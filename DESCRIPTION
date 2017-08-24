@@ -1,0 +1,14 @@
+Package: hhh4addon
+Type: Package
+Title: Extensions to endemic-epidemic timeseries modeling from package surveillance
+Version: 0.0.0.0.9003
+Author: Johannes Bracher
+Maintainer: Johannes Bracher <johannes.bracher@uzh.ch>
+Description: Extending surveillance::hhh4 to allow for distributed lags, solutions for longterm prediction and stationary moments.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 3.2.0), methods, grDevices, graphics, stats, utils, sp
+        (>= 1.0-15), xtable (>= 1.7-0), polyCub (>= 0.4-3), surveillance
+Imports: surveillance, fanplot, MASS, Matrix, nlme, spatstat
+RoxygenNote: 6.0.1
