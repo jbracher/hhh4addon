@@ -105,8 +105,8 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
   # re-order nu and phi if necessary:
   re_order <- c(start:length_of_period, if(start != 1) 1:(start - 1))
   ana_mom <- ana_mom[,,re_order]
-  nu <- nu[re_order, ]
-  phi <- phi[,,re_order]
+  nu <- nu[re_order, , drop = FALSE]
+  phi <- phi[,,re_order, drop = FALSE]
 
   extended_M <- matrix(ncol = 1 + n_timepoints*n_units,
                        nrow = 1 + n_timepoints*n_units)
