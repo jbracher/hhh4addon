@@ -39,6 +39,6 @@ weightedSumAR <- function (observed, lag, funct_lag, par_lag, max_lag, use_distr
     Ym1 <- rbind(matrix(NA_integer_, 1, ncol(observed)), head(observed, nTime - 1)) #BJ: force to first lag
     funct_lag(lag1 = Ym1, par_lag = par_lag, max_lag = max_lag, sum_up = sum_up) #BJ transform to geometric lags
   }else{ #BJ: if regular lags are used
-    rbind(matrix(NA_integer_, 1, nUnits), head(observed, nTime - lag))
+    rbind(matrix(NA_integer_, lag, nUnits), head(observed, nTime - lag))
   }
 }
