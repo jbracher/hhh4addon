@@ -7,7 +7,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
     control$ar$par_lag <- control$ne$par_lag <- range_par[i]
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     AICs[i] <- AIC(mod_temp) + 1 # +1 because of additional parameter
-    if(AICs[i] < AIC(best_mod)){
+    if(AICs[i] < min(AICs[1:(i - 1)])){
       best_mod <- mod_temp
     }
   }
@@ -16,12 +16,12 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
 
 
 #' Fitting hhh4 models with distributed lags
-#' 
+#'
 #' A modified version of \code{surveillance::hhh4} to allow for distributed lags.
-#' 
+#'
 #' @param stsObj,control,check.analyticals As in \code{surveillance::hhh4}, but \code{control}
 #' allows for some additional arguments (see details)
-#' 
+#'
 #' In this modified version of \code{surveillance::hhh4}, distributed laga can be specified using the following
 #' additional elements in the \code{ar} and \code{ne} parts of \code{control}:
 #' \itemize{
@@ -33,7 +33,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
 #'   }}
 #'   \item{\code{max_lag}}{ Maximum number of lags after which}
 #' }
-#' 
+#'
 #' @export
 hhh4_lag <- function (stsObj, control = list(
   ar = list(f = ~ -1,        # a formula "exp(x'lamba)*y_t-lag" (ToDo: matrix)
