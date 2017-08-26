@@ -17,12 +17,12 @@ distr_lag <- function(hhh4Obj){
 geometric_lag <- function(lag1, par_lag, max_lag, sum_up = TRUE){ #BJ
 
   if(is.list(par_lag)){
-    mu_lag <- par_lag$mu # extract parameter
+    p_lag <- par_lag$mu # extract parameter
   }else{
-    mu_lag <- par_lag
+    p_lag <- par_lag
   }
 
-  weights0 <- dgeom(0:(max_lag - 1), 1/mu_lag) #BJ
+  weights0 <- dgeom(0:(max_lag - 1), p_lag) #BJ
   weights <- weights0/sum(weights0) #BJ
   geom_lag <- if(sum_up){
     matrix(0, ncol = ncol(lag1), nrow = nrow(lag1))
