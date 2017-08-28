@@ -54,12 +54,15 @@ predictive_moments0 <- function(nu, phi, psi, stsObj, t_condition, lgt, M_start 
 
   M <- array(NA, dim = c(1 + n_units*n_lags, 1 + n_units*n_lags, lgt))
   M_0 <- c(1, as.vector(stsObj@observed[t_condition + 1 - n_lags:1, ]))%*%t(c(1, as.vector(stsObj@observed[t_condition + 1 - n_lags:1, ])))
-  M[,,1] <- recursion_M(nu[1, ], phi[,,1], psi, M_0)
+  M[,,1] <- recursion_M(nu_t = matrix(nu[1, , drop = FALSE], nrow = 1),
+                        phi_t = matrix(phi[,,1, drop = FALSE], nrow = n_units), psi, M_0)
 
   inds_new <- seq(to = ncol(M), length.out = n_units)
 
   for(i in 2:lgt){
-    M[,,i] <- recursion_M(nu[i, ], phi[,,i], psi, M[,,i - 1])
+    M[,,i] <- recursion_M(nu_t = matrix(nu[i, , drop = FALSE], nrow = 1),
+                          phi_t = matrix(phi[,,1, drop = FALSE], nrow = n_units),
+                          psi, M[,,i - 1])
   }
 
   return(M)

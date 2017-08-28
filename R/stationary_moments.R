@@ -72,14 +72,17 @@ stationary_moments0 <- function(nu, phi, psi, start = 1, n_seasons = 1,
   # iterative calculation of M:
   for(j in 1:max.iter){
     temp_1 <- M[,,1]
-    M[,,1] <- recursion_M(nu[1, ], phi[,,1],
+    M[,,1] <- recursion_M(nu_t = matrix(nu[1, , drop = FALSE], nrow = 1),
+                          phi_t = matrix(phi[,,1, drop = FALSE], nrow = n_units),
                           psi, M[,,length_of_period])
     # stop when convergence is reached:
     # if(all.equal(M[,,1], temp_1, tolerance = tolerance) == TRUE){
     #   break()
     # }
     for(i in 2:length_of_period){
-      M[,,i] <- recursion_M(nu[i, ], phi[,,i], psi, M[,,i - 1])
+      M[,,i] <- recursion_M(nu_t = matrix(nu[i, , drop = FALSE], nrow = 1),
+                            phi_t = matrix(phi[,,1, drop = FALSE], nrow = n_units),
+                            psi, M[,,i - 1])
     }
   }
 
