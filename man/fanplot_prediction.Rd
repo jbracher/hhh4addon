@@ -8,9 +8,9 @@ fanplot_prediction(pred, unit, probs = 1:99/100, interpolate_probs = TRUE,
   add_observed = TRUE, fan.col = colorRampPalette(c("darkgreen", "gray90")),
   pt.col = "red", pt.cex = 0.3, l.col = "black", ln = NULL,
   rlab = NULL, add = FALSE, add_legend = FALSE, width_legend = 0.1 *
-  (max(pred$timepoints) - min(pred$timepoints)), probs_legend = c(1, 5, 10,
-  15, 19)/20, ylim = NULL, xlab = "t", ylab = "cases",
-  return_matrix = FALSE, ...)
+  (max(pred$timepoints) - min(pred$timepoints))/pred$frequency,
+  probs_legend = c(1, 5, 10, 15, 19)/20, ylim = NULL, xlab = "t",
+  ylab = "cases", return_matrix = FALSE, ...)
 }
 \arguments{
 \item{pred}{the prediction as returned by \code{longterm_prediction_hhh4}

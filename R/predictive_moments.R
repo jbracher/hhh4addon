@@ -1,3 +1,24 @@
+#' #' Analytical computation of predictive moments for an \code{hhh4} model
+#'
+#' #' This functions calculates the predictive mean vector and covariance matrix for a path forecast from
+#' an \code{hhh4} model.
+#'
+#' #' @param hhh4Obj an \code{hhh4} object
+#' @param t_condition the index of the week on which to condition the path forecast
+#' @param lgt the length of the path forecast, i.e. 52 for forecasting an entire season when using weekly data
+#' @param return_Sigma logical: should the entire variance-covariance matrix of the forecast be returned? defaults to
+#' \code{FALSE} in order to save storage.
+#' @param return_cov_array logical: should an array with week-wise covariance matrices be returned?
+#' @param return_mu_decomposed logical: should an array with the predictive means decomposed into the fidderent components be returned?
+#' @param return_M logical: should the matrix M containing the predictive un-centered second moments be returned?
+#'
+#' @return mu_matrix,mu_vector predictive means as a matrix and flattened as a vector
+#' @return var_matrix matrix of predictive variances
+#' @return Sigma predictive variance-covariance matrix
+#' @return cov_array array containing week-wise predictive variance-covariance matrices.
+
+
+#' @export
 predictive_moments <- function(hhh4Obj, t_condition, lgt,
                                return_Sigma = FALSE, return_cov_array = FALSE,
                                return_mu_decomposed = FALSE, return_M = FALSE){

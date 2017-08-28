@@ -1,4 +1,5 @@
-plotHHH4_fitted <- function (x, units = 1, names = NULL,
+#' @export
+plotHHH4lag_fitted <- function (x, units = 1, names = NULL,
                              col = c("grey85", "blue", "orange"),
                              pch = 19, pt.cex = 0.6, pt.col = 1,
                              par.settings = list(),
