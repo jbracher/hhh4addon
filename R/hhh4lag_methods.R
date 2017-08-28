@@ -89,5 +89,19 @@ terms.hhh4lag <- function (x, ...)
     hhh4addon:::interpretControl(x$control,x$stsObj) else x$terms
 }
 
+#' @export
+logLik.hhh4lag <- function(object, ...)
+{
+  val <- if (object$convergence) object$loglikelihood else {
+    warning("algorithm did not converge")
+    NA_real_
+  }
+  attr(val, "df") <- if (object$dim["random"])
+    NA_integer_ else object$dim[["fixed"]] # use "[[" to drop the name; # BJ: maybe add + 1 to account for additional lag parameter
+  attr(val, "nobs") <- surveillance:::nobs.hhh4(object)
+  class(val) <- "logLik"
+  val
+}
+
 # to do: predict.hhh4
 # check whether necessary: update; decompose.hhh4 (this could be very useful!), neOffsetArray
