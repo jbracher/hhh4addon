@@ -61,7 +61,7 @@ predictive_moments0 <- function(nu, phi, psi, stsObj, t_condition, lgt, M_start 
 
   for(i in 2:lgt){
     M[,,i] <- recursion_M(nu_t = matrix(nu[i, , drop = FALSE], nrow = 1),
-                          phi_t = matrix(phi[,,1, drop = FALSE], nrow = n_units),
+                          phi_t = matrix(phi[,,i, drop = FALSE], nrow = n_units),
                           psi, M[,,i - 1])
   }
 

@@ -1,15 +1,15 @@
 recursion_M <- function(nu_t, phi_t, psi, last_M){
-  
+
   # extract features:
   n_units <- length(nu_t)
   n_lags <- if(is.matrix(phi_t)) ncol(phi_t)/n_units else 1 # handle univariate case with one lag
   inds_new <- seq(to = ncol(last_M), length.out = n_units)
-  
+
   # extend phi to phi_tilde
   phi_tilde <- rbind(c(1, rep(0, n_units*n_lags)),
                      cbind(matrix(0, nrow = (n_lags - 1)*n_units, ncol = n_units + 1),
                            diag((n_lags - 1)*n_units)),
-                     cbind(nu_t, phi_t)
+                     cbind(t(nu_t), phi_t)
   )
 
   # caclucation, step 1: quadratic form
