@@ -2,13 +2,15 @@
 % Please edit documentation in R/predictive_moments.R
 \name{predictive_moments}
 \alias{predictive_moments}
-\title{#' Analytical computation of predictive moments for an \code{hhh4} model}
+\title{Analytical computation of predictive moments for an \code{hhh4} model}
 \usage{
 predictive_moments(hhh4Obj, t_condition, lgt, return_Sigma = FALSE,
   return_cov_array = FALSE, return_mu_decomposed = FALSE,
   return_M = FALSE)
 }
 \arguments{
+\item{hhh4Obj}{an \code{hhh4} object}
+
 \item{t_condition}{the index of the week on which to condition the path forecast}
 
 \item{lgt}{the length of the path forecast, i.e. 52 for forecasting an entire season when using weekly data}
@@ -32,9 +34,17 @@ Sigma predictive variance-covariance matrix
 cov_array array containing week-wise predictive variance-covariance matrices.
 }
 \description{
-#' This functions calculates the predictive mean vector and covariance matrix for a path forecast from
+This functions calculates the predictive mean vector and covariance matrix for a path forecast from
 an \code{hhh4} model.
 }
-\details{
-#' @param hhh4Obj an \code{hhh4} object
+\examples{
+data("salmonella.agona")
+salmonella <- disProg2sts(salmonella.agona) # convert old "disProg" to new "sts" data class
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                           ar = list(f = addSeason2formula(~ 1), lag = 1),
+                           family = "NegBinM", subset = 6:250)
+fit_salmonella <- hhh4_lag(salmonella, control_salmonella) # fit model
+pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52) obtain prediction
+plot(fit_salmonella)
+fanplot_prediction(pred_mom, add = TRUE) # add fan plot
 }

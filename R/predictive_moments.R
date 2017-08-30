@@ -1,9 +1,9 @@
-#' #' Analytical computation of predictive moments for an \code{hhh4} model
+#' Analytical computation of predictive moments for an \code{hhh4} model
 #'
-#' #' This functions calculates the predictive mean vector and covariance matrix for a path forecast from
+#' This functions calculates the predictive mean vector and covariance matrix for a path forecast from
 #' an \code{hhh4} model.
 #'
-#' #' @param hhh4Obj an \code{hhh4} object
+#' @param hhh4Obj an \code{hhh4} object
 #' @param t_condition the index of the week on which to condition the path forecast
 #' @param lgt the length of the path forecast, i.e. 52 for forecasting an entire season when using weekly data
 #' @param return_Sigma logical: should the entire variance-covariance matrix of the forecast be returned? defaults to
@@ -16,6 +16,17 @@
 #' @return var_matrix matrix of predictive variances
 #' @return Sigma predictive variance-covariance matrix
 #' @return cov_array array containing week-wise predictive variance-covariance matrices.
+#'
+#' @examples
+#' data("salmonella.agona")
+#' salmonella <- disProg2sts(salmonella.agona) # convert old "disProg" to new "sts" data class
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            family = "NegBinM", subset = 6:250)
+#' fit_salmonella <- hhh4_lag(salmonella, control_salmonella) # fit model
+#' pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52) obtain prediction
+#' plot(fit_salmonella)
+#' fanplot_prediction(pred_mom, add = TRUE) # add fan plot
 
 
 #' @export
