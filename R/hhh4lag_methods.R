@@ -30,7 +30,11 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
   } else cat("No coefficients\n")
   cat("\n")
   if(any(x$use_distr_lag)){ #BJ
-    cat("Distributed lags used; use distr_lag() to check the applied lag distribution and parameters.\n") #BJ
+    wgts <- if(is.null(x$distr_lag$ar)) x$distr_lag$ne else x$distr_lag$ar
+    cat(paste0("Distributed lags used (max_lag = ", length(wgts),
+               "). Weights: "))
+    cat(paste(round(wgts, 2), collapse = "; "))
+    cat("\nUse distr_lag() to check the applied lag distribution and parameters.\n") #BJ
     cat("\n") #BJ
   }
   invisible(x)
@@ -56,7 +60,8 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
                 AIC   = AIC(object),
                 BIC   = BIC(object),
                 use_distr_lag = object$control$ar$use_distr_lag | object$control$ne$use_distr_lag,
-                maxEV_range = if (maxEV) unique(range(getMaxEV(object)))))
+                maxEV_range = if (maxEV) unique(range(getMaxEV(object))),
+                distr_lag = object$distr_lag))
   class(ret) <- "summary.hhh4lag"
   return(ret)
 }

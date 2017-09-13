@@ -26,7 +26,7 @@ setControl <- function (control, stsObj)
         stop("'control$", comp, "$lag' must be a ",
              if (comp=="ar") "positive" else "non-negative", " integer")
       control[[comp]]$lag <- as.integer(control[[comp]]$lag)
-      control[[comp]]$mu_lag <- NA # set mu_lag, max_lag to NA to avoid that they are used anywhere
+      # control[[comp]]$mu_lag <- NA # set mu_lag, max_lag to NA to avoid that they are used anywhere
       control[[comp]]$max_lag <- NA
     }else{ # case where 'mu_lag' and 'max_lag' are used
       #BJ: check max_lag and mu_lag
@@ -38,6 +38,15 @@ setControl <- function (control, stsObj)
       # }
       control[[comp]]$lag <- NA # set lag to NA to avoid that it is used anywhere
     }
+  }
+
+  if((control$ar$f != ~-1) & (control$ne$f != ~-1) & (control$ar$use_distr_lag != control$ne$use_distr_lag)){
+    stop("The current implementation requires use_distr_lag to be the same for the ar and the ne component.")
+  }
+
+  ## BJ: only same lag_par in the two components can currently be handled
+  if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
+    stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
   }
 
 

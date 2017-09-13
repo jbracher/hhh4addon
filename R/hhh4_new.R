@@ -87,6 +87,8 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
 #'   \item{\code{par_lag, max_lag}}{ Specification of the arguments
 #'   passed to funct_lag} to compute the distributed  lags.
 #' }
+#' The current implementation requires the lag structure to be handled
+#' the same way in the «code{ar} and the \code{ne} components.
 #' The parameter \code{par_lag} can be estimated using a profile
 #' likelihood approach. This is done using the wrapper \code{fit_par_lag}.
 #'
@@ -109,11 +111,11 @@ hhh4_lag <- function (stsObj, control = list(
   ar = list(f = ~ -1,        # a formula "exp(x'lamba)*y_t-lag" (ToDo: matrix)
             offset = 1,      # multiplicative offset
             lag = 1,         # autoregression on y_i,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = list(mu = 1), max_lag = 5, use_distr_lag = FALSE), #BJ: added arguments
+            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = FALSE), #BJ: added arguments
   ne = list(f = ~ -1,        # a formula "exp(x'phi) * sum_j w_ji * y_j,t-lag"
             offset = 1,      # multiplicative offset
             lag = 1,         # regression on y_j,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = list(mu = 1), max_lag = 5, use_distr_lag = FALSE, #BJ: added arguments
+            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = FALSE, #BJ: added arguments
             weights = neighbourhood(stsObj) == 1,  # weights w_ji
             scale = NULL,    # such that w_ji = scale * weights
             normalize = FALSE), # w_ji -> w_ji / rowSums(w_ji), after scaling
