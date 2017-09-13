@@ -7,14 +7,71 @@
 aggregate_moments(momentsObj, aggregation_matrix, by_timepoint = FALSE)
 }
 \arguments{
-\item{momentsObj}{an object of class \code{moments_hhh4} containing stationary or predictive moments, as returned by \code{stationary_moments} or \code{predictive_moments}}
+\item{momentsObj}{an object of class \code{moments_hhh4} containing stationary
+or predictive moments, as returned by \code{stationary_moments} or
+\code{predictive_moments}}
 
-\item{aggregation_matrix}{an aggregation matrix with either \code{momentsObj$n_units} columns
-(for aggregation across units while keeping the temporal structure; set option \code{by_timepoint = TRUE} in this case) 
-or \code{length(momentsObj$mu_vector)} (for aggregation that does not preserve the temporal structure; set option \code{by_timepoint = FALSE}).}
+\item{aggregation_matrix}{an aggregation matrix with either
+\code{momentsObj$n_units} columns
+(for aggregation across units while keeping the temporal structure; set option
+\code{by_timepoint = TRUE} in this case)
+or \code{length(momentsObj$mu_vector)} (for aggregation that does not preserve
+the temporal structure; set option \code{by_timepoint = FALSE}).}
 
-\item{by_timepoint}{Is aggregation only across units while preserving the temporal structure?}
+\item{by_timepoint}{logical: is aggregation only across units while preserving
+the temporal structure? Note that the new  \code{moments_hhh4} object
+cannot have the \code{condition} , \code{mu_matrix}, \code{var_matrix} and
+\code{cov_array} elements if the temporal structure is given up.}
+}
+\value{
+An object of class \code{moments_hhh4} representing the new prediction.
 }
 \description{
-Aggregation of stationary or predictive moments as calculated from \code{hhh4} objects using \code{stationary_moments} or \code{predictive_moments}
+Aggregation of stationary or predictive moments as calculated using
+\code{stationary_moments} or \code{predictive_moments}.
+}
+\examples{
+# load data:
+data("noroBL")
+
+########
+# fit a bivariate model:
+controlBL <- list(end = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE))),
+                  ar = list(f = ~ -1 + fe(1, unitSpecific = TRUE)),
+                  ne = list(f = ~ -1 + fe(1, unitSpecific = TRUE)),
+                  family = "NegBinM", subset = 2:260) # not a very parsimonious parametrization, but feasible
+fitBL <- hhh4(noroBL, control = controlBL)
+pred_mom <- predictive_moments(fitBL, t_condition = 260, lgt = 52, return_Sigma = TRUE)
+# Sigma is required in order to aggregate predictions.
+
+#########
+# plot predictions for two regions:
+par(mfrow = 1:2)
+fanplot_prediction(pred_mom, unit = 1, main = "Bremen")
+fanplot_prediction(pred_mom, unit = 2, main = "Lower Saxony")
+
+#########
+# aggregation 1: combine the two regions
+aggr_matr_pool <- matrix(1, ncol = 2)
+# specify by_timepoint = TRUE to keep the temporal structure and aggregate only
+# counts from the same week:
+pred_mom_pooled <- aggregate_moments(pred_mom, aggr_matr_pool, by_timepoint = TRUE)
+fanplot_prediction(pred_mom_pooled, unit = 1, ylim = c(0, 500), main = "Aggregation over regions")
+
+#########
+# aggregation 2: total burden in the two regions
+aggr_matr_total_burden <- matrix(rep(c(1, 0, 0, 1), 52), nrow = 2,
+                                 dimnames = list(c("Bremen", "Lower Saxony"),
+                                                 NULL))
+pred_mom_total_burden <- aggregate_moments(pred_mom, aggr_matr_total_burden)
+plot_moments_by_unit(pred_mom_total_burden, main = "Total burdens")
+
+#########
+# works also with stationary moments:
+stat_mom <- stationary_moments(fitBL, return_Sigma = TRUE)
+stat_mom_pooled <- aggregate_moments(stat_mom, aggr_matr_pool, by_timepoint = TRUE)
+stat_mom_total_burden <- aggregate_moments(stat_mom, aggr_matr_total_burden, by_timepoint = FALSE)
+fanplot_stationary(stat_mom_pooled)
+plot_moments_by_unit(stat_mom_total_burden, main = "Total burdens")
+
 }

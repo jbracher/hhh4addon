@@ -11,12 +11,12 @@ NULL
 
 #' Check whether the rows of a matrix show a cyclic pattern
 #'
-#' Needed to determine whether longterm_prediction_hhh4 is applicable (works only for
+#' Needed to determine whether \code{stationary_moments} is applicable (works only for
 #' models with periodic parameter structure)
 #'
 #' @param matr The parameter matrix to check.
 #' @param length_of_period Usually 52 (52 weeks per year).
-#'
+#' @return logical: does the matrix show a periodic pattern?
 matrix_is_cyclic <- function(matr, length_of_period){
   n_timepoints <- nrow(matr)
   cyclic_for_ith_timepoint <- rep(NA, length_of_period)

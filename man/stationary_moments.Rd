@@ -2,7 +2,7 @@
 % Please edit documentation in R/stationary_moments.R
 \name{stationary_moments}
 \alias{stationary_moments}
-\title{Stationary distributions implied by a \code{hhh4}-model}
+\title{Analytic calculation of periodically stationary moments implied by a \code{hhh4}-model}
 \usage{
 stationary_moments(hhh4Obj, start = 1, n_seasons = 1,
   return_Sigma = FALSE, return_cov_array = FALSE,
@@ -16,19 +16,73 @@ stationary_moments(hhh4Obj, start = 1, n_seasons = 1,
 
 \item{n_seasons}{number of}
 
-\item{return_Sigma}{logical: return entire variance/covariance matrix of the prediction; can take a lot of storage}
+\item{return_Sigma}{logical: return entire variance/covariance matrix of the prediction;
+can take a lot of storage}
 
 \item{return_cov_array}{logical: return an array containing week-wise covariance matrices}
 
-\item{return_mu_decomposed}{logical: return an array containing a decomposition of stationary means into the three
+\item{return_mu_decomposed}{logical: return an array containing a decomposition of
+stationary means into the three
 components \code{endemic}, \code{epi.own} and \code{epi.others}.}
 
-\item{return_M}{logical: return the array M containing un-centered second moments (used internally for calculations)}
+\item{return_M}{logical: return the array M containing un-centered second moments
+(used internally for calculations)}
 
 \item{max.iter}{maximum number of iterations before iterative algorithm stops}
 
-\item{tolerance}{element-wise maximum tolerance (entering into temination criterion for the iterative calculation)}
+\item{tolerance}{element-wise maximum tolerance (entering into termination criterion
+for the iterative calculation)}
+}
+\value{
+An object of class \code{stationary_moments_hhh4} containing the following components:
+\itemize{
+  \item{\code{mu_matrix}} A matrix containing the stationary means. Each row corresponds
+  to a time period and each column to a unit.
+  \item{\code{var_matrix}} A matrix containing the stationary variances.
+  \item{\code{cov_array}} An array containing time period-wise variance-covariance matrices.
+  \item{\code{mu_vector}} as \code{mu_matrix}, but flattened into a vector.
+  \item{\code{Sigma}} a large covariance matrix for all elements of the prediction
+  (corresponding to \code{mu_vector})
+  \item{\code{M}} a matrix containing stationary means and (un-centered) second moments,
+  specifically E(c(1, X)%*%t(c(1, X))) where X contains all counts that shall be forecasted.
+  Important in the internal calculation, accessible mainly for de-bugging purposes.
+  \item{\code{mu_decomposed}} an array with the same number of rows and columns as
+  \code{mu_matrix}, but three layers corresponding to the contributions of the three components
+  to the means
+  \item{\code{start}} the position (within a cycle) of the time period to which the first elements of
+  \code{mu_matrix} etc. correspond (i.e. the \code{start} argument from the call of
+  \code{stationary_moments})
+  \item{\code{freq}} the length of a cycle
+  \item{\code{n_seasons}} the number of seasons covered in \code{mu_matrix} etc.
+  \item{\code{n_units}} the number of units covered in the prediction
+  \item{\code{timepoints}} the positions within a cycle of the timepoints covered by \code{mu_matrix} etc.
+  \item{\code{condition}} \code{NULL}. Only relevant in predictive moments, just a place holder here.
+  \item{\code{type}} \code{"stationary"}; to distinguish from predictive moments.
+  \item{\code{has_temporal_structure}} does the object still have the original temporal structure? can
+  be set to \code{FALSE} when aggregated using \code{aggregate_prediction}.
+}
 }
 \description{
-Returns the mean vector and covariance matrix of the stationary distribution implied by an hhh4 object.
+Returns the mean vector and covariance matrix of the periodically stationary distribution
+implied by an hhh4 object.
+}
+\examples{
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+# specify and fit model
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                           ar = list(f = addSeason2formula(~ 1), lag = 1),
+                           family = "NegBinM")
+fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+# obtain periodically stationary moments:
+stat_mom <- stationary_moments(fit_salmonella)
+# plot periodically stationary means:
+fanplot_stationary(stat_mom)
+# add paths of the six seasons in the data set:
+for(i in 0:5){
+ lines(1:52/52, salmonella@observed[(i*52 + 1):((i + 1)*52)], col = "blue")
+}
+legend("topleft", col = "blue", lty = 1, legend = "observed seasons")
+
 }

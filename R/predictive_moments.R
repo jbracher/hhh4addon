@@ -1,30 +1,77 @@
 #' Analytical computation of predictive moments for an \code{hhh4} model
 #'
-#' This functions calculates the predictive mean vector and covariance matrix for a path forecast from
-#' an \code{hhh4} model.
+#' This functions calculates the predictive mean vector and covariance
+#' matrix for a path forecast from an \code{hhh4} model.
 #'
 #' @param hhh4Obj an \code{hhh4} object
-#' @param t_condition the index of the week on which to condition the path forecast
-#' @param lgt the length of the path forecast, i.e. 52 for forecasting an entire season when using weekly data
-#' @param return_Sigma logical: should the entire variance-covariance matrix of the forecast be returned? defaults to
-#' \code{FALSE} in order to save storage.
-#' @param return_cov_array logical: should an array with week-wise covariance matrices be returned?
-#' @param return_mu_decomposed logical: should an array with the predictive means decomposed into the fidderent components be returned?
-#' @param return_M logical: should the matrix M containing the predictive un-centered second moments be returned?
+#' @param t_condition the index of the week on which to condition the
+#' path forecast
+#' @param lgt the length of the path forecast, i.e. 52 for forecasting
+#'  an entire season when using weekly data
+#' @param return_Sigma logical: should the entire variance-covariance
+#'  matrix of the forecast be returned? defaults to \code{FALSE} in
+#'  order to save storage.
+#' @param return_cov_array logical: should an array with week-wise
+#' covariance matrices be returned?
+#' @param return_mu_decomposed logical: should an array with the
+#' predictive means decomposed into the fidderent components be returned?
+#' @param return_M logical: should the matrix M containing the predictive
+#' first and (un-centered) second moments be returned?
 #'
-#' @return mu_matrix,mu_vector predictive means as a matrix and flattened as a vector
-#' @return var_matrix matrix of predictive variances
-#' @return Sigma predictive variance-covariance matrix
-#' @return cov_array array containing week-wise predictive variance-covariance matrices.
+#' @return An object of class \code{stationary_moments_hhh4} containing
+#' the following components:
+#' \itemize{
+#'   \item{\code{mu_matrix}} A matrix containing the predictive means.
+#'   Each row corresponds
+#'   to a time period and each column to a unit.
+#'   \item{\code{var_matrix}} A matrix containing the predictive variances.
+#'   \item{\code{cov_array}} An array containing time period-wise
+#'   variance-covariance matrices.
+#'   \item{\code{mu_vector}} as \code{mu_matrix}, but flattened into a vector.
+#'   \item{\code{Sigma}} a large covariance matrix for all elements
+#'   of the prediction
+#'   (corresponding to \code{mu_vector})
+#'   \item{\code{M}} a matrix containing predictive means and (un-centered)
+#'    second moments,
+#'   specifically E(c(1, X)%*%t(c(1, X))) where X contains all counts that
+#'    shall be forecasted.
+#'   Important in the internal calculation, accessible mainly for
+#'   de-bugging purposes.
+#'   \item{\code{mu_decomposed}} an array with the same number of rows
+#'    and columns as
+#'   \code{mu_matrix}, but three layers corresponding to the contributions
+#'    of the three
+#'   components to the means
+#'   \item{\code{start}} the index (in the original \code{sts} object) of
+#'    the first time
+#'   period of the prediction
+#'   \item{\code{freq}} the length of a cycle
+#'   \item{\code{n_units}} the number of units covered in the prediction
+#'   \item{\code{timepoints}} the timepoints covered by the prediction etc.
+#'   \item{\code{timepoints}} as \code{timepoints}, but calendar time
+#'   rather than indices
+#'   \item{\code{condition}} A matrix containing the realizations for
+#'   the conditioning time period (or periods)
+#'   \item{\code{realizations_matrix}} A matrix containing the realizations
+#'   that have materialized in the
+#'   period covered by the prediction.
+#'   \item{\code{type}} \code{"predictive"}; to distinguish from stationary
+#'    moments.
+#'   \item{\code{has_temporal_structure}} does the object still have the
+#'    original temporal structure? can
+#'   be set to \code{FALSE} when aggregated using \code{aggregate_prediction}.
+#'   }
 #'
 #' @examples
 #' data("salmonella.agona")
-#' salmonella <- disProg2sts(salmonella.agona) # convert old "disProg" to new "sts" data class
+#' # convert old "disProg" to new "sts" data class:
+#' salmonella <- disProg2sts(salmonella.agona)
 #' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
 #'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
 #'                            family = "NegBinM", subset = 6:250)
 #' fit_salmonella <- hhh4_lag(salmonella, control_salmonella) # fit model
-#' pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52) obtain prediction
+#' # obtain prediction:
+#' pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52)
 #' plot(fit_salmonella)
 #' fanplot_prediction(pred_mom, add = TRUE) # add fan plot
 
@@ -147,17 +194,19 @@ format_return_prediction <- function(M, nu, phi, t_condition, stsObj,
     ret$M <- M
   }
 
-  ret$start <- stsObj@start
-  ret$frequency <- stsObj@freq
+  ret$start <- t_condition + 1 # stsObj@start
+  ret$freq <- stsObj@freq
   ret$t_condition <- t_condition
   ret$condition <- stsObj@observed[t_condition + 1 - n_lags:1, , drop = FALSE]
   ret$n_units <- n_units
-  ret$timepoints <- t_condition+ 1:lgt
+  ret$timepoints <- t_condition + 1:lgt
+  ret$timepoints_calendar <- stsObj@start[1] +
+    (stsObj@start[2] + t_condition - 1 + 1:lgt)/ret$freq
   ret$realizations_matrix <- stsObj@observed[t_condition + 1:lgt, , drop = FALSE]
   ret$type <- "predictive"
   ret$has_temporal_strucutre <- TRUE
 
-  class(ret) <- c("stationary_moments_hhh4", "moments_hhh4")
+  class(ret) <- c("predictive_moments_hhh4", "moments_hhh4")
 
   return(ret)
 }

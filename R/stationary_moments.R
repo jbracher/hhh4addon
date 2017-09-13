@@ -1,17 +1,69 @@
-#' Stationary distributions implied by a \code{hhh4}-model
+#' Analytic calculation of periodically stationary moments implied by a \code{hhh4}-model
 #'
-#' Returns the mean vector and covariance matrix of the stationary distribution implied by an hhh4 object.
+#' Returns the mean vector and covariance matrix of the periodically stationary distribution
+#' implied by an hhh4 object.
 #'
 #' @param hhh4Obj \code{hhh4} object for which to calculate stationary moments
 #' @param start start of the season
 #' @param n_seasons number of
-#' @param return_Sigma logical: return entire variance/covariance matrix of the prediction; can take a lot of storage
+#' @param return_Sigma logical: return entire variance/covariance matrix of the prediction;
+#' can take a lot of storage
 #' @param return_cov_array logical: return an array containing week-wise covariance matrices
-#' @param return_mu_decomposed logical: return an array containing a decomposition of stationary means into the three
+#' @param return_mu_decomposed logical: return an array containing a decomposition of
+#' stationary means into the three
 #' components \code{endemic}, \code{epi.own} and \code{epi.others}.
-#' @param return_M logical: return the array M containing un-centered second moments (used internally for calculations)
+#' @param return_M logical: return the array M containing un-centered second moments
+#' (used internally for calculations)
 #' @param max.iter maximum number of iterations before iterative algorithm stops
-#' @param tolerance element-wise maximum tolerance (entering into temination criterion for the iterative calculation)
+#' @param tolerance element-wise maximum tolerance (entering into termination criterion
+#' for the iterative calculation)
+#'
+#' @return An object of class \code{stationary_moments_hhh4} containing the following components:
+#' \itemize{
+#'   \item{\code{mu_matrix}} A matrix containing the stationary means. Each row corresponds
+#'   to a time period and each column to a unit.
+#'   \item{\code{var_matrix}} A matrix containing the stationary variances.
+#'   \item{\code{cov_array}} An array containing time period-wise variance-covariance matrices.
+#'   \item{\code{mu_vector}} as \code{mu_matrix}, but flattened into a vector.
+#'   \item{\code{Sigma}} a large covariance matrix for all elements of the prediction
+#'   (corresponding to \code{mu_vector})
+#'   \item{\code{M}} a matrix containing stationary means and (un-centered) second moments,
+#'   specifically E(c(1, X)%*%t(c(1, X))) where X contains all counts that shall be forecasted.
+#'   Important in the internal calculation, accessible mainly for de-bugging purposes.
+#'   \item{\code{mu_decomposed}} an array with the same number of rows and columns as
+#'   \code{mu_matrix}, but three layers corresponding to the contributions of the three components
+#'   to the means
+#'   \item{\code{start}} the position (within a cycle) of the time period to which the first elements of
+#'   \code{mu_matrix} etc. correspond (i.e. the \code{start} argument from the call of
+#'   \code{stationary_moments})
+#'   \item{\code{freq}} the length of a cycle
+#'   \item{\code{n_seasons}} the number of seasons covered in \code{mu_matrix} etc.
+#'   \item{\code{n_units}} the number of units covered in the prediction
+#'   \item{\code{timepoints}} the positions within a cycle of the timepoints covered by \code{mu_matrix} etc.
+#'   \item{\code{condition}} \code{NULL}. Only relevant in predictive moments, just a place holder here.
+#'   \item{\code{type}} \code{"stationary"}; to distinguish from predictive moments.
+#'   \item{\code{has_temporal_structure}} does the object still have the original temporal structure? can
+#'   be set to \code{FALSE} when aggregated using \code{aggregate_prediction}.
+#' }
+#'
+#' @examples
+#' data("salmonella.agona")
+#' ## convert old "disProg" to new "sts" data class
+#' salmonella <- disProg2sts(salmonella.agona)
+#' # specify and fit model
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            family = "NegBinM")
+#' fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+#' # obtain periodically stationary moments:
+#' stat_mom <- stationary_moments(fit_salmonella)
+#' # plot periodically stationary means:
+#' fanplot_stationary(stat_mom)
+#' # add paths of the six seasons in the data set:
+#' for(i in 0:5){
+#'  lines(1:52/52, salmonella@observed[(i*52 + 1):((i + 1)*52)], col = "blue")
+#' }
+#' legend("topleft", col = "blue", lty = 1, legend = "observed seasons")
 #'
 #' @export
 stationary_moments <- function(hhh4Obj, start = 1, n_seasons = 1,
@@ -20,6 +72,9 @@ stationary_moments <- function(hhh4Obj, start = 1, n_seasons = 1,
                                max.iter = 10, tolerance = 1e-5){
   if(!("hhh4" %in% class(hhh4Obj))){
     stop("hhh4Obj neds to be of class hhh4 or an extension thereof.")
+  }
+  if(!is.numeric(start) | start < 1 | start > hhh4Obj$stsObj@freq){
+    stop("start needs to be an integer between 1 and hhh4Obj$stsObj@freq")
   }
   nu_lambda <- lambda_tilde_complex_neighbourhood(hhh4Obj, periodic = TRUE)
 
@@ -123,7 +178,7 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
     extended_M[inds_blockdiag, inds_blockdiag] <- ana_mom[-1, -1,ind_ana_mom]
     # fill remaining parts:
     if( i >= n_lags + 1){
-      phi_star <- cbind(nu[ind_ana_mom, ], phi[, , ind_ana_mom])
+      phi_star <- cbind(nu[ind_ana_mom, ], matrix(phi[, , ind_ana_mom], ncol = n_lags))
       inds_t <- seq(to = i*n_units + 1, length.out = n_units)
       inds_off_blockdiag <- 2:((i - n_lags)*n_units + 1)
       inds_lags <- c(1, seq(to = (i - 1)*n_units + 1, length.out = n_lags*n_units))
@@ -204,7 +259,7 @@ format_return <- function(M, nu, phi, n_seasons, start,
     mu_decomposed0[,,"endemic"] <- nu
     for(i in 1:length_of_period){
       mu_decomposed0[i,,"epi.own"] <-
-        only_ar(phi[,,i])%*%as.vector(t(mu_matrix0[ominus(i, n_lags:1, length_of_period), ]))
+        only_ar(phi[ , , i, drop = FALSE])%*%as.vector(t(mu_matrix0[ominus(i, n_lags:1, length_of_period), ]))
     }
     mu_decomposed0[,,"epi.neighbours"] <- mu_matrix0 - mu_decomposed0[,,"endemic"] - mu_decomposed0[,,"epi.own"]
     # append n_seasons times:

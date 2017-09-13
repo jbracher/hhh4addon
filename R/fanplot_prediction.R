@@ -34,16 +34,37 @@ interpolate_qnbinom <- function(p, ...){
 #' @param xlab,ylab axis labels
 #' @param return_matrix logical: return matrix passed to \code{fanplot::fan}; useful to make more sophisticated plots.
 #' @param ... other arguments passed on to \code{plot()}
+#'
+#' @return Only if \code{return_matrix} set to \code{TRUE}: the matrix passed to fanplot::fan
+#'
+#' @examples
+#' data("salmonella.agona")
+#' # convert old "disProg" to new "sts" data class:
+#' salmonella <- disProg2sts(salmonella.agona)
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            family = "NegBinM", subset = 6:250)
+#' fit_salmonella <- hhh4_lag(salmonella, control_salmonella) # fit model
+#' # obtain prediction:
+#' pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52)
+#' # plot the prediction only:
+#' fanplot_prediction(pred_mom, add_legend = TRUE)
+#' # or plot it along with the fit:
+#' plot(fit_salmonella)
+#' fanplot_prediction(pred_mom, add = TRUE) # add fan plot
+#'
 #' @importFrom fanplot fan
 #' @export
-fanplot_prediction <- function(pred, unit, probs = 1:99/100,
-                               interpolate_probs = TRUE, add_observed = TRUE,
-                               fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red", pt.cex = 0.3, l.col = "black",
+fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
+                               interpolate_probs = TRUE, add_observed = TRUE, add_pred_means = TRUE,
+                               fan.col = colorRampPalette(c("darkgreen", "gray90")),
+                               pt.col = "red", pt.cex = 0.3, l.col = "black",
+                               mean_col = "black", mean_lty = "dashed",
                                ln = NULL, rlab = NULL, add = FALSE,
-                               add_legend = FALSE, width_legend = 0.1*(max(pred$timepoints) - min(pred$timepoints))/pred$frequency,
+                               add_legend = FALSE, width_legend = 0.1*(max(pred$timepoints) - min(pred$timepoints))/pred$freq,
                                probs_legend = c(1, 5, 10, 15, 19)/20,
                                ylim = NULL,
-                               xlab = "t", ylab  ="cases",
+                               xlab = "t", ylab  ="No. infected",
                                return_matrix = FALSE, ...){
 
   if(is.null(pred$condition)){
@@ -76,39 +97,43 @@ fanplot_prediction <- function(pred, unit, probs = 1:99/100,
     }
   }
 
-  timepoints_calendar <- pred$start[1] + (pred$start[2] + c(pred$t_condition, pred$timepoints) - 1)/pred$frequency
+  timepoints_calendar0 <- c(pred$timepoints_calendar[1] - 1/pred$freq, pred$timepoints_calendar)
 
   # new plot if add==FALSE
   if(!add){
     if(is.null(ylim)){
       ylim <- c(0, max(matr_cond))
     }
-    xlim <- pred$start[1] + (pred$start[2] + range(pred$timepoints) - 1:0)/pred$frequency
-    plot(NULL, xlim = range(timepoints_calendar) + c(-1/pred$freq, 2*add_legend*width_legend),
+
+    plot(NULL, xlim = range(timepoints_calendar0),
          ylim = ylim, xlab = xlab, ylab = ylab, ...)
     if(add_legend){
       y_legend <- matrix(seq(from = 0.9*min(matr_cond), to = max(matr_cond),
                              length.out = length(probs)),
                          ncol = 1)
-      fan(y_legend, start = max(timepoints_calendar) + 1.5*width_legend, fan.col = fan.col,
+      fan(y_legend, start = max(timepoints_calendar0) + 1.5*width_legend, fan.col = fan.col,
           rlab = probs_legend)
-      abline(v = max(pred$timepoints) + width_legend)
+      abline(v = max(timepoints_calendar0) + width_legend)
     }
   }
 
   # add fan:
   par(bty = "n") # suppress box that fan adds by default
   # plot fan:
-  fan(matr_cond, start = timepoints_calendar[1], frequency = pred$frequency,
+  fan(matr_cond, start = timepoints_calendar0[1], frequency = pred$freq,
       fan.col = fan.col, ln = ln, rlab = rlab, data.type = "values", probs = probs)
-  abline(v = pred$timepoints[1] - 1/pred$freq, lty = "dashed")
+  abline(v = timepoints_calendar0[1], lty = "dashed")
   # set par()$bty back to default
   par(bty = "o")
+  # add means:
+  if(add_pred_means){
+    lines(timepoints_calendar0, c(pred$condition[unit], mu), col = mean_col, lty = mean_lty)
+  }
   # add observed:
   if(add_observed){
     rlz <- c(pred$condition[unit], pred$realizations_matrix[, unit])
-    lines(timepoints_calendar, rlz, lty=2, col = l.col)
-    points(timepoints_calendar, rlz, pch = 19, cex = pt.cex, col = pt.col)
+    lines(timepoints_calendar0, rlz, lty=2, col = l.col)
+    points(timepoints_calendar0, rlz, pch = 19, cex = pt.cex, col = pt.col)
   }
   if(return_matrix){
     return(matr_cond)

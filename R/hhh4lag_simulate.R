@@ -164,12 +164,17 @@ simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
                                         funct_lag = funct_lag.ar, par_lag = par_lag.ar, max_lag = max_lag.ar, #BJ
                                         use_distr_lag = use_distr_lag.ar, sum_up = TRUE)[max_lag.ne + 1, ] #BJ
 
-    Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag.ne:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
-                             funct_lag = funct_lag.ne, #BJ
-                             par_lag = par_lag.ne, #BJ
-                             max_lag = max_lag.ne, #BJ
-                             use_distr_lag = use_distr_lag.ne, #BJ
-                             sum_up = TRUE)[max_lag.ar + 1, ]
+    if(!is.null(neW)){
+      Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag.ne:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
+                                              funct_lag = funct_lag.ne, #BJ
+                                              par_lag = par_lag.ne, #BJ
+                                              max_lag = max_lag.ne, #BJ
+                                              use_distr_lag = use_distr_lag.ne, #BJ
+                                              sum_up = TRUE)[max_lag.ar + 1, ]
+    }else{
+      Ylagged.ne <- 0
+    }
+
     mu[t,] <-
       ar[t,] * Ylagged +
       ne[t,] * Ylagged.ne +

@@ -1,4 +1,8 @@
 ## NOTE: we also apply print.hhh4 in print.summary.hhh4()
+#' A modified version of \code{surveillance::print.hhh4}
+#'
+#' A modified version of \code{surveillance::print.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
 #'@export
 print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
 {
@@ -25,13 +29,17 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
       quote = FALSE, print.gap = 2)
   } else cat("No coefficients\n")
   cat("\n")
-  if(any(x$use_distr_lag)){
-    cat("Distributed lags used; use distr_lag() to check the applied lag distribution and parameters.\n")
-    cat("\n")
+  if(any(x$use_distr_lag)){ #BJ
+    cat("Distributed lags used; use distr_lag() to check the applied lag distribution and parameters.\n") #BJ
+    cat("\n") #BJ
   }
   invisible(x)
 }
 
+#' A modified version of \code{surveillance::summary.hhh4}
+#'
+#' A modified version of \code{surveillance::summary.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
 #' @export
 summary.hhh4lag <- function (object, maxEV = FALSE, ...)
 {
@@ -53,6 +61,10 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
   return(ret)
 }
 
+#' A modified version of \code{print.summary.hhh4}
+#'
+#' A modified version of \code{print.summary.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
 #' @export
 print.summary.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
 {
@@ -82,6 +94,10 @@ print.summary.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ..
   invisible(x)
 }
 
+#' A modified version of \code{terms.hhh4}
+#'
+#' A modified version of \code{terms.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
 #' @export
 terms.hhh4lag <- function (x, ...)
 {
@@ -89,6 +105,10 @@ terms.hhh4lag <- function (x, ...)
     hhh4addon:::interpretControl(x$control,x$stsObj) else x$terms
 }
 
+#' A modified version of \code{logLik.hhh4}
+#'
+#' A modified version of \code{terms.hhh4} to deal with the added
+#' features of the \code{logLik.hhh4} class.
 #' @export
 logLik.hhh4lag <- function(object, ...)
 {
@@ -103,5 +123,182 @@ logLik.hhh4lag <- function(object, ...)
   val
 }
 
-# to do: predict.hhh4
-# check whether necessary: update; decompose.hhh4 (this could be very useful!), neOffsetArray
+
+### refit hhh4-model
+## ...: arguments modifying the original control list
+## S: a named list to adjust the number of harmonics of the three components
+## subset.upper: refit on a subset of the data up to that time point
+## use.estimates: use fitted parameters as new start values
+
+#' A modified version of \code{update.hhh4}
+#'
+#' A modified version of \code{update.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
+#' @export
+update.hhh4lag <- function (object, ..., S = NULL, subset.upper = NULL,
+                         use.estimates = object$convergence, evaluate = TRUE)
+{
+  control <- object$control
+
+  ## first modify the control list according to the components in ...
+  extras <- list(...)
+  control <- modifyList(control, extras)
+
+  ## adjust start values
+  control$start <- if (use.estimates) { # use parameter estimates
+    surveillance:::hhh4coef2start(object)
+  } else local({ # re-use previous 'start' specification
+    ## for pre-1.8-2 "hhh4" objects,
+    ## object$control$start is not necessarily a complete list:
+    template <- eval(formals(hhh4)$control$start)
+    template[] <- object$control$start[names(template)]
+    template
+  })
+  ## and update according to an extra 'start' argument
+  if (!is.null(extras[["start"]])) {
+    if (!is.list(extras$start) || is.null(names(extras$start))) {
+      stop("'start' must be a named list, see 'help(\"hhh4\")'")
+    }
+    control$start[] <- mapply(
+      FUN = function (now, extra) {
+        if (is.null(names(extra))) {
+          extra
+        } else { # can retain non-extra values
+          now[names(extra)] <- extra
+          now
+        }
+      },
+      control$start, extras$start[names(control$start)],
+      SIMPLIFY = FALSE, USE.NAMES = FALSE
+    )
+  }
+  ## update initial values of parametric weight function
+  if (use.estimates && length(coefW <- coefW(object)) &&
+      ! "weights" %in% names(extras$ne)) { # only if function is unchanged
+    control$ne$weights$initial <- coefW
+  }
+
+  ## adjust seasonality
+  if (!is.null(S)) {
+    stopifnot(is.list(S), !is.null(names(S)),
+              names(S) %in% c("ar", "ne", "end"))
+    control[names(S)] <- mapply(function (comp, S) {
+      comp$f <- surveillance::addSeason2formula(removeSeasonFromFormula(comp$f),
+                                  period = object$stsObj@freq, S = S)
+      comp
+    }, control[names(S)], S, SIMPLIFY=FALSE, USE.NAMES=FALSE)
+  }
+
+  ## restrict fit to those epochs of control$subset which are <=subset.upper
+  if (surveillance:::isScalar(subset.upper))
+    control$subset <- control$subset[control$subset <= subset.upper]
+
+
+  ## fit the updated model or just return the modified control list
+  if (evaluate) {
+    hhh4_lag(stsObj = object$stsObj, control = control)
+  } else {
+    control
+  }
+}
+
+## adapted version: decompose the fitted mean of a "hhh4" model returning an array
+## with dimensions (t, i, j), where the first j index is "endemic"
+
+#' A wrapper around \code{decompose.hhh4lag} and \code{surveillance::decompose.hhh4}
+#'
+#' A wrapper around \code{decompose.hhh4lag} and \code{surveillance::decompose.hhh4}
+#' to handle ordinary \code{hhh4} objects and objects of the new \code{hhh4lag} class.
+#'
+#' @export
+decompose.hhh4 <- function(x, coefs = x$coefficients, ...){
+  if(class(x)[1] == "hhh4lag"){
+    decompose.hhh4lag(x, coefs = x$coefficients, ...)
+  }else{
+    surveillance::decompose.hhh4(x, coefs = x$coefficients, ...)
+  }
+}
+
+#' A modified version of \code{decompose.hhh4}
+#'
+#' A modified version of \code{decompose.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class.
+decompose.hhh4lag <- function (x, coefs = x$coefficients, ...)
+{
+  ## get three major components from meanHHH() function
+  meancomps <- surveillance:::meanHHH(coefs, terms.hhh4lag(x))
+
+  ## this contains c("endemic", "epi.own", "epi.neighbours")
+  ## but we really want the mean by neighbour
+  neArray <- c(meancomps$ne.exppred) * neOffsetArray.hhh4lag(x, coefW(coefs))
+  ##<- ne.exppred is (t, i) and recycled for (t, i, j)
+  stopifnot(all.equal(rowSums(neArray, dims = 2), meancomps$epi.neighbours,
+                      check.attributes = FALSE))
+
+  ## add autoregressive part to neArray
+  diagidx <- cbind(c(row(meancomps$epi.own)),
+                   c(col(meancomps$epi.own)),
+                   c(col(meancomps$epi.own)))
+  ## usually: neArray[diagidx] == 0
+  neArray[diagidx] <- neArray[diagidx] + meancomps$epi.own
+
+  ## add endemic component to the array
+  res <- array(c(meancomps$endemic, neArray),
+               dim = dim(neArray) + c(0, 0, 1),
+               dimnames = with(dimnames(neArray), list(t=t, i=i, j=c("endemic",j))))
+  stopifnot(all.equal(rowSums(res, dims = 2), meancomps$mean,
+                      check.attributes = FALSE))
+  res
+}
+
+## new version:
+## get the w_{ji} Y_{j,t-1} values from a hhh4() fit
+## (i.e., before summing the neighbourhood component over j)
+## in an array with dimensions (t, i, j)
+
+#' A modified version of \code{neOffsetArray}
+#'
+#' A modified version of \code{neOffsetArray} to deal with the added
+#' features of the \code{hhh4lag} class.
+neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
+                           subset = object$control$subset)
+{
+  ## initialize array ordered as (j, t, i) for apply() below
+  res <- array(data = 0,
+               dim = c(object$nUnit, length(subset), object$nUnit),
+               dimnames = list(
+                 "j" = colnames(object$stsObj),
+                 "t" = rownames(object$stsObj)[subset],
+                 "i" = colnames(object$stsObj)))
+  # BJ: extract some elements of the control:
+  ar <- object$control$ar
+
+  ## calculate array values if the fit has an NE component
+  if ("ne" %in% surveillance:::componentsHHH4(object)) {
+    W <- surveillance:::getNEweights(object, pars = pars)
+    Y <- observed(object$stsObj)
+    # tm1 <- subset - object$control$ne$lag
+    # is.na(tm1) <- tm1 <= 0
+    # tYtm1 <- t(Y[tm1,,drop=FALSE])
+    #BJ calculate lags using weightedSumAR instead of indexing as in original function
+    tY_lagged <- t(hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
+                                          funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, #BJ
+                                          use_distr_lag = ar$use_distr_lag, sum_up = TRUE)[subset, ]) #BJ
+    # from now on everything continues as before
+    res[] <- apply(W, 2L, function (wi) tY_lagged * wi)
+    offset <- object$control$ne$offset
+    res <- if (length(offset) > 1L) {
+      offset <- offset[subset,,drop=FALSE]
+      res * rep(offset, each = object$nUnit)
+    } else {
+      res * offset
+    }
+    ## stopifnot(all.equal(
+    ##     colSums(res),  # sum over j
+    ##     terms.hhh4(object)$offset$ne(pars)[subset,,drop=FALSE],
+    ##     check.attributes = FALSE))
+  }
+
+  ## permute dimensions as (t, i, j)
+  aperm(res, perm = c(2L, 3L, 1L), resize = TRUE)
+}

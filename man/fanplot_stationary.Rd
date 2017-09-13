@@ -5,13 +5,16 @@
 \title{Display stationary distribution as a fanplot}
 \usage{
 fanplot_stationary(stat_mom, unit, probs = 1:99/100,
-  interpolate_probs = TRUE, fan.col = colorRampPalette(c("darkgreen",
-  "gray90")), pt.col = "red", pt.cex = 0.3, l.col = "black", ln = NULL,
-  ln.col = "red", rlab = NULL, style = "fan", add = FALSE,
+  interpolate_probs = TRUE, add_pred_means = TRUE,
+  fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red",
+  pt.cex = 0.3, l.col = "black", mean_col = "black",
+  mean_lty = "dashed", ln = NULL, ln.col = "red", rlab = NULL,
+  style = "fan", add = FALSE,
   timepoints = 1:nrow(stat_mom$mu_matrix)/stat_mom$freq, add_legend = FALSE,
   width_legend = 0.1 * (max(timepoints) - min(timepoints)),
   probs_legend = c(1, 25, 50, 75, 99)/100, hlines = NULL, vlines = NULL,
-  ylim = NULL, xlab = "t", ylab = "cases", return_matrix = FALSE, ...)
+  ylim = NULL, xlab = "t", ylab = "No. infected", return_matrix = FALSE,
+  ...)
 }
 \arguments{
 \item{stat_mom}{the stationary moments as returned by \code{stationary_moments_hhh4}
@@ -22,6 +25,8 @@ fanplot_stationary(stat_mom, unit, probs = 1:99/100,
 \item{probs}{vector of probabilities: which quantiles shall be displayed in the fan plot?}
 
 \item{interpolate_probs}{logical: smooth curves by simple interpolation of quantiles}
+
+\item{add_pred_means}{logical: add line showing the the predictive means}
 
 \item{fan.col, ln, ln.col, rlab, style}{graphical parameters passed on to \code{fanplot::fan}}
 
@@ -46,7 +51,31 @@ fanplot_stationary(stat_mom, unit, probs = 1:99/100,
 \item{return_matrix}{logical: return matrix passed to \code{fanplot::fan}; useful to make more sophisticated plots.}
 
 \item{...}{other arguments passed on to \code{plot()}}
+
+\item{means_col, mean_lty}{graphical parameters for display of predictive means}
+}
+\value{
+Only if \code{return_matrix} set to \code{TRUE}: the matrix passed to fanplot::fan
 }
 \description{
 Plots a fanplot to display quantiles of (negative binomial approximations) of the week-wise stationary distributions
+}
+\examples{
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+# specify and fit model
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                           ar = list(f = addSeason2formula(~ 1), lag = 1),
+                           family = "NegBinM")
+fit_salmonella <- hhh4(salmonella, control_salmonella)
+# obtain periodically stationary moments:
+stat_mom <- stationary_moments(fit_salmonella)
+# plot periodically stationary means:
+fanplot_stationary(stat_mom, add_legend = TRUE)
+# add paths of the six seasons in the data set:
+for(i in 0:5){
+ lines(1:52/52, salmonella@observed[(i*52 + 1):((i + 1)*52)], col = "blue")
+}
+legend("topleft", col = "blue", lty = 1, legend = "observed seasons")
 }

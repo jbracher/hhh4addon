@@ -7,9 +7,11 @@
 #' @param unit numeric denoting the unit to display
 #' @param probs vector of probabilities: which quantiles shall be displayed in the fan plot?
 #' @param interpolate_probs logical: smooth curves by simple interpolation of quantiles
+#' @param add_pred_means logical: add line showing the the predictive means
 #' @param timepoints vector giving the x-coordinates for the fanplot (generates \code{start} and \code{frequency} for \code{fanplot::fan})
 #' @param fan.col,ln,ln.col,rlab,style graphical parameters passed on to \code{fanplot::fan}
 #' @param  pt.col,pt.cex,l.col graphical parameters for display of observed values
+#' @param means_col,mean_lty graphical parameters for display of predictive means
 #' @param add logical: add to existing plot?
 #' @param add_legend logical: shall a color key legend be added?
 #' @param width_legend width of box for color key legend in user coordinates
@@ -19,17 +21,39 @@
 #' @param xlab,ylab axis labels
 #' @param return_matrix logical: return matrix passed to \code{fanplot::fan}; useful to make more sophisticated plots.
 #' @param ... other arguments passed on to \code{plot()}
+#'
+#' @return Only if \code{return_matrix} set to \code{TRUE}: the matrix passed to fanplot::fan
+#'
+#' @examples
+#' data("salmonella.agona")
+#' ## convert old "disProg" to new "sts" data class
+#' salmonella <- disProg2sts(salmonella.agona)
+#' # specify and fit model
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+#'                            family = "NegBinM")
+#' fit_salmonella <- hhh4(salmonella, control_salmonella)
+#' # obtain periodically stationary moments:
+#' stat_mom <- stationary_moments(fit_salmonella)
+#' # plot periodically stationary means:
+#' fanplot_stationary(stat_mom, add_legend = TRUE)
+#' # add paths of the six seasons in the data set:
+#' for(i in 0:5){
+#'  lines(1:52/52, salmonella@observed[(i*52 + 1):((i + 1)*52)], col = "blue")
+#' }
+#' legend("topleft", col = "blue", lty = 1, legend = "observed seasons")
 #' @importFrom fanplot fan
 #' @export
 fanplot_stationary <- function(stat_mom, unit, probs = 1:99/100,
-                               interpolate_probs = TRUE,
+                               interpolate_probs = TRUE, add_pred_means = TRUE,
                                fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red", pt.cex = 0.3, l.col = "black",
+                               mean_col = "black", mean_lty = "dashed",
                                ln = NULL, ln.col = "red", rlab = NULL, style = "fan", add = FALSE,
                                timepoints = 1:nrow(stat_mom$mu_matrix) / stat_mom$freq,
                                add_legend = FALSE, width_legend = 0.1*(max(timepoints) - min(timepoints)),
                                probs_legend = c(1, 25, 50, 75, 99)/100, hlines = NULL, vlines = NULL,
                                ylim = NULL,
-                               xlab = "t", ylab  ="cases",
+                               xlab = "t", ylab  = "No. infected",
                                return_matrix = FALSE, ...){
 
   if(is.null(stat_mom$mu_matrix)){
@@ -82,6 +106,9 @@ fanplot_stationary <- function(stat_mom, unit, probs = 1:99/100,
       fan.col = fan.col, ln = ln, ln.col = ln.col, rlab = rlab,
       data.type = "values", probs = probs,
       style = style)
+  if(add_pred_means){
+    lines(stat_mom$timepoints/stat_mom$freq, mu, col = mean_col, lty = mean_lty)
+  }
   # set par()$bty back to default
   par(bty = "o")
   if(return_matrix){

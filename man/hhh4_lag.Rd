@@ -17,39 +17,65 @@ hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = 1,
   FALSE), check.analyticals = FALSE)
 }
 \arguments{
-\item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4}, but the \code{control} argument
-allows for some additional specifications.
+\item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4},
+but the \code{control} argument allows for some additional specifications.
 
 Distributed lags can be specified by
 additional elements in the \code{ar} and \code{ne} parts of \code{control}:
 \itemize{
-  \item{\code{funct_lag}}{ Function to calculate the a matrix of distributed lags from a matrix of first lags.
-   Currently only geometric lags (\code{hhh4addon:::geometric_lag}) are available and set as default, see Details.
-  The function has to take the following arguments:
+  \item{\code{funct_lag}}{ Function to calculate the a matrix of
+  distributed lags from a matrix of first lags. Currently only
+  geometric lags (\code{hhh4addon:::geometric_lag}) are available
+  and set as default, see Details. The function has to take the
+  following arguments:
   \itemize{
-  \item{\code{lag1}}{ Matrix containing the first lags which would be used in a standard \code{hhh4} model.}
-  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For the geometric lags this is the un-normalized weight of the first lag.}
+  \item{\code{lag1}}{ Matrix containing the first lags which would
+  be used in a standard \code{hhh4} model.}
+  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For
+  the geometric lags this is the un-normalized weight of the first lag.}
   \item{\code{max_lag}}{ Maximum number of lags.}
-  \item{\code{sum_up}}{ Specifies how detailed the output of the function is - only for internal use.}
+  \item{\code{sum_up}}{ Specifies how detailed the output of the
+  function is - only for internal use.}
   }}
-  \item{\code{par_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed  lags.
+  \item{\code{par_lag, max_lag}}{ Specification of the arguments
+  passed to funct_lag} to compute the distributed  lags.
 }
-The parameter \code{par_lag} can be estimated using a profile likelihood approach,
-see \code{fit_par_lag}.}
+The parameter \code{par_lag} can be estimated using a profile
+likelihood approach. This is done using the wrapper \code{fit_par_lag}.}
 }
 \description{
-A modified version of \code{surveillance::hhh4} to allow for distributed lags.
-Usually used from inside of the wrapper \code{fit_par_lag}.
+A modified version of \code{surveillance::hhh4} to allow for distributed
+lags. Usually used from inside of the wrapper \code{fit_par_lag}.
 }
 \details{
-The standard \code{hhh4} function only allows for models with first lags i.e. of the form
+The standard \code{hhh4} function only allows for models with
+first lags i.e. of the form
 \deqn{mu_{it} = \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j != i}w_{ji}X_{j, t - 1} + \nu_{it},}
-see \code{?hhh4}. The extension \code{hhh4_lag} allows to specify models of the form
+see \code{?hhh4}. The extension \code{hhh4_lag} allows to specify
+models of the form
 \deqn{mu_{it} = \lambda_{it}\sum_{q= 1}^Q u_q X_{i, t - q} + \phi_{it}\sum_{j\neq i}sum_{q= 1}^Q w_{ji}u_q X_{j, t - q} + \nu_{it}.}
-The simple first lags are replaced by weighted sums of the Q previous observations.
-The weights u_q, q = 1, ..., Q sum up to 1 and need to be parametrizable by a single scalar parameter \code{par_lag}.
-This parameter is passed to a function \code{funct_lag} which takes the first lags and transforms them into distributed lags.
-Currently only geometric lags (function \code{geometric_lag}) are available. These are specified as u0_q = p^q * (1 - p)^{q - 1} and
-u_q = u0_q / sum_{q = 1}^Q u0_q. The \code{par_lag} parameter corresponds to u0_1, i.e. the un-normalized
-weight of the first lag.
+The simple first lags are replaced by weighted sums of the Q
+previous observations. The weights u_q, q = 1, ..., Q sum up to
+1 and need to be parametrizable by a single scalar parameter \code{par_lag}.
+This parameter is passed to a function \code{funct_lag} which takes
+the first lags and transforms them into distributed lags. Currently
+only geometric lags (function \code{geometric_lag}) are available.
+These are specified as u0_q = p^q * (1 - p)^{q - 1} and u_q = u0_q /
+sum_{q = 1}^Q u0_q. The \code{par_lag} parameter corresponds to u0_1,
+i.e. the un-normalized weight of the first lag.
+}
+\examples{
+## a simple univariate example:
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+# specify and fit model: fixed geometric lag structure
+# with weight 0.8 for first lag
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
+                           ar = list(f = addSeason2formula(~ 1),
+                                     par_lag = 0.8, use_distr_lag = TRUE),
+                           family = "NegBinM", subset = 6:312)
+fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+summary(fit_salmonella)
+
 }

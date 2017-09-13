@@ -1,17 +1,24 @@
-plotHHH4lag_stationary <- function(hhh4Obj, unit, stat_mom = NULL){
+plotHHH4lag_stationary <- function(hhh4Obj, unit = 1, stat_mom = NULL, col = c("grey85", "blue", "orange"),
+                                   ylab = "No. infected", pch = 19, pt.cex = 0.6, pt.col = 1, ...){
   if(is.null(stat_mom)){
-    stat_mom <- hhh4addon:::stationary_moments(hhh4Obj, return_mu_split = TRUE)
+    stat_mom <- hhh4addon:::stationary_moments(hhh4Obj, return_mu_decomposed = TRUE)
   }
 
-  meanHHHunit <- stat_mom$mu_split[,unit,]
+  meanHHHunit <- stat_mom$mu_decomposed[,unit,]
   inds <- rep_len(1:hhh4Obj$stsObj@freq, nrow(hhh4Obj$stsObj))
   meanHHHunit <- meanHHHunit[inds, ]
 
   tp <- hhh4Obj$stsObj@start[1] + (hhh4Obj$stsObj@start[2] + 1:length(inds))/hhh4Obj$stsObj@freq # all observation time points
+  realizations <- hhh4Obj$stsObj@observed[, unit]
+  pred_mom_decomposed <- meanHHHunit[,c("endemic", "epi.own", "epi.neighbours"),drop=FALSE]
+
+  plot(range(tp), c(0, max(realizations)), type = "n", ylab = ylab, xlab = "", ...)
 
   surveillance:::plotComponentPolygons(
     x = tp,
-    y = meanHHHunit[,c("endemic", "epi.own", "epi.neighbours"),drop=FALSE])
+    y = pred_mom_decomposed,
+    add = TRUE, col = col)
+  points(tp, realizations, col = pt.col, pch = pch, cex = pt.cex)
 }
 
 

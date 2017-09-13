@@ -11,7 +11,10 @@ matrix_is_cyclic(matr, length_of_period)
 
 \item{length_of_period}{Usually 52 (52 weeks per year).}
 }
+\value{
+logical: does the matrix show a periodic pattern?
+}
 \description{
-Needed to determine whether longterm_prediction_hhh4 is applicable (works only for
+Needed to determine whether \code{stationary_moments} is applicable (works only for
 models with periodic parameter structure)
 }

@@ -4,13 +4,15 @@
 \alias{fanplot_prediction}
 \title{Display prediction as a fan plot}
 \usage{
-fanplot_prediction(pred, unit, probs = 1:99/100, interpolate_probs = TRUE,
-  add_observed = TRUE, fan.col = colorRampPalette(c("darkgreen", "gray90")),
-  pt.col = "red", pt.cex = 0.3, l.col = "black", ln = NULL,
-  rlab = NULL, add = FALSE, add_legend = FALSE, width_legend = 0.1 *
-  (max(pred$timepoints) - min(pred$timepoints))/pred$frequency,
-  probs_legend = c(1, 5, 10, 15, 19)/20, ylim = NULL, xlab = "t",
-  ylab = "cases", return_matrix = FALSE, ...)
+fanplot_prediction(pred, unit = 1, probs = 1:99/100,
+  interpolate_probs = TRUE, add_observed = TRUE, add_pred_means = TRUE,
+  fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red",
+  pt.cex = 0.3, l.col = "black", mean_col = "black",
+  mean_lty = "dashed", ln = NULL, rlab = NULL, add = FALSE,
+  add_legend = FALSE, width_legend = 0.1 * (max(pred$timepoints) -
+  min(pred$timepoints))/pred$freq, probs_legend = c(1, 5, 10, 15, 19)/20,
+  ylim = NULL, xlab = "t", ylab = "No. infected", return_matrix = FALSE,
+  ...)
 }
 \arguments{
 \item{pred}{the prediction as returned by \code{longterm_prediction_hhh4}
@@ -44,6 +46,26 @@ fanplot_prediction(pred, unit, probs = 1:99/100, interpolate_probs = TRUE,
 
 \item{...}{other arguments passed on to \code{plot()}}
 }
+\value{
+Only if \code{return_matrix} set to \code{TRUE}: the matrix passed to fanplot::fan
+}
 \description{
 Plots a fanplot to display quantiles of (negative binomial approximations) of the week-wise predictive distributions
+}
+\examples{
+data("salmonella.agona")
+# convert old "disProg" to new "sts" data class:
+salmonella <- disProg2sts(salmonella.agona)
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                           ar = list(f = addSeason2formula(~ 1), lag = 1),
+                           family = "NegBinM", subset = 6:250)
+fit_salmonella <- hhh4_lag(salmonella, control_salmonella) # fit model
+# obtain prediction:
+pred_mom <- predictive_moments(fit_salmonella, t_condition = 250, lgt = 52)
+# plot the prediction only:
+fanplot_prediction(pred_mom, add_legend = TRUE)
+# or plot it along with the fit:
+plot(fit_salmonella)
+fanplot_prediction(pred_mom, add = TRUE) # add fan plot
+
 }
