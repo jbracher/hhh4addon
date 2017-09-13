@@ -1,0 +1,143 @@
+---
+title: "hhh4addon: extending the functionality of surveillance:hhh4"
+author: "Johannes Bracher"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Purpose of the `hhh4addon` package
+
+The `hhh4addon` package modifies and extends  the functionality of the `surveillance` package, more specifically the model class implemented in the function `hhh4`. **Note that `hhh4addon` is currently only available in a development version.** It adds the following features:
+
+- Fitting model versions with distributed-lags.
+- Computation of predictive and stationary first and second moments.
+
+As `hhh4addon` can only be used in combination with `surveillance` we assume some basic familiarity with this package in the following.
+
+
+## The `hhh4` model class and its extension to distributed lags
+
+We only give a very brief description of the `hhh4` modeling framework, details can be found for instance in `vignette("hhh4")` and `vignette("hhh4_spacetime")` from the `surveillance` package. Counts $X_{it}$ in unit $i$ at time $t$ are modelled as
+
+$$
+X_{it} \sim \text{NegBin}(\mu_{it}, \psi_i)\\
+\mu_{it} = e_{it}\nu_{it} + \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j \neq i} w_{ji}X_{j, t - 1}
+$$
+where the negative binomial distribution is parametrized by its mean $\mu_{it}$ and an overdispersion perameter $\psi_i$ such that the conditional variance $\text{Var}(X_t \mid X_{t - 1}) = \mu_{it}\cdot(1 + \psi_i\mu_{it})$. While $e_{it}$ is a population offset, the remaining parameters of the mean structure are modelled in a log-linear fashion. While in principle covariates can enter here, it is common to let only an intercept and sine/cosine terms for seasonality enter:
+$$
+\nu_{it} = \alpha^{(\nu)}_i + \beta^{(\nu)}_i \sin(2\pi t/\omega) + \gamma^{(\nu)}_i \cos(2\pi t/\omega)\\
+\lambda_{it} = \alpha^{(\lambda)}_i + \beta^{(\lambda)}_i \sin(2\pi t/\omega) + \gamma^{(\lambda)}_i \cos(2\pi t/\omega)\\
+\phi_{it} = \alpha^{(\phi)}_i + \beta^{(\phi)}_i \sin(2\pi t/\omega) + \gamma^{(\phi)}_i \cos(2\pi t/\omega)\\
+$$
+Whether unit-specific parameters are necessary and identifiable depends on the data at hand, see the more general vignettes from `surveillance` for more information on model building.
+
+The added functionality which `hhh4addon` offers is to allow for distributed lags, i.e. models with a conditional mean of the form
+$$
+\mu_{it} = \nu_{it} + \lambda_{it}\sum_{q = 1}^Q \lfloor u_q\rfloor X_{t - q} + \phi_{it}\sum_{j\neq i}\sum_{q = 1}^Q w_{ji}\lfloor u_q\rfloor X_{j, t - q}
+$$
+
+where the weights $u_d$ are normalized such that $\sum_{d = 1}^D \lfloor u_d\rfloor = 1$ before they enter. This means that instead of the previous observation $X_{t - 1}$ a weighted average of the $D$ preceding observations $X_{t - D},\dots, X_{t - 1}$ enters. Currently only a geometric, i.e. exponentially decaying lag structure is implemented:
+$$
+u_q = p(1 - p)^{q - 1}
+$$
+We exemplify this with an with a simple univariate analysis of the `salmonella` data from `surveillance`. All syntax also translates to the multivariate case.
+```{r, fig.show='hold'}
+library(surveillance, quietly = TRUE)
+library(hhh4addon)
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+
+plot(salmonella)
+```
+
+First we fit a regular `hhh4` model with seasonality in both components:
+```{r, message=FALSE, warning=FALSE}
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+                            family = "NegBinM", subset = 6:312)
+fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+AIC(fit_salmonella)
+```
+
+When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available which allows for some additional specifications in the `control` list. Specifically the following arguments can be specified in the `ar` (and potentially `ne`) components:
+
+- `use_distributed_lag`: de-activates the usual `lag` argument and activates the use of the three following arguments
+- `funct_lag`: a function to compute distributed lags from simple first lags given some parameter value and a maximum number of lags. Currently only the default function `geometric_lag` is implemented.
+- `par_lag`: the parameter entering into `funct_lag`; for `geometric_lag` this is $p$ (which corresponds to the un-normalized weight of the first lag)
+- `max_lag`: the maximum number of lags entering into `funct_lag`
+
+The folowing code allows to fit a model with a geometric lag structure, a fixed value of $p = 0.8$ and a maximum of five lags:
+
+```{r}
+control_salmonella.08 <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
+                                      par_lag = 0.8, max_lag = 5),
+                            family = "NegBinM", subset = 6:312)
+fit_salmonella.08 <- hhh4_lag(salmonella, control_salmonella.08)
+plot(fit_salmonella.08)
+AIC(fit_salmonella.08) # 1225.157
+```
+
+We can see that this model is better than the above model with first lags. To estimate $p$ from the data we can use wrapper `fit_par_lag` which evaluates `hhh4_lag` for a set of values for `par_lag` provided in an argument `range_par`:
+
+```{r}
+control_salmonella.flex <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
+                                      par_lag = 0.8, max_lag = 5),
+                            family = "NegBinM", subset = 6:312)
+range_par <- seq(0.1, 1, by = 0.01)
+fit_salmonella.flex <- fit_par_lag(salmonella, control_salmonella.flex, range_par = range_par)
+```
+The return object of this function contains two objects: the `hhh4` object from the fit with the lowest AIC (`best_mod`) and a vector giving the AIC values for models using the different values of par_lag.
+```{r}
+plot(fit_salmonella.flex$best_mod)
+summary(fit_salmonella.flex$best_mod)
+fit_salmonella.flex$best_mod$distr_lag # the weights of the 5 lags
+plot(range_par, fit_salmonella.flex$AICs, type = "l", xlab = "p", ylab = "AIC")
+min(fit_salmonella.flex$AICs)
+```
+The best fit is attained with a model using $p = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one.
+
+## Predictive and periodically stationary moments
+
+The second and more mature functionality of `hhh4addon` concerns predictive and periodically stationary moments. These quantities can be calculated analytically for the `hhh4` class, ses Held, Meyer and Bracher (2017) and Bracher and Held (2017) for the theoretical background.
+
+To demonstrate this we re-fit the above models on a a subset of the `salmonella` data and keep the rest for validation of our predictions.
+```{r}
+control_salmonella.sub <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                            ar = list(f = addSeason2formula(~ 1), lag = 1),
+                            family = "NegBinM", subset = 6:260)
+fit_salmonella.sub <- hhh4(salmonella, control_salmonella.sub)
+```
+Predictive moments can now be calculated and plotted as follows:
+```{r}
+pred_mom <- predictive_moments(fit_salmonella.sub, t_condition = 260, lgt = 52, return_Sigma = TRUE)
+plot(fit_salmonella.sub)
+fanplot_prediction(pred_mom, add = TRUE)
+fanplot_prediction(pred_mom, add = FALSE)
+```
+
+The fanplots here are based on negative binomial approximations of the predictive distributions via the first two moments. We can also use these predictive moments to evaluate the Dawid-Sebastiani score, a proper scoring rule for predictive model assessment:
+```{r}
+ds_score_hhh4(pred_mom)
+```
+
+We use this to compare a model with one lag to a model with geometric lags.
+```{r}
+# fit the model with geometric lags
+control_salmonella.sub.flex <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
+                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
+                                      par_lag = 0.8, max_lag = 5),
+                            family = "NegBinM", subset = 6:260)
+range_par <- seq(0.1, 1, by = 0.01)
+fit_salmonella.sub.flex <- fit_par_lag(salmonella, control_salmonella.sub.flex, range_par = range_par)
+# get prediction:
+pred_mom.flex <- predictive_moments(fit_salmonella.sub.flex$best_mod, t_condition = 260, lgt = 52, return_Sigma = TRUE)
+ds_score_hhh4(pred_mom.flex)
+```
+Like other predictive scores the David-Sebastiani score is negatively oriented, i.e. the prediction from the model `fit_salmonella.sub.flex` with geometric lags is slightly better than the one from the simpler `fit_salmonella.sub`.
