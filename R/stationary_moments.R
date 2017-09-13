@@ -178,7 +178,7 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
     extended_M[inds_blockdiag, inds_blockdiag] <- ana_mom[-1, -1,ind_ana_mom]
     # fill remaining parts:
     if( i >= n_lags + 1){
-      phi_star <- cbind(nu[ind_ana_mom, ], matrix(phi[, , ind_ana_mom], ncol = n_lags))
+      phi_star <- cbind(nu[ind_ana_mom, ], matrix(phi[, , ind_ana_mom], ncol = n_units*n_lags))
       inds_t <- seq(to = i*n_units + 1, length.out = n_units)
       inds_off_blockdiag <- 2:((i - n_lags)*n_units + 1)
       inds_lags <- c(1, seq(to = (i - 1)*n_units + 1, length.out = n_lags*n_units))

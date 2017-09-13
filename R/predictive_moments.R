@@ -173,6 +173,8 @@ format_return_prediction <- function(M, nu, phi, t_condition, stsObj,
     # calculate mean vector and covariance matrix from this:
     ret$mu_vector <- large_M[1, -1]
     ret$Sigma <- large_M[-1, -1] - large_M[1, -1] %*%t(large_M[1, -1])
+    # also return a vector of realizations:
+    ret$realizations <- as.vector(t(stsObj@observed[t_condition + 1:lgt]))
 
     names_Sigma <- paste0(rep(names_units, lgt), ";t=",
                           rep(t_condition + seq_len(lgt), each = n_units))
