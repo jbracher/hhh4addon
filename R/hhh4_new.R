@@ -30,7 +30,7 @@
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
   control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE
   AICs <- rep(NA, length(range_par))
-  best_mod <- hhh4_lag(stsObj, control, check.analyticals)
+  best_mod <- NULL
   for(i in 1:length(range_par)){
     control$ar$par_lag <- control$ne$par_lag <- range_par[i]
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)

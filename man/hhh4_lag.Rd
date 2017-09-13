@@ -5,16 +5,16 @@
 \title{Fitting hhh4 models with distributed lags}
 \usage{
 hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = 1,
-  funct_lag = geometric_lag, par_lag = list(mu = 1), max_lag = 5, use_distr_lag
-  = FALSE), ne = list(f = ~-1, offset = 1, lag = 1, funct_lag = geometric_lag,
-  par_lag = list(mu = 1), max_lag = 5, use_distr_lag = FALSE, weights =
-  neighbourhood(stsObj) == 1, scale = NULL, normalize = FALSE), end = list(f =
-  ~1, offset = 1), family = c("Poisson", "NegBin1", "NegBinM"), subset =
-  2:nrow(stsObj), optimizer = list(stop = list(tol = 1e-05, niter = 100),
-  regression = list(method = "nlminb"),      variance = list(method =
-  "nlminb")), verbose = FALSE, start = list(fixed = NULL, random = NULL, sd.corr
-  = NULL), data = list(t = stsObj@epoch - min(stsObj@epoch)), keep.terms =
-  FALSE), check.analyticals = FALSE)
+  funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = FALSE),
+  ne = list(f = ~-1, offset = 1, lag = 1, funct_lag = geometric_lag, par_lag =
+  1, max_lag = 5, use_distr_lag = FALSE, weights = neighbourhood(stsObj) == 1,
+  scale = NULL, normalize = FALSE), end = list(f = ~1, offset = 1), family =
+  c("Poisson", "NegBin1", "NegBinM"), subset = 2:nrow(stsObj), optimizer =
+  list(stop = list(tol = 1e-05, niter = 100), regression = list(method =
+  "nlminb"),      variance = list(method = "nlminb")), verbose = FALSE, start =
+  list(fixed = NULL, random = NULL, sd.corr = NULL), data = list(t =
+  stsObj@epoch - min(stsObj@epoch)), keep.terms = FALSE),
+  check.analyticals = FALSE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4},
@@ -40,6 +40,8 @@ additional elements in the \code{ar} and \code{ne} parts of \code{control}:
   \item{\code{par_lag, max_lag}}{ Specification of the arguments
   passed to funct_lag} to compute the distributed  lags.
 }
+The current implementation requires the lag structure to be handled
+the same way in the «code{ar} and the \code{ne} components.
 The parameter \code{par_lag} can be estimated using a profile
 likelihood approach. This is done using the wrapper \code{fit_par_lag}.}
 }
