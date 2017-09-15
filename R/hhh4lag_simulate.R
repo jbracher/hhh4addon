@@ -1,3 +1,21 @@
+################################################################################
+### The following are modified versions of functions from the surveillance package.
+### See below the original copyright declaration.
+################################################################################
+
+################################################################################
+### Copyright declaration from the surveillance package:
+### Part of the surveillance package, http://surveillance.r-forge.r-project.org
+### Free software under the terms of the GNU General Public License, version 2,
+### a copy of which is available at http://www.r-project.org/Licenses/.
+###
+### Simulate from a HHH4 model
+###
+### Copyright (C) 2012 Michaela Paul, 2013-2016 Sebastian Meyer
+### $Revision: 1635 $
+### $Date: 2016-03-16 12:11:48 +0100 (Mit, 16. Mär 2016) $
+################################################################################
+
 ### Updated version: Simulate-method for hhh4-objects
 #' @import stats
 #'@export

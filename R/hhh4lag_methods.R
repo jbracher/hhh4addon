@@ -1,3 +1,22 @@
+################################################################################
+### The following are modified versions of functions from the surveillance package.
+### See below the original copyright declaration.
+################################################################################
+
+################################################################################
+### Part of the surveillance package, http://surveillance.r-forge.r-project.org
+### Free software under the terms of the GNU General Public License, version 2,
+### a copy of which is available at http://www.r-project.org/Licenses/.
+###
+### Standard methods for hhh4-fits
+###
+### Copyright (C) 2010-2012 Michaela Paul, 2012-2016 Sebastian Meyer
+### $Revision: 1697 $
+### $Date: 2016-04-06 14:21:54 +0200 (Mit, 06. Apr 2016) $
+################################################################################
+
+
+
 ## NOTE: we also apply print.hhh4 in print.summary.hhh4()
 #' A modified version of \code{surveillance::print.hhh4}
 #'

@@ -1,3 +1,20 @@
+################################################################################
+### The following are modified versions of functions from the surveillance package.
+### See below the original copyright declaration.
+################################################################################
+
+################################################################################
+### Part of the surveillance package, http://surveillance.r-forge.r-project.org
+### Free software under the terms of the GNU General Public License, version 2,
+### a copy of which is available at http://www.r-project.org/Licenses/.
+###
+### Plot-method(s) for fitted hhh4() models
+###
+### Copyright (C) 2010-2012 Michaela Paul, 2012-2016 Sebastian Meyer
+### $Revision: 1715 $
+### $Date: 2016-05-17 10:01:28 +0200 (Die, 17. Mai 2016) $
+################################################################################
+
 #' @export
 plotHHH4lag_fitted <- function (x, units = 1, names = NULL,
                              col = c("grey85", "blue", "orange"),

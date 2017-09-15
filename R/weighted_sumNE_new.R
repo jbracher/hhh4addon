@@ -1,3 +1,21 @@
+################################################################################
+### The following are modified versions of functions from the surveillance package
+### and wrappers around them.
+### See below the original copyright declaration.
+################################################################################
+
+################################################################################
+### Part of the surveillance package, http://surveillance.r-forge.r-project.org
+### Free software under the terms of the GNU General Public License, version 2,
+### a copy of which is available at http://www.r-project.org/Licenses/.
+###
+### Helper functions for neighbourhood weight matrices in hhh4()
+###
+### Copyright (C) 2012-2016 Sebastian Meyer
+### $Revision: 1687 $
+### $Date: 2016-04-01 21:40:25 +0200 (Fre, 01. Apr 2016) $
+################################################################################
+
 ### updated version: calculate the weighted sum of counts of adjacent (or all other) regions
 ### i.e. the nTime x nUnit matrix with elements ne_ti = sum_j w_jit * y_jt
 ## W is either a nUnits x nUnits matrix of time-constant weights w_ji

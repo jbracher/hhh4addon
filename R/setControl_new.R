@@ -1,3 +1,23 @@
+################################################################################
+### The following are modified versions of functions from the surveillance package
+### and wrappers around them.
+### See below the original copyright declaration.
+################################################################################
+
+################################################################################
+### Copyright declaration from the surveillance package:
+### Part of the surveillance package, http://surveillance.r-forge.r-project.org
+### Free software under the terms of the GNU General Public License, version 2,
+### a copy of which is available at http://www.r-project.org/Licenses/.
+###
+### hhh4 is an extended version of algo.hhh for the sts-class
+### The function allows the incorporation of random effects and covariates.
+###
+### Copyright (C) 2010-2012 Michaela Paul, 2012-2016 Sebastian Meyer
+### $Revision: 1706 $
+### $Date: 2016-05-03 16:09:49 +0200 (Die, 03. Mai 2016) $
+################################################################################
+
 ## updated version: set default values for model specifications in control
 setControl <- function (control, stsObj)
 {
