@@ -1,8 +1,8 @@
 Package: hhh4addon
 Type: Package
 Title: Extensions to endemic-epidemic timeseries modeling from package surveillance
-Version: 0.0.0.0.9003
-Author: Johannes Bracher
+Version: 0.0.0.0.9004
+Author: Johannes Bracher [aut, cre], the authors and contributors of the surveillance package, https://cran.r-project.org/package=surveillance [ctb] (substantial parts of the package consist of modified code from the surveillance package), R Core Team [ctb] (a few code segments are modified versions of code from base R)
 Maintainer: Johannes Bracher <johannes.bracher@uzh.ch>
 Description: Extending surveillance::hhh4 to allow for distributed lags, solutions for longterm prediction and stationary moments.
 License: GPL-2
@@ -15,3 +15,4 @@ RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/jbracher/hhh4addon
