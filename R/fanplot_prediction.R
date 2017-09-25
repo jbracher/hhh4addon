@@ -62,7 +62,7 @@ fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
                                mean_col = "black", mean_lty = "dashed",
                                ln = NULL, rlab = NULL, add = FALSE,
                                add_legend = FALSE, width_legend = 0.1*(max(pred$timepoints) - min(pred$timepoints))/pred$freq,
-                               probs_legend = c(1, 5, 10, 15, 19)/20,
+                               probs_legend = c(1, 25, 50, 75, 99)/100,
                                ylim = NULL,
                                xlab = "t", ylab  ="No. infected",
                                return_matrix = FALSE, ...){
@@ -105,7 +105,7 @@ fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
       ylim <- c(0, max(matr_cond))
     }
 
-    plot(NULL, xlim = range(timepoints_calendar0),
+    plot(NULL, xlim = range(timepoints_calendar0) + c(0, 2*add_legend*width_legend),
          ylim = ylim, xlab = xlab, ylab = ylab, ...)
     if(add_legend){
       y_legend <- matrix(seq(from = 0.9*min(matr_cond), to = max(matr_cond),
