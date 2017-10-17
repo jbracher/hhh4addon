@@ -259,7 +259,8 @@ format_return <- function(M, nu, phi, n_seasons, start,
     mu_decomposed0[,,"endemic"] <- nu
     for(i in 1:length_of_period){
       mu_decomposed0[i,,"epi.own"] <-
-        only_ar(phi[ , , i, drop = FALSE])%*%as.vector(t(mu_matrix0[ominus(i, n_lags:1, length_of_period), ]))
+        only_ar(matrix(phi[ , , i], nrow = nrow(phi)))%*%
+        as.vector(t(mu_matrix0[ominus(i, n_lags:1, length_of_period), ]))
     }
     mu_decomposed0[,,"epi.neighbours"] <- mu_matrix0 - mu_decomposed0[,,"endemic"] - mu_decomposed0[,,"epi.own"]
     # append n_seasons times:
