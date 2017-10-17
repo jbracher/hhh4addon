@@ -326,3 +326,57 @@ neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
   ## permute dimensions as (t, i, j)
   aperm(res, perm = c(2L, 3L, 1L), resize = TRUE)
 }
+
+
+#' A modified version of \code{residuals.hhh4}
+#'
+#' A modified version of \code{residuals.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class. Computes deviance residuals.
+#'
+residuals.hhh4 <- function (object, type = c("deviance", "response"), ...)
+{
+  type <- match.arg(type)
+  obs <- observed(object$stsObj)[object$control$subset,]
+  fit <- fitted(object)
+  if (type == "response")
+    return(obs - fit)
+
+  ## deviance residuals
+  ## Cf. residuals.ah, it calculates:
+  ## deviance = sign(y - mean) * sqrt(2 * (distr(y) - distr(mean)))
+  ## pearson = (y - mean)/sqrt(variance)
+  dev.resids <- if (identical(object$control$family, "Poisson")) {
+    poisson()$dev.resids
+  } else {
+    size <- if (identical(object$control$family, "NegBin1")) {
+      hhh4addon:::psi2size.hhh4(object, subset = NULL) # changed
+    } else {
+      hhh4addon:::psi2size.hhh4(object) # CAVE: a matrix -> non-standard "size" # changed
+    }
+    MASS:::negative.binomial(size)$dev.resids
+  }
+
+  di2 <- dev.resids(y=obs, mu=fit, wt=1)
+  sign(obs-fit) * sqrt(pmax.int(di2, 0))
+}
+
+#' A modified version of \code{psi2size.hhh4}
+#'
+#' A modified version of \code{psi2size.hhh4} to deal with the added
+#' features of the \code{hhh4lag} class. Extracts estimated overdispersion
+#' in dnbinom() parametrization (and as matrix)
+##
+psi2size.hhh4 <- function (object, subset = object$control$subset, units = NULL)
+{
+  size <- sizeHHH(object$coefficients, hhh4addon:::terms.hhh4lag(object), subset = subset) # only change
+  if (!is.null(size) && !is.null(units)) {
+    if (is.null(subset)) {
+      warning("ignoring 'units' (not compatible with 'subset = NULL')")
+      size
+    } else {
+      size[, units, drop = FALSE]
+    }
+  } else {
+    size
+  }
+}
