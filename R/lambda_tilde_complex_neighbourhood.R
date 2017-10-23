@@ -16,7 +16,7 @@ check_lags <- function(hhh4Obj){
   # for hhh4 class lags need to be 1 (could be generalized, but nobody ever uses the others)
   if(class(hhh4Obj)[1] == "hhh4"){
     if((ne$lag != ar$lag) & (ne$f != ~-1) & (ar$f != ~-1)){
-      stop("Lags in all components need to be 1. for these algorithms to work.")
+      stop("Lags in all components need to be the same for these algorithms to work.")
     }
   }
   # for class hhh4lag: if both ar and ne are included the lag specifications need to be identical.
