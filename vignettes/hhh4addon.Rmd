@@ -29,9 +29,9 @@ X_{it} \sim \text{NegBin}(\mu_{it}, \psi_i)\\
 $$
 where the negative binomial distribution is parametrized by its mean $\mu_{it}$ and an overdispersion perameter $\psi_i$ such that the conditional variance $\text{Var}(X_t \mid X_{t - 1}) = \mu_{it}\cdot(1 + \psi_i\mu_{it})$. While $e_{it}$ is a population offset, the remaining parameters of the mean structure are modelled in a log-linear fashion. While in principle covariates can enter here, it is common to let only an intercept and sine/cosine terms for seasonality enter:
 $$
-\nu_{it} = \alpha^{(\nu)}_i + \beta^{(\nu)}_i \sin(2\pi t/\omega) + \gamma^{(\nu)}_i \cos(2\pi t/\omega)\\
-\lambda_{it} = \alpha^{(\lambda)}_i + \beta^{(\lambda)}_i \sin(2\pi t/\omega) + \gamma^{(\lambda)}_i \cos(2\pi t/\omega)\\
-\phi_{it} = \alpha^{(\phi)}_i + \beta^{(\phi)}_i \sin(2\pi t/\omega) + \gamma^{(\phi)}_i \cos(2\pi t/\omega)\\
+\log(\nu_{it}) = \alpha^{(\nu)}_i + \beta^{(\nu)}_i \sin(2\pi t/\omega) + \gamma^{(\nu)}_i \cos(2\pi t/\omega)\\
+\log(\lambda_{it}) = \alpha^{(\lambda)}_i + \beta^{(\lambda)}_i \sin(2\pi t/\omega) + \gamma^{(\lambda)}_i \cos(2\pi t/\omega)\\
+\log(\phi_{it}) = \alpha^{(\phi)}_i + \beta^{(\phi)}_i \sin(2\pi t/\omega) + \gamma^{(\phi)}_i \cos(2\pi t/\omega)\\
 $$
 Whether unit-specific parameters are necessary and identifiable depends on the data at hand, see the more general vignettes from `surveillance` for more information on model building.
 
