@@ -15,7 +15,7 @@ check_lags <- function(hhh4Obj){
   # check compatibility with lag specification:
   # for hhh4 class lags need to be 1 (could be generalized, but nobody ever uses the others)
   if(class(hhh4Obj)[1] == "hhh4"){
-    if(ne$lag != 1 | ar$lag != 1){
+    if((ne$lag != ar$lag) & (ne$f != ~-1) & (ar$f != ~-1)){
       stop("Lags in all components need to be 1. for these algorithms to work.")
     }
   }
@@ -63,7 +63,7 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   # weights of lags:
   weights_lag <- if(hhh4Obj$control$ar$use_distr_lag){
     hhh4Obj$distr_lag$ar # have to be identical in ar and ne, checked by check_lags
-  }else{1}
+  }else{c(rep(0, max_lag - 1), 1)} # all weight to one lag if no distributed lags are used.
 
   # (potentially time-varying) nu:
   nu <- meanHHH_temp$endemic
