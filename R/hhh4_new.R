@@ -54,7 +54,8 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
   for(i in 1:length(range_par)){
     control$ar$par_lag <- control$ne$par_lag <- range_par[i]
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
-    AICs[i] <- AIC(mod_temp) + 2 # + 2 because of one additional parameter (which is multiplied by 2 in the AIC formula)
+    mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # + 1 for decay paramter
+    AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as +1 added above
     if(AICs[i] < min(AICs[1:(i - 1)])){
       best_mod <- mod_temp
     }
