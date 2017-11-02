@@ -88,7 +88,7 @@ We can see that this model is better than the above model with first lags. To es
 ```{r}
 control_salmonella.flex <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
                             ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      par_lag = 0.8, max_lag = 5),
+                                      max_lag = 5),
                             family = "NegBinM", subset = 6:312)
 range_par <- seq(0.1, 1, by = 0.01)
 fit_salmonella.flex <- fit_par_lag(salmonella, control_salmonella.flex, range_par = range_par)
@@ -102,6 +102,17 @@ plot(range_par, fit_salmonella.flex$AICs, type = "l", xlab = "p", ylab = "AIC")
 min(fit_salmonella.flex$AICs)
 ```
 The best fit is attained with a model using $p = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one.
+
+A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated:
+```{r}
+control_salmonella.056 <- list(end = list(f = addSeason2formula(~ 1)),
+                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
+                                      par_lag = 0.56, max_lag = 5),
+                            family = "NegBinM", subset = 6:312)
+fit_salmonella.056 <- hhh4_lag(salmonella, control_salmonella.056)
+AIC(fit_salmonella.056)
+AIC(fit_salmonella.flex$best_mod)
+```
 
 ## Predictive and periodically stationary moments
 

@@ -10,7 +10,7 @@ fanplot_prediction(pred, unit = 1, probs = 1:99/100,
   pt.cex = 0.3, l.col = "black", mean_col = "black",
   mean_lty = "dashed", ln = NULL, rlab = NULL, add = FALSE,
   add_legend = FALSE, width_legend = 0.1 * (max(pred$timepoints) -
-  min(pred$timepoints))/pred$freq, probs_legend = c(1, 5, 10, 15, 19)/20,
+  min(pred$timepoints))/pred$freq, probs_legend = c(1, 25, 50, 75, 99)/100,
   ylim = NULL, xlab = "t", ylab = "No. infected", return_matrix = FALSE,
   ...)
 }
