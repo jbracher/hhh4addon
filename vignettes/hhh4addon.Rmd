@@ -102,7 +102,7 @@ min(fit_salmonella.flex$AICs)
 ```
 The best fit is attained with a model using $p = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one.
 
-A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated:
+A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated. This is due to the loss of one degree of freedom.
 ```{r}
 control_salmonella.056 <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
