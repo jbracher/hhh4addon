@@ -166,6 +166,13 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
   nu <- nu[re_order, , drop = FALSE]
   phi <- phi[,,re_order, drop = FALSE]
 
+  if(n_timepoints < n_lags){
+    extended_M <- ana_mom[1:(n_timepoints*n_units + 1),
+                          1:(n_timepoints*n_units + 1),
+                          1]
+    return(extended_M)
+  }
+
   extended_M <- matrix(ncol = 1 + n_timepoints*n_units,
                        nrow = 1 + n_timepoints*n_units)
   extended_M[1, 1] <- 1
@@ -188,7 +195,7 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
       # extended_M[inds_t, inds_off_blockdiag] <- t(extended_M[inds_off_blockdiag, inds_t])
     }
   }
-  extended_M
+  return(extended_M)
 }
 
 
