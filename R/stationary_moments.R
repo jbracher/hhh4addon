@@ -166,35 +166,39 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
   nu <- nu[re_order, , drop = FALSE]
   phi <- phi[,,re_order, drop = FALSE]
 
-  if(n_timepoints < n_lags){
-    extended_M <- ana_mom[1:(n_timepoints*n_units + 1),
-                          1:(n_timepoints*n_units + 1),
-                          1]
-    return(extended_M)
-  }
-
   extended_M <- matrix(ncol = 1 + n_timepoints*n_units,
                        nrow = 1 + n_timepoints*n_units)
-  extended_M[1, 1] <- 1
-  for(i in n_lags:n_timepoints){
-    # fill block diagonal:
-    inds_blockdiag <- seq(to = i*n_units + 1, length.out = n_units*n_lags)
-    ind_ana_mom <- ifelse((start + i - 1)%%length_of_period == 0,
-                          length_of_period, (start + i - 1)%%length_of_period)
-    extended_M[1, inds_blockdiag] <- extended_M[inds_blockdiag, 1] <- ana_mom[1, -1, ind_ana_mom]
-    extended_M[inds_blockdiag, inds_blockdiag] <- ana_mom[-1, -1,ind_ana_mom]
-    # fill remaining parts:
-    if( i >= n_lags + 1){
-      phi_star <- cbind(nu[ind_ana_mom, ], matrix(phi[, , ind_ana_mom], ncol = n_units*n_lags))
-      inds_t <- seq(to = i*n_units + 1, length.out = n_units)
-      inds_off_blockdiag <- 2:((i - n_lags)*n_units + 1)
-      inds_lags <- c(1, seq(to = (i - 1)*n_units + 1, length.out = n_lags*n_units))
-      extended_M[inds_t, inds_off_blockdiag] <- phi_star %*% extended_M[inds_lags, inds_off_blockdiag]
-      extended_M[inds_off_blockdiag, inds_t] <- t(extended_M[inds_t, inds_off_blockdiag])
-      # extended_M[inds_off_blockdiag, inds_t] <- extended_M[inds_off_blockdiag, inds_lags]%*%t(phi_star)
-      # extended_M[inds_t, inds_off_blockdiag] <- t(extended_M[inds_off_blockdiag, inds_t])
+
+  if(n_lags >= n_timepoints){
+    ind_ana_mom <- c(1, seq(to = ncol(ana_mom), length.out = n_timepoints*n_units))
+    extended_M <- ana_mom[ind_ana_mom, ind_ana_mom, n_timepoints]
+  }
+
+
+  if(n_timepoints > n_lags){
+    extended_M[1, 1] <- 1
+
+    for(i in n_lags:n_timepoints){
+      # fill block diagonal:
+      inds_blockdiag <- seq(to = i*n_units + 1, length.out = n_units*n_lags)
+      ind_ana_mom <- ifelse((start + i - 1)%%length_of_period == 0,
+                            length_of_period, (start + i - 1)%%length_of_period)
+      extended_M[1, inds_blockdiag] <- extended_M[inds_blockdiag, 1] <- ana_mom[1, -1, ind_ana_mom]
+      extended_M[inds_blockdiag, inds_blockdiag] <- ana_mom[-1, -1,ind_ana_mom]
+      # fill remaining parts:
+      if( i >= n_lags + 1){
+        phi_star <- cbind(nu[ind_ana_mom, ], matrix(phi[, , ind_ana_mom], ncol = n_units*n_lags))
+        inds_t <- seq(to = i*n_units + 1, length.out = n_units)
+        inds_off_blockdiag <- 2:((i - n_lags)*n_units + 1)
+        inds_lags <- c(1, seq(to = (i - 1)*n_units + 1, length.out = n_lags*n_units))
+        extended_M[inds_t, inds_off_blockdiag] <- phi_star %*% extended_M[inds_lags, inds_off_blockdiag]
+        extended_M[inds_off_blockdiag, inds_t] <- t(extended_M[inds_t, inds_off_blockdiag])
+        # extended_M[inds_off_blockdiag, inds_t] <- extended_M[inds_off_blockdiag, inds_lags]%*%t(phi_star)
+        # extended_M[inds_t, inds_off_blockdiag] <- t(extended_M[inds_off_blockdiag, inds_t])
+      }
     }
   }
+
   return(extended_M)
 }
 
