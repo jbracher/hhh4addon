@@ -102,12 +102,12 @@ fanplot_stationary <- function(stat_mom, unit, probs = 1:99/100,
   # add fan:
   par(bty = "n") # suppress box that fan adds by default
   # plot fan:
-  fan(matr_cond, start = timepoints[1], frequency = stat_mom$freq,
+  fan(matr_cond, start = timepoints[1], frequency = 1/(timepoints[2] - timepoints[1]),
       fan.col = fan.col, ln = ln, ln.col = ln.col, rlab = rlab,
       data.type = "values", probs = probs,
       style = style)
   if(add_pred_means){
-    lines(stat_mom$timepoints/stat_mom$freq, mu, col = mean_col, lty = mean_lty)
+    lines(timepoints, mu, col = mean_col, lty = mean_lty)
   }
   # set par()$bty back to default
   par(bty = "o")
