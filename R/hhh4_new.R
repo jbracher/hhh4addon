@@ -65,7 +65,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
     }
   }
   if(which.min(AICs) == 1) warning("The minimum AIC is reached with the smallest value of par_lag. Consider lowering this value.")
-  if(which.min(AICs) == length(AIC)) warning("The minimum AIC is reached with the largest value of par_lag. Consider increasing this value.")
+  if(which.min(AICs) == length(AICs)) warning("The minimum AIC is reached with the largest value of par_lag. Consider increasing this value.")
   return(list(best_mod = best_mod, AICs = AICs))
 }
 
