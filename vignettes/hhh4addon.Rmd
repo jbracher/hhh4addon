@@ -60,7 +60,7 @@ First we fit a regular `hhh4` model with seasonality in both components:
 control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1), lag = 1),
                             family = "NegBinM", subset = 6:312)
-fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+fit_salmonella <- hhh4(salmonella, control_salmonella)
 AIC(fit_salmonella)
 ```
 
