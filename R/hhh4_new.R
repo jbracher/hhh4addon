@@ -50,10 +50,14 @@
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
   control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE
   AICs <- rep(NA, length(range_par))
-  best_mod <- NULL
+  best_mod <- mod_temp <- NULL
   for(i in 1:length(range_par)){
     control$ar$par_lag <- control$ne$par_lag <- range_par[i]
-    mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
+    mod_temp <- if(is.null(mod_temp) || mod_temp$convergence == FALSE){
+      hhh4_lag(stsObj, control, check.analyticals)
+    }else{
+      update(mod_temp, ar = control$ar, ne = control$ne)
+    }
     mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # + 1 for decay paramter
     AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as +1 added above
     if(i == 1){ # keep first model in all cases
