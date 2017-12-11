@@ -6,7 +6,8 @@ This repository contains a development version of `hhh4addon`, an add-on package
 
 The exported functions are by now largely documented, including short examples. To get an overview over the functionality of the package please consider the vignette `vignette(hhh4addon)`.
 
-The theory behind longterm predictions and cyclostationary moments can be found in Held, Meyer and Bracher (2017): [Probabilistic forecasting in infectious disease epidemiology: the 13th Armitage lecture](http://onlinelibrary.wiley.com/doi/10.1002/sim.7363/full#references)  and Bracher and Held (2017): [Periodically stationary multivariate non-Gaussian autoregressive models](https://arxiv.org/abs/1707.04635).
+The theory behind longterm predictions and cyclostationary moments can be found in Held, Meyer and Bracher (2017): [Probabilistic forecasting in infectious disease epidemiology: the 13th Armitage lecture](http://onlinelibrary.wiley.com/doi/10.1002/sim.7363/full#references) and Bracher and Held (2017): [Periodically stationary multivariate non-Gaussian autoregressive models](https://arxiv.org/abs/1707.04635). An R file to reproduce the results in this article can be found in [example_analyses/Bracher_Held_2017.R
+](https://raw.githubusercontent.com/jbracher/hhh4addon/master/example_analyses/Bracher_Held_2017.R)
 
 To install the package directly from github and explore its functionality type:
 
