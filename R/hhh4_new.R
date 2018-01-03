@@ -58,13 +58,20 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
     }else{
       update(mod_temp, ar = control$ar, ne = control$ne)
     }
+    if(mod_temp$convergence == FALSE){ # catch convergence errors by trying to fit without update
+      mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
+    }
     mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # + 1 for decay paramter
     AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as +1 added above
     if(i == 1){ # keep first model in all cases
       best_mod <- mod_temp
     }else{ # otherwise only if it beats the previous ones.
-      if(AICs[i] < min(AICs[1:(i - 1)])){
-        best_mod <- mod_temp
+      if(mod_temp$convergence){
+        if(AICs[i] < min(AICs[1:(i - 1)], na.rm = TRUE)){
+          best_mod <- mod_temp
+        }
+      }else{
+        warning("Model with par_lag = ", range_par[i], " did not converge. AIC set to NA.")
       }
     }
   }
@@ -143,12 +150,12 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
 hhh4_lag <- function (stsObj, control = list(
   ar = list(f = ~ -1,        # a formula "exp(x'lamba)*y_t-lag" (ToDo: matrix)
             offset = 1,      # multiplicative offset
-            lag = 1,         # autoregression on y_i,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = FALSE), #BJ: added arguments
+            lag = NULL,         # autoregression on y_i,t-lag; BJ: changed default to NA
+            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE), #BJ: added arguments
   ne = list(f = ~ -1,        # a formula "exp(x'phi) * sum_j w_ji * y_j,t-lag"
             offset = 1,      # multiplicative offset
-            lag = 1,         # regression on y_j,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = FALSE, #BJ: added arguments
+            lag = NULL,         # regression on y_j,t-lag; BJ: changed default to NA
+            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE, #BJ: added arguments
             weights = neighbourhood(stsObj) == 1,  # weights w_ji
             scale = NULL,    # such that w_ji = scale * weights
             normalize = FALSE), # w_ji -> w_ji / rowSums(w_ji), after scaling
