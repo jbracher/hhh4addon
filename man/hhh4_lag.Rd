@@ -23,6 +23,8 @@ but the \code{control} argument allows for some additional specifications.
 Distributed lags can be specified by
 additional elements in the \code{ar} and \code{ne} parts of \code{control}:
 \itemize{
+  \item{\code{use_distr_lag}}{ Logical: should distributed lags be used instead of ordinary lags as
+  implemented in \code{surveillance}?}
   \item{\code{funct_lag}}{ Function to calculate the a matrix of
   distributed lags from a matrix of first lags. Currently only
   geometric lags (\code{hhh4addon:::geometric_lag}) are available
