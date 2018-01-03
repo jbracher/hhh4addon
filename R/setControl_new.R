@@ -53,20 +53,20 @@ setControl <- function (control, stsObj)
       if (!surveillance:::isScalar(control[[comp]]$max_lag) || control[[comp]]$max_lag < (comp == "ar")) #BJ
         stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
       control[[comp]]$max_lag <- as.integer(control[[comp]]$max_lag)#BJ
-      # if(control[[comp]]$mu_lag < 1 | control[[comp]]$mu_lag > 0.8*control[[comp]]$max_lag){
-      #   stop("mu_lag has to be larger than 1 and smaler than 0.8*max_lag in ar and ne.")
-      # }
-      control[[comp]]$lag <- NA # set lag to NA to avoid that it is used anywhere
     }
   }
 
+  ## BJ: only same lag_par in the two components can currently be handled
   if((control$ar$f != ~-1) & (control$ne$f != ~-1) & (control$ar$use_distr_lag != control$ne$use_distr_lag)){
     stop("The current implementation requires use_distr_lag to be the same for the ar and the ne component.")
   }
 
-  ## BJ: only same lag_par in the two components can currently be handled
   if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
     stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
+  }
+
+  if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.null(control$ar$lag) | !is.null(control$ne$lag))){
+    stop("control$ar$lag and control$ne$lag must not be specified if use_distr_lag == TRUE.")
   }
 
 
