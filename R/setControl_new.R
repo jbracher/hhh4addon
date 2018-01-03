@@ -65,7 +65,7 @@ setControl <- function (control, stsObj)
     stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
   }
 
-  if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.null(control$ar$lag) | !is.null(control$ne$lag))){
+  if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){
     stop("control$ar$lag and control$ne$lag must not be specified if use_distr_lag == TRUE.")
   }
 

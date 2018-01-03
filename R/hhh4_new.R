@@ -59,6 +59,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
       update(mod_temp, ar = control$ar, ne = control$ne)
     }
     if(mod_temp$convergence == FALSE){ # catch convergence errors by trying to fit without update
+      warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
       mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     }
     mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # + 1 for decay paramter
@@ -150,11 +151,11 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par){
 hhh4_lag <- function (stsObj, control = list(
   ar = list(f = ~ -1,        # a formula "exp(x'lamba)*y_t-lag" (ToDo: matrix)
             offset = 1,      # multiplicative offset
-            lag = NULL,         # autoregression on y_i,t-lag; BJ: changed default to NA
+            lag = NA,         # autoregression on y_i,t-lag; BJ: changed default to NA
             funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE), #BJ: added arguments
   ne = list(f = ~ -1,        # a formula "exp(x'phi) * sum_j w_ji * y_j,t-lag"
             offset = 1,      # multiplicative offset
-            lag = NULL,         # regression on y_j,t-lag; BJ: changed default to NA
+            lag = NA,         # regression on y_j,t-lag; BJ: changed default to NA
             funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE, #BJ: added arguments
             weights = neighbourhood(stsObj) == 1,  # weights w_ji
             scale = NULL,    # such that w_ji = scale * weights
