@@ -46,6 +46,7 @@
 #' by the user; instead the model is re-fit for each parameter value provided in \code{range_par}.
 #'
 #' @param range_par a vector of values to try for the \code{par_lag} argument of \code{funct_lag}
+#' @param use_update should results from previous values in range_par be used as starting value for next iteration (via \code{update})?
 #' @export
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
   control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE

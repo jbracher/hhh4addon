@@ -107,9 +107,9 @@ aggregate_moments <- function(momentsObj, aggregation_matrix, by_timepoint = FAL
   ret <- list()
 
   # actual aggregation:
-  ret$mu <- aggregation_matrix %*% momentsObj$mu_vector
+  ret$mu_vector <- aggregation_matrix %*% momentsObj$mu_vector
   ret$Sigma <- aggregation_matrix%*%momentsObj$Sigma%*%t(aggregation_matrix)
-  # names(ret$mu) <- colnames(ret$Sigma) <- rownames(ret$Sigma) <- rownames(aggregation_matrix)
+  # names(ret$mu_vector) <- colnames(ret$Sigma) <- rownames(ret$Sigma) <- rownames(aggregation_matrix)
 
   # M is not always availbable
   if(!is.null(momentsObj$M)){
@@ -120,12 +120,12 @@ aggregate_moments <- function(momentsObj, aggregation_matrix, by_timepoint = FAL
   # realizations are not always available
   if(!is.null(momentsObj$realizations)){
     ret$realizations <- aggregation_matrix %*% as.vector(t(momentsObj$realizations))
-    names(ret$realizations) <- names(ret$mu)
+    names(ret$realizations) <- names(ret$mu_vector)
   }
 
   # some quantities can only be aggregated for by_timepoint
   if(by_timepoint){
-    ret$mu_matrix <- matrix(ret$mu, nrow = n_timepoints, byrow = TRUE)
+    ret$mu_matrix <- matrix(ret$mu_vector, nrow = n_timepoints, byrow = TRUE)
     ret$var_matrix <- matrix(diag(ret$Sigma), nrow = n_timepoints, byrow = TRUE)
     colnames(ret$mu_matrix) <- colnames(ret$var_matrix) <- names_new_units
     rownames(ret$mu_matrix) <- rownames(ret$var_matrix) <- rownames(momentsObj$mu_matrix)

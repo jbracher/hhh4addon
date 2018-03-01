@@ -57,12 +57,13 @@ setControl <- function (control, stsObj)
   }
 
   ## BJ: only same lag_par in the two components can currently be handled
-  if((control$ar$f != ~-1) & (control$ne$f != ~-1) & (control$ar$use_distr_lag != control$ne$use_distr_lag)){
-    stop("The current implementation requires use_distr_lag to be the same for the ar and the ne component.")
-  }
-
-  if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
-    stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
+  if((control$ar$f != ~-1) & (control$ne$f != ~-1)){
+    if(control$ar$use_distr_lag != control$ne$use_distr_lag){
+      stop("The current implementation requires use_distr_lag to be the same for the ar and the ne component.")
+    }
+    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
+      stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
+    }
   }
 
   if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){

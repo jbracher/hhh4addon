@@ -4,7 +4,8 @@
 \alias{fit_par_lag}
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
-fit_par_lag(stsObj, control, check.analyticals = FALSE, range_par)
+fit_par_lag(stsObj, control, check.analyticals = FALSE, range_par,
+  use_update = TRUE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4}, but \code{control}
@@ -28,6 +29,8 @@ Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not speci
 by the user; instead the model is re-fit for each parameter value provided in \code{range_par}.}
 
 \item{range_par}{a vector of values to try for the \code{par_lag} argument of \code{funct_lag}}
+
+\item{use_update}{should results from previous values in range_par be used as starting value for next iteration (via \code{update})?}
 }
 \description{
 Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
