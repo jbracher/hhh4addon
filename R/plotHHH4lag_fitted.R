@@ -43,7 +43,7 @@ plotHHH4lag_fitted <- function (x, units = 1, names = NULL,
     pt.col <- col[4L]
     rev(col[-4L])
   } else {
-    surveillance:::plotHHH4_fitted_check_col_decompose(col, decompose, dimnames(meanHHH)[[3L]][-1L])
+    surveillance:::plotHHH4_fitted_check_col_decompose(col, decompose)
   }
 
   ## setup graphical parameters

@@ -98,7 +98,7 @@ plotHHH4_stationary1 <- function(x, unit=1, main=NULL,
     pt.col <- col[4L]
     rev(col[-4L])
   } else {
-    surveillance:::plotHHH4_fitted_check_col_decompose(col, decompose, colnames(meanHHHunit)[-1L])
+    surveillance:::plotHHH4_fitted_check_col_decompose(col, decompose)
   }
 
   ## establish basic plot window

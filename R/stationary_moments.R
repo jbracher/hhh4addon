@@ -54,7 +54,7 @@
 #' control_salmonella <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
 #'                            ar = list(f = addSeason2formula(~ 1), lag = 1),
 #'                            family = "NegBinM")
-#' fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
+#' fit_salmonella <- hhh4(salmonella, control_salmonella)
 #' # obtain periodically stationary moments:
 #' stat_mom <- stationary_moments(fit_salmonella)
 #' # plot periodically stationary means:
