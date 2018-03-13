@@ -64,6 +64,9 @@ setControl <- function (control, stsObj)
     if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
       stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
     }
+    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$max_lag,  control$ne$max_lag)){
+      stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
+    }
   }
 
   if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){

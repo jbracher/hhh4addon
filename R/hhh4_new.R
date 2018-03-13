@@ -268,7 +268,7 @@ hhh4_lag <- function (stsObj, control = list(
     control$ar$funct_lag(m1, par_lag = control$ar$par_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
   }else{ NA}
   distr_lag_ne <- if(control$ne$use_distr_lag){
-    m1 <- matrix(1, nrow = control$ne$max_lag)
+    m1 <- matrix(1, nrow = control$ar$max_lag) # ar$max_lag and ne$max_lag have to be the same anyway
     control$ar$funct_lag(m1, par_lag = control$ar$par_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
   }else{NA}
 
