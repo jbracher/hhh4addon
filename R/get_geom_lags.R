@@ -33,7 +33,7 @@ distr_lag <- function(hhh4Obj){
 }
 
 # helper function: transform matrix of first lags to matrix of geometric lags
-geometric_lag <- function(lag1, par_lag, max_lag, sum_up = TRUE){ #BJ
+geometric_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
 
   if(is.list(par_lag)){
     p_lag <- par_lag$mu # extract parameter
@@ -41,7 +41,7 @@ geometric_lag <- function(lag1, par_lag, max_lag, sum_up = TRUE){ #BJ
     p_lag <- par_lag
   }
 
-  weights0 <- dgeom(0:(max_lag - 1), p_lag) #BJ
+  weights0 <- c(rep(0, min_lag - 1), dgeom((min_lag:max_lag) - 1, p_lag)) #BJ
   weights <- weights0/sum(weights0) #BJ
   geom_lag <- if(sum_up){
     matrix(0, ncol = ncol(lag1), nrow = nrow(lag1))

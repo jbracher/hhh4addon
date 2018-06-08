@@ -47,12 +47,16 @@ setControl <- function (control, stsObj)
              if (comp=="ar") "positive" else "non-negative", " integer")
       control[[comp]]$lag <- as.integer(control[[comp]]$lag)
       # control[[comp]]$mu_lag <- NA # set mu_lag, max_lag to NA to avoid that they are used anywhere
-      control[[comp]]$max_lag <- NA
+      control[[comp]]$max_lag <- NA #BJ
+      control[[comp]]$min_lag <- NA #BJ
     }else{ # case where 'mu_lag' and 'max_lag' are used
       #BJ: check max_lag and mu_lag
       if (!surveillance:::isScalar(control[[comp]]$max_lag) || control[[comp]]$max_lag < (comp == "ar")) #BJ
         stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
       control[[comp]]$max_lag <- as.integer(control[[comp]]$max_lag)#BJ
+      if (!surveillance:::isScalar(control[[comp]]$min_lag) || control[[comp]]$min_lag < (comp == "ar")) #BJ
+        stop("'control$", comp, "$min_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
+      control[[comp]]$min_lag <- as.integer(control[[comp]]$min_lag)#BJ
     }
   }
 
@@ -65,7 +69,10 @@ setControl <- function (control, stsObj)
       stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
     }
     if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$max_lag,  control$ne$max_lag)){
-      stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
+      stop("The current implementation requires control$ar$max_lag and control$ne$max_lag to be the same.")
+    }
+    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$min_lag,  control$ne$min_lag)){
+      stop("The current implementation requires control$ar$min_lag and control$ne$min_lag to be the same.")
     }
   }
 

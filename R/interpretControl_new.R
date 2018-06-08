@@ -45,18 +45,18 @@ interpretControl <- function (control, stsObj)
 
   # ## create list of offsets of the three components
   Ylagged <- hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
-                                      funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, #BJ
+                                      funct_lag = ar$funct_lag, par_lag = ar$par_lag, min_lag = ar$min_lag, max_lag = ar$max_lag, #BJ
                                       use_distr_lag = ar$use_distr_lag, sum_up = TRUE) #BJ
   Ylagged_detailed <- hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
-                             funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, #BJ
+                             funct_lag = ar$funct_lag, par_lag = ar$par_lag, min_lag = ar$min_lag, max_lag = ar$max_lag, #BJ
                              use_distr_lag = ar$use_distr_lag, sum_up = FALSE) #BJ
 
   Ylagged.ne <- neOffsetFUN(Y = Y, neweights = ne$weights, scale = ne$scale, normalize = ne$normalize, #BJ
                             nbmat = neighbourhood(stsObj), data = control$data, lag = ne$lag, funct_lag = ne$funct_lag, par_lag = ne$par_lag, # BJ
-                            max_lag = ne$max_lag, use_distr_lag = ne$use_distr_lag, sum_up = TRUE, offset = ne$offset)# BJ
+                            min_lag = ne$min_lag, max_lag = ne$max_lag, use_distr_lag = ne$use_distr_lag, sum_up = TRUE, offset = ne$offset)# BJ
   Ylagged.ne_detailed <- neOffsetFUN(Y = Y, neweights = ne$weights, scale = ne$scale, normalize = ne$normalize, #BJ
                 nbmat = neighbourhood(stsObj), data = control$data, lag = ne$lag, funct_lag = ne$funct_lag, par_lag = ne$par_lag, #BJ
-                max_lag = ne$max_lag, use_distr_lag = ne$use_distr_lag, sum_up = FALSE, offset = ne$offset)# BJ
+                min_lag = ne$min_lag, max_lag = ne$max_lag, use_distr_lag = ne$use_distr_lag, sum_up = FALSE, offset = ne$offset)# BJ
 
   offsets <- list(ar = ar$offset * Ylagged, ne = Ylagged.ne, end = end$offset, #BJ
                   ar_detailed = ar$offset * Ylagged_detailed, ne_detailed = Ylagged.ne_detailed) #BJ: may still cause trouble with matrix-valued offsets.

@@ -153,11 +153,11 @@ hhh4_lag <- function (stsObj, control = list(
   ar = list(f = ~ -1,        # a formula "exp(x'lamba)*y_t-lag" (ToDo: matrix)
             offset = 1,      # multiplicative offset
             lag = NA,         # autoregression on y_i,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE), #BJ: added arguments
+            funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, use_distr_lag = TRUE), #BJ: added arguments
   ne = list(f = ~ -1,        # a formula "exp(x'phi) * sum_j w_ji * y_j,t-lag"
             offset = 1,      # multiplicative offset
             lag = NA,         # regression on y_j,t-lag; BJ: changed default to NA
-            funct_lag = geometric_lag, par_lag = 1, max_lag = 5, use_distr_lag = TRUE, #BJ: added arguments
+            funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, use_distr_lag = TRUE, #BJ: added arguments
             weights = neighbourhood(stsObj) == 1,  # weights w_ji
             scale = NULL,    # such that w_ji = scale * weights
             normalize = FALSE), # w_ji -> w_ji / rowSums(w_ji), after scaling
@@ -265,11 +265,11 @@ hhh4_lag <- function (stsObj, control = list(
   #BJ: calculate distributed lags:
   distr_lag_ar <- if(control$ar$use_distr_lag){
     m1 <- matrix(1, nrow = control$ar$max_lag)
-    control$ar$funct_lag(m1, par_lag = control$ar$par_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
+    control$ar$funct_lag(m1, par_lag = control$ar$par_lag, min_lag = control$ar$min_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
   }else{ NA}
   distr_lag_ne <- if(control$ne$use_distr_lag){
     m1 <- matrix(1, nrow = control$ar$max_lag) # ar$max_lag and ne$max_lag have to be the same anyway
-    control$ar$funct_lag(m1, par_lag = control$ar$par_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
+    control$ar$funct_lag(m1, par_lag = control$ar$par_lag, min_lag = control$ar$min_lag, max_lag = control$ar$max_lag, sum_up = FALSE)[1,,]
   }else{NA}
 
   ## gather results in a list -> "hhh4" object
