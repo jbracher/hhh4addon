@@ -116,7 +116,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not specified directly
 #' by the user; instead it is estimated from the data using profile likelihood.
 #' @export
-profile_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
+profile_par_lag <- function(stsObj, control, check.analyticals = FALSE){
   control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE
   control$ar$par_lag <- control$ne$par_lag <- 0.5
   initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
