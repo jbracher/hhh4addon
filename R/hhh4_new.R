@@ -22,7 +22,8 @@
 #'
 #' Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
 #' governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
-#' around it and tries a set of possible parameters provided in the argument \code{range_par}.
+#' around it and tries a set of possible parameters provided in the argument \code{range_par}. NOTE: this will
+#' soon be replaced by \code{profile_par_lag} which does the same, but using \code{optim..., method = "Brent", ...)}.
 #'
 #'
 #' @param stsObj,control,check.analyticals As in \code{surveillance::hhh4}, but \code{control}
@@ -80,6 +81,76 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
   if(which.min(AICs) == 1) warning("The minimum AIC is reached with the smallest value of par_lag. Consider lowering this value.")
   if(which.min(AICs) == length(AICs)) warning("The minimum AIC is reached with the largest value of par_lag. Consider increasing this value.")
   return(list(best_mod = best_mod, AICs = AICs))
+}
+
+#' Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood
+#'
+#' Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
+#' governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
+#' around it and tries a set of possible parameters provided in the argument \code{range_par}. NOTE: this will
+#' soon replace \code{fit_par_lag} which does the same, but using a grid over \code{par_lag} instead of
+#' \code{optim}.
+#'
+#'
+#' @param stsObj,control,check.analyticals As in \code{surveillance::hhh4}, but \code{control}
+#' allows for some additional arguments
+#' @return A list with two elements: \code{best_mod} is the \code{hhh4lag} fit for the best value
+#' of \code{par_lag}; \code{cov} is an extended covariance matrix for the regression parameters
+#' which also includes par_lag. It is obtained via numerical differentiation using
+#' \code{numDeriv:::hessian}
+#'
+#' In this modified version of \code{surveillance::hhh4}, distributed lags can be specified by
+#' additional elements in the \code{ar} and \code{ne} parts of \code{control}:
+#' \itemize{
+#'   \item{\code{funct_lag}}{ Function to calculate the a matrix of distributed lags from a matrix of first lags.
+#'    Currently only geometric lags (\code{hhh4addon:::geometric_lag}) are available and set as default, see Details.
+#'   The function has to take the following arguments:
+#'   \itemize{
+#'   \item{\code{lag1}}{ Matrix containing the first lags which would be used in a standard \code{hhh4} model.}
+#'   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For the geometric lags this is the un-normalized weight of the first lag.}
+#'   \item{\code{max_lag}}{ Maximum number of lags.}
+#'   \item{\code{sum_up}}{ Specifies how detailed the output of the function is - only for internal use.}
+#'   }}
+#'   \item{\code{max_lag}}{ Specification of the \code{max_lag} argument passed to funct_lag} to compute the lags.
+#' }
+#' Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not specified directly
+#' by the user; instead it is estimated from the data using profile likelihood.
+#' @export
+profile_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
+  control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE
+  control$ar$par_lag <- control$ne$par_lag <- 0.5
+  initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
+  control$ar$use_distr_lag <- control$ne$use_distr_lag <- TRUE
+  profile_lik <- function(par_lag){
+    # par_lag <- exp(logit_par_lag)/(1 + exp(logit_par_lag))
+    control$ar$par_lag <- control$ne$par_lag <- par_lag
+    # control$start <- initial_fit$coefficients
+    mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
+    return(-mod_temp$loglikelihood)
+  }
+  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = 0.01, upper = 1)$par
+  control$ar$par_lag <- control$ne$par_lag <- opt_par_lag
+  best_mod <- hhh4_lag(stsObj = stsObj, control = control)
+  cov = numeric_fisher_hhh4lag(best_mod)
+  return(list(best_mod = best_mod, cov = cov))
+}
+
+#' Numerical evaluation of the covariance matrix including the additional parameter
+#' \code{par_lg}
+#' @param best_mod an \code{hhh4lag} object; should be generated in \code{profile_par_lag} so that
+#' the \code{par_lag} parameter is already optimized.
+numeric_fisher_hhh4lag <- function(best_mod){
+  stsObj <- best_mod$stsObj
+  ctrl <- best_mod$control
+  coefficients <- c(a$best_mod$coefficients, par_lag = best_mod$par_lag$ar)
+  lik_vect <- function(coefficients){
+    ctrl$ar$par_lag <- ctrl$ne$par_lag <- coefficients["par_lag"]
+    mod <- hhh4addon:::interpretControl(ctrl, stsObj = stsObj)
+    surveillance:::penLogLik(coefficients[names(coefficients) != "par_lag"], NULL, model = mod)
+  }
+  hess <- numDeriv::hessian(lik_vect, coefficients)
+  cov <- -solve(hess)
+  return(cov)
 }
 
 

@@ -306,7 +306,7 @@ neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
     # tYtm1 <- t(Y[tm1,,drop=FALSE])
     #BJ calculate lags using weightedSumAR instead of indexing as in original function
     tY_lagged <- t(hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
-                                          funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, #BJ
+                                          funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, min_lag = ar$min_lag, #BJ
                                           use_distr_lag = ar$use_distr_lag, sum_up = TRUE)[subset, ]) #BJ
     # from now on everything continues as before
     res[] <- apply(W, 2L, function (wi) tY_lagged * wi)
