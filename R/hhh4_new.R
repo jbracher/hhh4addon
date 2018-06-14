@@ -142,7 +142,7 @@ profile_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_pa
 numeric_fisher_hhh4lag <- function(best_mod){
   stsObj <- best_mod$stsObj
   ctrl <- best_mod$control
-  coefficients <- c(a$best_mod$coefficients, par_lag = best_mod$par_lag$ar)
+  coefficients <- c(best_mod$coefficients, par_lag = best_mod$par_lag$ar)
   lik_vect <- function(coefficients){
     ctrl$ar$par_lag <- ctrl$ne$par_lag <- coefficients["par_lag"]
     mod <- hhh4addon:::interpretControl(ctrl, stsObj = stsObj)
