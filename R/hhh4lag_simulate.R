@@ -95,8 +95,8 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
   ## simulate
   simcall <- quote(
     simHHH4(ar = ar, ne = ne, end = end, psi = psi, neW = neweights, start = y.start,
-            lag.ar = lag.ar, funct_lag.ar = control$ar$funct_lag, par_lag.ar = control$ar$par_lag, max_lag.ar = control$ar$max_lag, use_distr_lag.ar = control$ar$use_distr_lag,
-            lag.ne = lag.ne, funct_lag.ne = control$ne$funct_lag, par_lag.ne = control$ne$par_lag, max_lag.ne = control$ne$max_lag, use_distr_lag.ne = control$ne$use_distr_lag)
+            lag.ar = lag.ar, funct_lag.ar = control$ar$funct_lag, par_lag.ar = control$ar$par_lag, min_lag.ar = control$ar$min_lag, max_lag.ar = control$ar$max_lag, use_distr_lag.ar = control$ar$use_distr_lag,
+            lag.ne = lag.ne, funct_lag.ne = control$ne$funct_lag, par_lag.ne = control$ne$par_lag, min_lag.ne = control$ne$min_lag, max_lag.ne = control$ne$max_lag, use_distr_lag.ne = control$ne$use_distr_lag)
   )
   if (!simplify) {
     ## result template
@@ -136,8 +136,8 @@ simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
                     neW,    # weight matrix/array for neighbourhood component
                     start,  # starting counts (vector of length nUnits, or
                     # matrix with nUnits columns if lag > 1)
-                    lag.ar, funct_lag.ar, par_lag.ar, max_lag.ar, use_distr_lag.ar,
-                    lag.ne, funct_lag.ne, par_lag.ne, max_lag.ne, use_distr_lag.ne
+                    lag.ar, funct_lag.ar, par_lag.ar, min_lag.ar, max_lag.ar, use_distr_lag.ar,
+                    lag.ne, funct_lag.ne, par_lag.ne, min_lag.ne, max_lag.ne, use_distr_lag.ne
 )
 {
   nTime <- nrow(end)
@@ -179,13 +179,14 @@ simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
     if (timeDependentWeights) neWt <- neW[,,t]
     ## mean mu_i,t = lambda*y_i,t-1 + phi*sum_j wji*y_j,t-1 + nu_i,t
     Ylagged <- hhh4addon:::weightedSumAR(observed = y[nStart + t - (max_lag.ar:0), , drop = FALSE], lag = lag.ar, #BJ
-                                        funct_lag = funct_lag.ar, par_lag = par_lag.ar, max_lag = max_lag.ar, #BJ
+                                        funct_lag = funct_lag.ar, par_lag = par_lag.ar, min_lag = min_lag.ar, max_lag = max_lag.ar, #BJ
                                         use_distr_lag = use_distr_lag.ar, sum_up = TRUE)[max_lag.ne + 1, ] #BJ
 
     if(!is.null(neW)){
       Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag.ne:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
                                               funct_lag = funct_lag.ne, #BJ
                                               par_lag = par_lag.ne, #BJ
+                                              min_lag = min_lag.ne,
                                               max_lag = max_lag.ne, #BJ
                                               use_distr_lag = use_distr_lag.ne, #BJ
                                               sum_up = TRUE)[max_lag.ar + 1, ]
