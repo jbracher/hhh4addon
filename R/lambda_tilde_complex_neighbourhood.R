@@ -19,15 +19,6 @@ check_lags <- function(hhh4Obj){
       stop("Lags in all components need to be the same for these algorithms to work.")
     }
   }
-  # for class hhh4lag: if both ar and ne are included the lag specifications need to be identical.
-  if((class(hhh4Obj)[1] == "hhh4lag") & (ar$f != ~-1) & (ne$f != ~-1)){
-    if(!identical(ar$funct_lag, ne$funct_lag)|
-       !identical(ar$par_lag, ne$par_lag)|
-       !identical(ar$max_lag, ne$max_lag)|
-       !identical(ar$use_distr_lag, ne$use_distr_lag)){
-      stop("Lag structures in ar and ne need to be defined identically for these algorithms to work.")
-    }
-  }
 }
 
 ### Change this in a way that it returns a list of arrays nu and lambda.
@@ -47,8 +38,8 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   # extract information from model:
   n_units <- ncol(hhh4Obj$stsObj@observed)
   n_timepoints <- nrow(hhh4Obj$stsObj@observed)
-  if(is.null(hhh4Obj$control$ar$use_distr_lag)){
-    hhh4Obj$control$ar$use_distr_lag <- FALSE
+  if(is.null(hhh4Obj$control$use_distr_lag)){
+    hhh4Obj$control$use_distr_lag <- FALSE
   }
 
   # means etc:
@@ -58,11 +49,11 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   # lagged version:
   Ylagged <- terms(hhh4Obj)$offset$ar/hhh4Obj$control$ar$offset # the offset in terms alson contains the offset from control
   # maximium lag:
-  max_lag <- max(c(hhh4Obj$control$ar$max_lag, hhh4Obj$control$ar$lag,
-                   hhh4Obj$control$ne$max_lag, hhh4Obj$control$ne$lag), na.rm = TRUE) #BJ
+  max_lag <- max(c(hhh4Obj$control$max_lag, hhh4Obj$control$ar$lag,
+                   hhh4Obj$control$ne$lag), na.rm = TRUE) #BJ
   # weights of lags:
-  weights_lag <- if(hhh4Obj$control$ar$use_distr_lag){
-    hhh4Obj$distr_lag$ar # have to be identical in ar and ne, checked by check_lags
+  weights_lag <- if(hhh4Obj$control$use_distr_lag){
+    hhh4Obj$distr_lag # have to be identical in ar and ne, checked by check_lags
   }else{c(rep(0, max_lag - 1), 1)} # all weight to one lag if no distributed lags are used.
 
   # (potentially time-varying) nu:

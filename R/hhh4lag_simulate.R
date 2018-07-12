@@ -14,14 +14,14 @@
 ### Simulate-method for hhh4-objects
 
 simulate.hhh4lag <- function (object, # result from a call to hhh4
-                               nsim=1, # number of replicates to simulate
-                               seed=NULL,
-                               y.start=NULL, # initial counts for epidemic components
-                               subset=1:nrow(object$stsObj),
-                               coefs=coef(object), # coefficients used for simulation
-                               components=c("ar","ne","end"), # which comp to include
-                               simplify=nsim>1, # counts array only (no full sts)
-                               ...)
+                              nsim=1, # number of replicates to simulate
+                              seed=NULL,
+                              y.start=NULL, # initial counts for epidemic components
+                              subset=1:nrow(object$stsObj),
+                              coefs=coef(object), # coefficients used for simulation
+                              components=c("ar","ne","end"), # which comp to include
+                              simplify=nsim>1, # counts array only (no full sts)
+                              ...)
 {
   ## Determine seed (this part is copied from stats:::simulate.lm with
   ## Copyright (C) 1995-2012 The R Core Team)
@@ -45,10 +45,8 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
   lag.ar <- object$control$ar$lag
   lag.ne <- object$control$ne$lag
   # maxlag <- max(lag.ar, lag.ne) #BJ
-  maxlag <- max(c(control$ar$max_lag, control$ar$lag,
-                  control$ne$max_lag, control$ne$lag), na.rm = TRUE) #BJ
-  minlag <- min(c(control$ar$min_lag, control$ar$lag,
-                  control$ne$min_lag, control$ne$lag), na.rm = TRUE)
+  maxlag <- max(c(control$max_lag, control$ar$lag, control$ne$lag), na.rm = TRUE) #BJ
+  minlag <- min(c(control$min_lag, control$ar$lag, control$ne$lag), na.rm = TRUE)
 
   ## initial counts
   nUnits <- object$nUnit
@@ -88,12 +86,9 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
   ## simulate
   simcall <- quote(
     simHHH4lag(ar = ar, ne = ne, end = end, psi = psi, neW = neweights, start = y.start,
-                lag.ar = lag.ar, funct_lag.ar = control$ar$funct_lag, par_lag.ar = control$ar$par_lag,
-                min_lag.ar = control$ar$min_lag, max_lag.ar = control$ar$max_lag,
-                use_distr_lag.ar = control$ar$use_distr_lag,
-                lag.ne = lag.ne, funct_lag.ne = control$ne$funct_lag, par_lag.ne = control$ne$par_lag,
-                min_lag.ne = control$ne$min_lag, max_lag.ne = control$ne$max_lag,
-                use_distr_lag.ne = control$ne$use_distr_lag)
+               lag.ar = lag.ar, lag.ne = lag.ne, funct_lag = control$funct_lag,
+               par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag,
+               use_distr_lag = control$use_distr_lag)
   )
   if (!simplify) {
     ## result template
@@ -124,14 +119,13 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
 ### Internal auxiliary function, which performs the actual simulation
 
 simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
-                    ne,     # phi_it (nTime x nUnits matrix)
-                    end,    # nu_it (nTime x nUnits matrix, offset included)
-                    psi,    # overdisp param(s) or numeric(0) (psi->0 = Poisson)
-                    neW,    # weight matrix/array for neighbourhood component
-                    start,  # starting counts (vector of length nUnits, or
-                    # matrix with nUnits columns if lag > 1)
-                    lag.ar, funct_lag.ar, par_lag.ar, min_lag.ar, max_lag.ar, use_distr_lag.ar,
-                    lag.ne, funct_lag.ne, par_lag.ne, min_lag.ne, max_lag.ne, use_distr_lag.ne
+                       ne,     # phi_it (nTime x nUnits matrix)
+                       end,    # nu_it (nTime x nUnits matrix, offset included)
+                       psi,    # overdisp param(s) or numeric(0) (psi->0 = Poisson)
+                       neW,    # weight matrix/array for neighbourhood component
+                       start,  # starting counts (vector of length nUnits, or
+                       # matrix with nUnits columns if lag > 1)
+                       lag.ar, lag.ne, funct_lag, par_lag, min_lag, max_lag, use_distr_lag #BJ
 )
 {
   nTime <- nrow(end)
@@ -172,18 +166,18 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
   for(t in seq_len(nTime)){
     if (timeDependentWeights) neWt <- neW[,,t]
     ## mean mu_i,t = lambda*y_i,t-1 + phi*sum_j wji*y_j,t-1 + nu_i,t
-    Ylagged <- hhh4addon:::weightedSumAR(observed = y[nStart + t - (max_lag.ar:0), , drop = FALSE], lag = lag.ar, #BJ
-                                         funct_lag = funct_lag.ar, par_lag = par_lag.ar, min_lag = min_lag.ar, max_lag = max_lag.ar, #BJ
-                                         use_distr_lag = use_distr_lag.ar, sum_up = TRUE)[max_lag.ne + 1, ] #BJ
+    Ylagged <- hhh4addon:::weightedSumAR(observed = y[nStart + t - (max_lag:0), , drop = FALSE], lag = lag.ar, #BJ
+                                         funct_lag = funct_lag, par_lag = par_lag, min_lag = min_lag, max_lag = max_lag, #BJ
+                                         use_distr_lag = use_distr_lag, sum_up = TRUE)[max_lag + 1, ] #BJ
 
     if(!is.null(neW)){
-      Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag.ne:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
-                                              funct_lag = funct_lag.ne, #BJ
-                                              par_lag = par_lag.ne, #BJ
-                                              min_lag = min_lag.ne,
-                                              max_lag = max_lag.ne, #BJ
-                                              use_distr_lag = use_distr_lag.ne, #BJ
-                                              sum_up = TRUE)[max_lag.ar + 1, ]
+      Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
+                                              funct_lag = funct_lag, #BJ
+                                              par_lag = par_lag, #BJ
+                                              min_lag = min_lag,
+                                              max_lag = max_lag, #BJ
+                                              use_distr_lag = use_distr_lag, #BJ
+                                              sum_up = TRUE)[max_lag + 1, ]
     }else{
       Ylagged.ne <- 0
     }
@@ -204,8 +198,8 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
 ## extract exppreds multiplied with offsets
 ## note: theta = coef(object) would also work since psi is not involved here
 get_exppreds_with_offsets_lag <- function (object,
-                                       subset = seq_len(nrow(object$stsObj)),
-                                       theta = object$coefficients)
+                                           subset = seq_len(nrow(object$stsObj)),
+                                           theta = object$coefficients)
 {
   model <- terms.hhh4lag(object)
   means <- surveillance:::meanHHH(theta, model, subset = subset)

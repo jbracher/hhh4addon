@@ -48,8 +48,8 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
       quote = FALSE, print.gap = 2)
   } else cat("No coefficients\n")
   cat("\n")
-  if(any(x$use_distr_lag)){ #BJ
-    wgts <- if(is.null(x$distr_lag$ar)) x$distr_lag$ne else x$distr_lag$ar
+  if(x$use_distr_lag){ #BJ
+    wgts <- x$distr_lag
     cat(paste0("Distributed lags used (max_lag = ", length(wgts),
                "). Weights: "))
     cat(paste(round(wgts, 2), collapse = "; "))
@@ -78,7 +78,7 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
                 REmat = surveillance:::.getREmat(object),
                 AIC   = AIC(object),
                 BIC   = BIC(object),
-                use_distr_lag = object$control$ar$use_distr_lag | object$control$ne$use_distr_lag,
+                use_distr_lag = object$control$use_distr_lag,
                 maxEV_range = if (maxEV) unique(range(getMaxEV(object))),
                 distr_lag = object$distr_lag))
   class(ret) <- "summary.hhh4lag"

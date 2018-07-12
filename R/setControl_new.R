@@ -37,46 +37,31 @@ setControl <- function (control, stsObj)
     if(!is.list(control[[comp]])) stop("'control$", comp, "' must be a list")
   }
 
-  ## check lags in "ar" and "ne" components
-  for (comp in c("ar", "ne")) {
-
-    #BJ: checking plausibility of lag arguments:
-    if(!control[[comp]]$use_distr_lag){ #BJ case where 'lag' is used
+  if(control$use_distr_lag){
+    { # case where 'min_lag' and 'max_lag' are used
+      #BJ: check max_lag and mu_lag
+      if (!surveillance:::isScalar(control$max_lag) || control$max_lag < (comp == "ar")) #BJ
+        stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
+      control$max_lag <- as.integer(control$max_lag)#BJ
+      if (!surveillance:::isScalar(control$min_lag) || control$min_lag < (comp == "ar")) #BJ
+        stop("'control$", comp, "$min_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
+      control$min_lag <- as.integer(control$min_lag)#BJ
+    }
+  }else{
+    ## check lags in "ar" and "ne" components
+    for (comp in c("ar", "ne")) {
+      #BJ: checking plausibility of lag arguments:
       if (!surveillance:::isScalar(control[[comp]]$lag) || control[[comp]]$lag < (comp=="ar"))
         stop("'control$", comp, "$lag' must be a ",
              if (comp=="ar") "positive" else "non-negative", " integer")
       control[[comp]]$lag <- as.integer(control[[comp]]$lag)
       # control[[comp]]$mu_lag <- NA # set mu_lag, max_lag to NA to avoid that they are used anywhere
-      control[[comp]]$max_lag <- NA #BJ
-      control[[comp]]$min_lag <- NA #BJ
-    }else{ # case where 'mu_lag' and 'max_lag' are used
-      #BJ: check max_lag and mu_lag
-      if (!surveillance:::isScalar(control[[comp]]$max_lag) || control[[comp]]$max_lag < (comp == "ar")) #BJ
-        stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
-      control[[comp]]$max_lag <- as.integer(control[[comp]]$max_lag)#BJ
-      if (!surveillance:::isScalar(control[[comp]]$min_lag) || control[[comp]]$min_lag < (comp == "ar")) #BJ
-        stop("'control$", comp, "$min_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
-      control[[comp]]$min_lag <- as.integer(control[[comp]]$min_lag)#BJ
+      control$max_lag <- NA #BJ
+      control$min_lag <- NA #BJ
     }
   }
 
-  ## BJ: only same lag_par in the two components can currently be handled
-  if((control$ar$f != ~-1) & (control$ne$f != ~-1)){
-    if(control$ar$use_distr_lag != control$ne$use_distr_lag){
-      stop("The current implementation requires use_distr_lag to be the same for the ar and the ne component.")
-    }
-    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$par_lag,  control$ne$par_lag)){
-      stop("The current implementation requires control$ar$par_lag and control$ne$par_lag to be the same.")
-    }
-    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$max_lag,  control$ne$max_lag)){
-      stop("The current implementation requires control$ar$max_lag and control$ne$max_lag to be the same.")
-    }
-    if(control$ar$use_distr_lag & control$ne$use_distr_lag & !identical(control$ar$min_lag,  control$ne$min_lag)){
-      stop("The current implementation requires control$ar$min_lag and control$ne$min_lag to be the same.")
-    }
-  }
-
-  if((control$ar$use_distr_lag | control$ne$use_distr_lag) & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){
+  if(control$use_distr_lag & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){
     stop("control$ar$lag and control$ne$lag must not be specified if use_distr_lag == TRUE.")
   }
 
@@ -182,8 +167,8 @@ setControl <- function (control, stsObj)
       !all(control$subset %in% seq_len(nTime)))
     stop("'control$subset' must be %in% 1:", nTime)
   #BJ: use lags or max_lags depending on setting
-  lags <- c(ar = ifelse(control$ar$use_distr_lag, control$ar$max_lag, control$ar$lag), #BJ
-            ne = ifelse(control$ne$use_distr_lag, control$ne$max_lag, control$ne$lag)) # BJ
+  lags <- c(ar = ifelse(control$use_distr_lag, control$max_lag, control$ar$lag), #BJ
+            ne = ifelse(control$use_distr_lag, control$max_lag, control$ne$lag)) # BJ
   maxlag <- suppressWarnings(max(lags[names(lags) %in% comps])) # could be -Inf
   if (control$subset[1L] <= maxlag) {
     warning("'control$subset' should be > ", maxlag, " due to epidemic lags")
