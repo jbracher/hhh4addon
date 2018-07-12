@@ -4,8 +4,7 @@
 \alias{profile_par_lag}
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
-profile_par_lag(stsObj, control, check.analyticals = FALSE, range_par,
-  use_update = TRUE)
+profile_par_lag(stsObj, control, check.analyticals = FALSE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4}, but \code{control}

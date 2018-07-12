@@ -20,7 +20,8 @@ additional elements in the \code{ar} and \code{ne} parts of \code{control}:
   \itemize{
   \item{\code{lag1}}{ Matrix containing the first lags which would be used in a standard \code{hhh4} model.}
   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For the geometric lags this is the un-normalized weight of the first lag.}
-  \item{\code{max_lag}}{ Maximum number of lags.}
+  \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
+  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
   \item{\code{sum_up}}{ Specifies how detailed the output of the function is - only for internal use.}
   }}
   \item{\code{max_lag}}{ Specification of the \code{max_lag} argument passed to funct_lag} to compute the lags.

@@ -35,11 +35,12 @@ additional elements in the \code{ar} and \code{ne} parts of \code{control}:
   be used in a standard \code{hhh4} model.}
   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For
   the geometric lags this is the un-normalized weight of the first lag.}
-  \item{\code{max_lag}}{ Maximum number of lags.}
+  \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
+  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
   \item{\code{sum_up}}{ Specifies how detailed the output of the
   function is - only for internal use.}
   }}
-  \item{\code{par_lag, max_lag}}{ Specification of the arguments
+  \item{\code{par_lag, min_lag, max_lag}}{ Specification of the arguments
   passed to funct_lag} to compute the distributed  lags.
 }
 The current implementation requires the lag structure to be handled
@@ -62,11 +63,22 @@ The simple first lags are replaced by weighted sums of the Q
 previous observations. The weights u_q, q = 1, ..., Q sum up to
 1 and need to be parametrizable by a single scalar parameter \code{par_lag}.
 This parameter is passed to a function \code{funct_lag} which takes
-the first lags and transforms them into distributed lags. Currently
-only geometric lags (function \code{geometric_lag}) are available.
-These are specified as u0_q = p^q * (1 - p)^{q - 1} and u_q = u0_q /
-sum_{q = 1}^Q u0_q. The \code{par_lag} parameter corresponds to u0_1,
-i.e. the un-normalized weight of the first lag.
+the first lags and transforms them into distributed lags. Currently three
+different types of lags are available:
+\itemize{
+\item{Geometric lags (function \code{geometric_lag}).
+These are specified as
+\deqn{u0_q = \alpha * (1 - \alpha)^{q - 1}}
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to \eqn{\alpha},
+i.e. the un-normalized weight of the first lag.}
+\item{Poisson lags (function \code{poisson_lag}).
+These are specified as
+\deqn{u0_q =  \alpha^(q - 1)\exp(-\alpha)/(q - 1)!,}
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}. Note that he Poisson distribution is shifted by one to
+achieve a positive support. The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+\item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
+The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+}
 }
 \examples{
 ## a simple univariate example:
