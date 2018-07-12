@@ -1,33 +1,27 @@
 ################################################################################
-### The following are modified versions of functions from the surveillance package.
-### See below the original copyright declaration.
-################################################################################
-
-################################################################################
-### Copyright declaration from the surveillance package:
 ### Part of the surveillance package, http://surveillance.r-forge.r-project.org
 ### Free software under the terms of the GNU General Public License, version 2,
 ### a copy of which is available at http://www.r-project.org/Licenses/.
 ###
 ### Simulate from a HHH4 model
 ###
-### Copyright (C) 2012 Michaela Paul, 2013-2016 Sebastian Meyer
-### $Revision: 1635 $
-### $Date: 2016-03-16 12:11:48 +0100 (Mit, 16. Mär 2016) $
+### Copyright (C) 2012 Michaela Paul, 2013-2016,2018 Sebastian Meyer
+### $Revision$
+### $Date$
 ################################################################################
 
-### Updated version: Simulate-method for hhh4-objects
-#' @import stats
-#'@export
+
+### Simulate-method for hhh4-objects
+
 simulate.hhh4lag <- function (object, # result from a call to hhh4
-                           nsim=1, # number of replicates to simulate
-                           seed=NULL,
-                           y.start=NULL, # initial counts for epidemic components
-                           subset=1:nrow(object$stsObj),
-                           coefs=coef(object), # coefficients used for simulation
-                           components=c("ar","ne","end"), # which comp to include
-                           simplify=nsim>1, # counts array only (no full sts)
-                           ...)
+                               nsim=1, # number of replicates to simulate
+                               seed=NULL,
+                               y.start=NULL, # initial counts for epidemic components
+                               subset=1:nrow(object$stsObj),
+                               coefs=coef(object), # coefficients used for simulation
+                               components=c("ar","ne","end"), # which comp to include
+                               simplify=nsim>1, # counts array only (no full sts)
+                               ...)
 {
   ## Determine seed (this part is copied from stats:::simulate.lm with
   ## Copyright (C) 1995-2012 The R Core Team)
@@ -45,19 +39,16 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
 
   cl <- match.call()
   theta <- if (missing(coefs)) coefs else checkCoefs(object, coefs)
-
   control <- object$control #BJ
 
   ## lags
   lag.ar <- object$control$ar$lag
   lag.ne <- object$control$ne$lag
-
-  #BJ: use lags or max_lags depending on setting
-  # lags <- c(ar = ifelse(control$ar$use_distr_lag, control$ar$max_lag, control$ar$lag),
-  #           ne = ifelse(control$ne$use_distr_lag, control$ne$max_lag, control$ne$lag))
+  # maxlag <- max(lag.ar, lag.ne) #BJ
   maxlag <- max(c(control$ar$max_lag, control$ar$lag,
                   control$ne$max_lag, control$ne$lag), na.rm = TRUE) #BJ
-  #BJ maxlag <- max(lag.ar, lag.ne)
+  minlag <- min(c(control$ar$min_lag, control$ar$lag,
+                  control$ne$min_lag, control$ne$lag), na.rm = TRUE)
 
   ## initial counts
   nUnits <- object$nUnit
@@ -72,21 +63,23 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
       stop("need 'y.start' values for lag=", maxlag, " initial time points")
   }
 
-  ## get fitted components nu_it (with offset), phi_it, lambda_it, t in subset
-  model <- hhh4addon:::terms.hhh4lag(object)
-  means <- surveillance:::meanHHH(theta, model, subset=subset)
-  psi <- surveillance:::splitParams(theta,model)$overdisp
+  ## get fitted exppreds nu_it, phi_it, lambda_it (incl. offsets, t in subset)
+  exppreds <- get_exppreds_with_offsets_lag(object, subset = subset, theta = theta) #BJ
+
+  ## extract overdispersion parameters (simHHH4 assumes psi->0 means Poisson)
+  model <- terms.hhh4lag(object) #BJ
+  psi <- surveillance:::splitParams(theta,model)$overdisp #BJ
+  if (length(psi) > 1) # "NegBinM" or shared overdispersion parameters
+    psi <- psi[model$indexPsi]
 
   ## weight matrix/array of the ne component
-  neweights <- surveillance:::getNEweights(object, surveillance:::coefW(theta))
+  neweights <- surveillance:::getNEweights(object, coefW(theta))
 
   ## set predictor to zero if not included ('components' argument)
   stopifnot(length(components) > 0, components %in% c("ar", "ne", "end"))
   getComp <- function (comp) {
-    sel <- if (comp == "end") "endemic" else paste(comp, "exppred", sep=".")
-    res <- means[[sel]]
-    if (!comp %in% components) res[] <- 0
-    res
+    exppred <- exppreds[[comp]]
+    if (comp %in% components) exppred else "[<-"(exppred, value = 0)
   }
   ar <- getComp("ar")
   ne <- getComp("ne")
@@ -94,9 +87,13 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
 
   ## simulate
   simcall <- quote(
-    simHHH4(ar = ar, ne = ne, end = end, psi = psi, neW = neweights, start = y.start,
-            lag.ar = lag.ar, funct_lag.ar = control$ar$funct_lag, par_lag.ar = control$ar$par_lag, min_lag.ar = control$ar$min_lag, max_lag.ar = control$ar$max_lag, use_distr_lag.ar = control$ar$use_distr_lag,
-            lag.ne = lag.ne, funct_lag.ne = control$ne$funct_lag, par_lag.ne = control$ne$par_lag, min_lag.ne = control$ne$min_lag, max_lag.ne = control$ne$max_lag, use_distr_lag.ne = control$ne$use_distr_lag)
+    simHHH4lag(ar = ar, ne = ne, end = end, psi = psi, neW = neweights, start = y.start,
+                lag.ar = lag.ar, funct_lag.ar = control$ar$funct_lag, par_lag.ar = control$ar$par_lag,
+                min_lag.ar = control$ar$min_lag, max_lag.ar = control$ar$max_lag,
+                use_distr_lag.ar = control$ar$use_distr_lag,
+                lag.ne = lag.ne, funct_lag.ne = control$ne$funct_lag, par_lag.ne = control$ne$par_lag,
+                min_lag.ne = control$ne$min_lag, max_lag.ne = control$ne$max_lag,
+                use_distr_lag.ne = control$ne$use_distr_lag)
   )
   if (!simplify) {
     ## result template
@@ -124,12 +121,9 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
 }
 
 
+### Internal auxiliary function, which performs the actual simulation
 
-### updated version Internal auxiliary function, which performs the actual simulation
-
-# THIS IS NOT READY YET
-
-simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
+simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
                     ne,     # phi_it (nTime x nUnits matrix)
                     end,    # nu_it (nTime x nUnits matrix, offset included)
                     psi,    # overdisp param(s) or numeric(0) (psi->0 = Poisson)
@@ -179,8 +173,8 @@ simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
     if (timeDependentWeights) neWt <- neW[,,t]
     ## mean mu_i,t = lambda*y_i,t-1 + phi*sum_j wji*y_j,t-1 + nu_i,t
     Ylagged <- hhh4addon:::weightedSumAR(observed = y[nStart + t - (max_lag.ar:0), , drop = FALSE], lag = lag.ar, #BJ
-                                        funct_lag = funct_lag.ar, par_lag = par_lag.ar, min_lag = min_lag.ar, max_lag = max_lag.ar, #BJ
-                                        use_distr_lag = use_distr_lag.ar, sum_up = TRUE)[max_lag.ne + 1, ] #BJ
+                                         funct_lag = funct_lag.ar, par_lag = par_lag.ar, min_lag = min_lag.ar, max_lag = max_lag.ar, #BJ
+                                         use_distr_lag = use_distr_lag.ar, sum_up = TRUE)[max_lag.ne + 1, ] #BJ
 
     if(!is.null(neW)){
       Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag.ne:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
@@ -204,4 +198,22 @@ simHHH4 <- function(ar,     # lambda_it (nTime x nUnits matrix)
 
   ## return simulated data without initial counts
   y[-seq_len(nStart),,drop=FALSE]
+}
+
+# originally in hh4_plot #BJ
+## extract exppreds multiplied with offsets
+## note: theta = coef(object) would also work since psi is not involved here
+get_exppreds_with_offsets_lag <- function (object,
+                                       subset = seq_len(nrow(object$stsObj)),
+                                       theta = object$coefficients)
+{
+  model <- terms.hhh4lag(object)
+  means <- surveillance:::meanHHH(theta, model, subset = subset)
+  res <- sapply(X = c("ar", "ne", "end"), FUN = function (comp) {
+    exppred <- means[[paste0(comp, ".exppred")]]
+    offset <- object$control[[comp]]$offset
+    if (length(offset) > 1) offset <- offset[subset,,drop=FALSE]
+    exppred * offset
+  }, simplify = FALSE, USE.NAMES = TRUE)
+  res
 }
