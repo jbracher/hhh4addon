@@ -38,9 +38,6 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   # extract information from model:
   n_units <- ncol(hhh4Obj$stsObj@observed)
   n_timepoints <- nrow(hhh4Obj$stsObj@observed)
-  if(is.null(hhh4Obj$control$use_distr_lag)){
-    hhh4Obj$control$use_distr_lag <- FALSE
-  }
 
   # means etc:
   meanHHH_temp <- surveillance:::meanHHH(hhh4Obj$coefficients,
@@ -52,7 +49,7 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   max_lag <- max(c(hhh4Obj$control$max_lag, hhh4Obj$control$ar$lag,
                    hhh4Obj$control$ne$lag), na.rm = TRUE) #BJ
   # weights of lags:
-  weights_lag <- if(hhh4Obj$control$use_distr_lag){
+  weights_lag <- if(!is.null(hhh4Obj$distr_lag)){
     hhh4Obj$distr_lag # have to be identical in ar and ne, checked by check_lags
   }else{c(rep(0, max_lag - 1), 1)} # all weight to one lag if no distributed lags are used.
 
@@ -139,14 +136,6 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
     stop("Extracted Lambda is not in agreement with fitted values returned by surveillance:::meanHHH.
          Model does not seem to be covered by extraction algorithm")
   }# else{print("Equality check in lambda_tilde_complex_neighbourhood passed")}
-
-  # if(hhh4Obj$contro$ar$use_distr_lag){
-  #   max_lag <- hhh4Obj$control$ar$max_lag
-  #   Lambda_tilde_arr <- array(dim = c(n_units + 1))
-  #   for(i in 1:max_lag){
-  #     inds <-
-  #   }
-  # }
 
   return(list(nu = nu, lambda = Lambda_wide))
 }

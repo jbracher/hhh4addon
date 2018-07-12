@@ -29,7 +29,7 @@
 ## offset is a multiplicative offset for \phi_{it}, e.g., the population.
 ## scale is a nUnit-vector or a nUnit x nUnit matrix scaling neweights.
 neOffsetFUN <- function (Y, neweights, scale, normalize,
-                         nbmat, data, lag, funct_lag, par_lag, min_lag, max_lag, use_distr_lag, #BJ: added arguments; may have to re-introduce 'lag'
+                         nbmat, data, lag, funct_lag, par_lag, min_lag, max_lag, #BJ: added arguments; may have to re-introduce 'lag'
                          sum_up = TRUE, offset = 1) #BJ: added argument sum_up
 {
   if (is.null(neweights)) { # no neighbourhood component
@@ -48,7 +48,7 @@ neOffsetFUN <- function (Y, neweights, scale, normalize,
       res <- surveillance:::clapply(weights, function (W)
         offset * hhh4addon:::weightedSumNE(observed = Y, weights = W, lag = lag,
                                           funct_lag = funct_lag, par_lag = par_lag, min_lag = min_lag, max_lag = max_lag,
-                                          use_distr_lag = use_distr_lag, sum_up = sum_up)) # BJ: distr. lags now done inside of weightedSumNE
+                                          sum_up = sum_up)) # BJ: distr. lags now done inside of weightedSumNE
       ##<- clapply always returns a list (possibly of length 1)
       if (type=="response") res[[1L]] else res
     }
@@ -63,7 +63,6 @@ neOffsetFUN <- function (Y, neweights, scale, normalize,
                                                         par_lag = par_lag, #BJ
                                                         min_lag = min_lag, #BJ
                                                         max_lag = max_lag, #BJ
-                                                        use_distr_lag = use_distr_lag, #BJ
                                                         sum_up = sum_up) #BJ: distr. lags now done inside of weightedSumNE
 
     as.function(c(alist(...=), quote(initoffset)), envir=env)

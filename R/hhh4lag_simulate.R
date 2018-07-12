@@ -87,8 +87,7 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
   simcall <- quote(
     simHHH4lag(ar = ar, ne = ne, end = end, psi = psi, neW = neweights, start = y.start,
                lag.ar = lag.ar, lag.ne = lag.ne, funct_lag = control$funct_lag,
-               par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag,
-               use_distr_lag = control$use_distr_lag)
+               par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag)
   )
   if (!simplify) {
     ## result template
@@ -125,7 +124,7 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
                        neW,    # weight matrix/array for neighbourhood component
                        start,  # starting counts (vector of length nUnits, or
                        # matrix with nUnits columns if lag > 1)
-                       lag.ar, lag.ne, funct_lag, par_lag, min_lag, max_lag, use_distr_lag #BJ
+                       lag.ar, lag.ne, funct_lag, par_lag, min_lag, max_lag #BJ
 )
 {
   nTime <- nrow(end)
@@ -168,7 +167,7 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
     ## mean mu_i,t = lambda*y_i,t-1 + phi*sum_j wji*y_j,t-1 + nu_i,t
     Ylagged <- hhh4addon:::weightedSumAR(observed = y[nStart + t - (max_lag:0), , drop = FALSE], lag = lag.ar, #BJ
                                          funct_lag = funct_lag, par_lag = par_lag, min_lag = min_lag, max_lag = max_lag, #BJ
-                                         use_distr_lag = use_distr_lag, sum_up = TRUE)[max_lag + 1, ] #BJ
+                                         sum_up = TRUE)[max_lag + 1, ] #BJ
 
     if(!is.null(neW)){
       Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
@@ -176,7 +175,6 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
                                               par_lag = par_lag, #BJ
                                               min_lag = min_lag,
                                               max_lag = max_lag, #BJ
-                                              use_distr_lag = use_distr_lag, #BJ
                                               sum_up = TRUE)[max_lag + 1, ]
     }else{
       Ylagged.ne <- 0

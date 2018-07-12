@@ -51,7 +51,6 @@
 #' @param use_update should results from previous values in range_par be used as starting value for next iteration (via \code{update})?
 #' @export
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
-  control$use_distr_lag <- TRUE
   AICs <- rep(NA, length(range_par))
   best_mod <- mod_temp <- NULL
   for(i in 1:length(range_par)){
@@ -118,10 +117,8 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' by the user; instead it is estimated from the data using profile likelihood.
 #' @export
 profile_par_lag <- function(stsObj, control, check.analyticals = FALSE){
-  control$use_distr_lag <- TRUE
   control$par_lag <- 0.5
   initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
-  control$use_distr_lag <- TRUE
   profile_lik <- function(par_lag){
     # par_lag <- exp(logit_par_lag)/(1 + exp(logit_par_lag))
     control$par_lag <- par_lag
@@ -193,8 +190,6 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' Distributed lags can be specified by
 #' additional elements in \code{control} argument:
 #' \itemize{
-#'   \item{\code{use_distr_lag}}{ Logical: should distributed lags be used instead of ordinary lags as
-#'   implemented in \code{surveillance}?}
 #'   \item{\code{funct_lag}}{ Function to calculate the a matrix of
 #'   distributed lags from a matrix of first lags. Currently only
 #'   geometric lags (\code{hhh4addon:::geometric_lag}) are available
@@ -227,7 +222,7 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' # with weight 0.8 for first lag
 #' control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
 #'                            ar = list(f = addSeason2formula(~ 1),
-#'                                      par_lag = 0.8, use_distr_lag = TRUE),
+#'                                      par_lag = 0.8),
 #'                            family = "NegBinM", subset = 6:312)
 #' fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
 #' summary(fit_salmonella)
@@ -246,7 +241,7 @@ hhh4_lag <- function (stsObj, control = list(
   end = list(f = ~ 1,        # a formula "exp(x'nu) * n_it"
              offset = 1),    # optional multiplicative offset e_it
   family = c("Poisson", "NegBin1", "NegBinM"), # or a factor of length nUnit
-  funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, use_distr_lag = TRUE,
+  funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5,
   subset = 2:nrow(stsObj),   # epidemic components require Y_{t-lag}
   optimizer = list(stop = list(tol = 1e-5, niter = 100), # control arguments
                    regression = list(method = "nlminb"), # for optimization
@@ -346,10 +341,8 @@ hhh4_lag <- function (stsObj, control = list(
   }
 
   #BJ: calculate distributed lags:
-  distr_lag <- if(control$use_distr_lag){
-    m1 <- matrix(1, nrow = control$max_lag)
-    control$funct_lag(m1, par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag, sum_up = FALSE)[1,,]
-  }else{ NA}
+  distr_lag <- control$funct_lag(matrix(1, nrow = control$max_lag), par_lag = control$par_lag,
+                      min_lag = control$min_lag, max_lag = control$max_lag, sum_up = FALSE)[1,,]
 
   ## gather results in a list -> "hhh4" object
   result <- list(coefficients=thetahat,
@@ -371,7 +364,6 @@ hhh4_lag <- function (stsObj, control = list(
                  par_lag = control$par_lag, #BJ
                  max_lag = control$max_lag, #BJ
                  min_lag = control$min_lag, #BJ
-                 use_distr_lag = control$use_distr_lag, #BJ
                  distr_lag = distr_lag,
                  nObs=sum(!model$isNA[control$subset,]),
                  nTime=length(model$subset), nUnit=ncol(stsObj),

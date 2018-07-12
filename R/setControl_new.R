@@ -37,34 +37,15 @@ setControl <- function (control, stsObj)
     if(!is.list(control[[comp]])) stop("'control$", comp, "' must be a list")
   }
 
-  if(control$use_distr_lag){
-    { # case where 'min_lag' and 'max_lag' are used
-      #BJ: check max_lag and mu_lag
-      if (!surveillance:::isScalar(control$max_lag) || control$max_lag < (comp == "ar")) #BJ
-        stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
-      control$max_lag <- as.integer(control$max_lag)#BJ
-      if (!surveillance:::isScalar(control$min_lag) || control$min_lag < (comp == "ar")) #BJ
-        stop("'control$", comp, "$min_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
-      control$min_lag <- as.integer(control$min_lag)#BJ
-    }
-  }else{
-    ## check lags in "ar" and "ne" components
-    for (comp in c("ar", "ne")) {
-      #BJ: checking plausibility of lag arguments:
-      if (!surveillance:::isScalar(control[[comp]]$lag) || control[[comp]]$lag < (comp=="ar"))
-        stop("'control$", comp, "$lag' must be a ",
-             if (comp=="ar") "positive" else "non-negative", " integer")
-      control[[comp]]$lag <- as.integer(control[[comp]]$lag)
-      # control[[comp]]$mu_lag <- NA # set mu_lag, max_lag to NA to avoid that they are used anywhere
-      control$max_lag <- NA #BJ
-      control$min_lag <- NA #BJ
-    }
+  { # case where 'min_lag' and 'max_lag' are used
+    #BJ: check max_lag and mu_lag
+    if (!surveillance:::isScalar(control$max_lag) || control$max_lag < (comp == "ar")) #BJ
+      stop("'control$", comp, "$max_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
+    control$max_lag <- as.integer(control$max_lag)#BJ
+    if (!surveillance:::isScalar(control$min_lag) || control$min_lag < (comp == "ar")) #BJ
+      stop("'control$", comp, "$min_lag' must be a ", if (comp == "ar") "positive" else "non-negative", " integer")#BJ
+    control$min_lag <- as.integer(control$min_lag)#BJ
   }
-
-  if(control$use_distr_lag & (!is.na(control$ar$lag) | !is.na(control$ne$lag))){
-    stop("control$ar$lag and control$ne$lag must not be specified if use_distr_lag == TRUE.")
-  }
-
 
   ### check AutoRegressive component
 
@@ -106,8 +87,8 @@ setControl <- function (control, stsObj)
            "if 'control$ar$f' is a matrix")
     ## check ne$weights specification
     surveillance:::checkWeights(control$ne$weights, nUnit, nTime,
-                 neighbourhood(stsObj), control$data,
-                 check0diag = control$ar$inModel)
+                                neighbourhood(stsObj), control$data,
+                                check0diag = control$ar$inModel)
     ## check optional scaling of weights
     if (!is.null(control$ne$scale)) {
       stopifnot(is.numeric(control$ne$scale))
@@ -167,8 +148,8 @@ setControl <- function (control, stsObj)
       !all(control$subset %in% seq_len(nTime)))
     stop("'control$subset' must be %in% 1:", nTime)
   #BJ: use lags or max_lags depending on setting
-  lags <- c(ar = ifelse(control$use_distr_lag, control$max_lag, control$ar$lag), #BJ
-            ne = ifelse(control$use_distr_lag, control$max_lag, control$ne$lag)) # BJ
+  lags <- c(ar = control$max_lag, #BJ
+            ne = control$max_lag) # BJ
   maxlag <- suppressWarnings(max(lags[names(lags) %in% comps])) # could be -Inf
   if (control$subset[1L] <= maxlag) {
     warning("'control$subset' should be > ", maxlag, " due to epidemic lags")

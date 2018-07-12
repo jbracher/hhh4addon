@@ -48,14 +48,14 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
       quote = FALSE, print.gap = 2)
   } else cat("No coefficients\n")
   cat("\n")
-  if(x$use_distr_lag){ #BJ
+  # if(x$use_distr_lag){ #BJ
     wgts <- x$distr_lag
     cat(paste0("Distributed lags used (max_lag = ", length(wgts),
                "). Weights: "))
     cat(paste(round(wgts, 2), collapse = "; "))
     cat("\nUse distr_lag() to check the applied lag distribution and parameters.\n") #BJ
     cat("\n") #BJ
-  }
+  #}
   invisible(x)
 }
 
@@ -78,7 +78,7 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
                 REmat = surveillance:::.getREmat(object),
                 AIC   = AIC(object),
                 BIC   = BIC(object),
-                use_distr_lag = object$control$use_distr_lag,
+                # use_distr_lag = object$control$use_distr_lag,
                 maxEV_range = if (maxEV) unique(range(getMaxEV(object))),
                 distr_lag = object$distr_lag))
   class(ret) <- "summary.hhh4lag"
@@ -295,7 +295,7 @@ neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
                  "t" = rownames(object$stsObj)[subset],
                  "i" = colnames(object$stsObj)))
   # BJ: extract some elements of the control:
-  ar <- object$control$ar
+  control <- object$control
 
   ## calculate array values if the fit has an NE component
   if ("ne" %in% surveillance:::componentsHHH4(object)) {
@@ -305,9 +305,10 @@ neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
     # is.na(tm1) <- tm1 <= 0
     # tYtm1 <- t(Y[tm1,,drop=FALSE])
     #BJ calculate lags using weightedSumAR instead of indexing as in original function
-    tY_lagged <- t(hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
-                                          funct_lag = ar$funct_lag, par_lag = ar$par_lag, max_lag = ar$max_lag, min_lag = ar$min_lag, #BJ
-                                          use_distr_lag = ar$use_distr_lag, sum_up = TRUE)[subset, ]) #BJ
+    tY_lagged <- t(hhh4addon:::weightedSumAR(observed = Y, lag = control$ar$lag, #BJ
+                                          funct_lag = control$funct_lag, par_lag = control$par_lag,
+                                          max_lag = control$max_lag, min_lag = control$min_lag,
+                                          sum_up = TRUE)[subset, ]) #BJ
     # from now on everything continues as before
     res[] <- apply(W, 2L, function (wi) tY_lagged * wi)
     offset <- object$control$ne$offset

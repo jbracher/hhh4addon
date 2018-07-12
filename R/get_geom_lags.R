@@ -11,7 +11,7 @@
 #' # with weight 0.8 for first lag
 #' control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
 #'                            ar = list(f = addSeason2formula(~ 1),
-#'                            par_lag = 0.8, use_distr_lag = TRUE),
+#'                            par_lag = 0.8),
 #'                            family = "NegBinM", subset = 6:312)
 #' fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
 #' distr_lag(fit_salmonella)
@@ -21,14 +21,11 @@ distr_lag <- function(hhh4Obj){
     stop("structure of distributed lags can only be extracted from objects of class hhh4lag.")
   }
 
-  ret <- list()
-  for(comp in c("ar", "ne")){
-    ret[[comp]] <- if(hhh4Obj$control[[comp]]$use_distr_lag){
-      list(funct_lag = hhh4Obj$control[[comp]]$funct_lag,
-           par_lag = hhh4Obj$control[[comp]]$par_lag,
-           max_lag = hhh4Obj$control[[comp]]$max_lag)
-    }
-  }
+  list(funct_lag = hhh4Obj$control$funct_lag,
+       par_lag = hhh4Obj$control$par_lag,
+       min_lag = hhh4Obj$control$min_lag,
+       max_lag = hhh4Obj$control$max_lag)
+
   return(ret)
 }
 
