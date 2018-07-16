@@ -126,7 +126,7 @@ profile_par_lag <- function(stsObj, control, check.analyticals = FALSE){
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     return(-mod_temp$loglikelihood)
   }
-  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = 0.01, upper = 1)$par
+  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = -10, upper = 10)$par
   control$par_lag <- opt_par_lag
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
   cov = numeric_fisher_hhh4lag(best_mod)
