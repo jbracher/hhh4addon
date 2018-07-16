@@ -58,7 +58,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
     mod_temp <- if(is.null(mod_temp) || mod_temp$convergence == FALSE || use_update == FALSE){
       hhh4_lag(stsObj, control, check.analyticals)
     }else{
-      update(mod_temp, ar = control$ar, ne = control$ne)
+      update(mod_temp, par_lag = control$par_lag)
     }
     if(mod_temp$convergence == FALSE & use_update){ # catch convergence errors by trying to fit without update
       warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
@@ -116,8 +116,8 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not specified directly
 #' by the user; instead it is estimated from the data using profile likelihood.
 #' @export
-profile_par_lag <- function(stsObj, control, check.analyticals = FALSE){
-  control$par_lag <- 0.5
+profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag = -10, upper_par_lag = 10, check.analyticals = FALSE){
+  control$par_lag <- start_par_lag
   initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
   profile_lik <- function(par_lag){
     # par_lag <- exp(logit_par_lag)/(1 + exp(logit_par_lag))
@@ -126,7 +126,7 @@ profile_par_lag <- function(stsObj, control, check.analyticals = FALSE){
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     return(-mod_temp$loglikelihood)
   }
-  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = -10, upper = 10)$par
+  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag)$par
   control$par_lag <- opt_par_lag
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
   cov = numeric_fisher_hhh4lag(best_mod)
