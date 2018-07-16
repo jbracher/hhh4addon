@@ -29,14 +29,20 @@ distr_lag <- function(hhh4Obj){
   return(ret)
 }
 
-# helper function: transform matrix of first lags to matrix of geometric lags
+#' Transform matrix of first-order lagged observations to matrix of weighted sums of past observation (with geometric weights)
+#'
+#' This function modifies the design matrices from first-order lags to weighted lags with geometric structure. To be passed to \code{hhh4lag} or
+#' \code{profile_par_lag} in order to use geometric lags.
+#' @param lag1 a matrix of first lags as usually used in \code{hhh4}.
+#' @param par_lag a parameter to steer the lag structure, here \eqn{logit(p)} where \eqn{p} is the parameter of
+#' the geometric distribution characterizing the lag structure; see details of \code{hhh4lag} or \code{profile_par_lag}
+#' @param min_lag smallest lag to include; the support of the geometric form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @param sum_up \code{sum_up = FALSE} returns a more detailed output; for debugging only
+#' @export
 geometric_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
 
-  if(is.list(par_lag)){
-    p_lag <- par_lag$mu # extract parameter
-  }else{
-    p_lag <- par_lag
-  }
+  p_lag <- exp(par_lag)/(1 + exp(par_lag))
 
   weights0 <- c(rep(0, min_lag - 1), dgeom((min_lag:max_lag) - 1, p_lag)) #BJ
   weights <- weights0/sum(weights0) #BJ
@@ -59,16 +65,22 @@ geometric_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
 } #BJ
 
 
-# helper function: transform matrix of first lags to matrix of geometric lags
+#' Transform matrix of first-order lagged observations to matrix of weighted sums of past observation (with Poisson weights)
+
+#' This function modifies the design matrices from first-order lags to weighted lags with Poisson structure.
+#' To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use Poisson lags.
+#' @param lag1 a matrix of first lags as usually used in \code{hhh4}.
+#' @param par_lag a parameter to steer the lag structure, here \eqn{log(\mu)} where \eqn{\mu} is the parameter of
+#' the Poisson distribution characterizing the lag structure; see details of \code{hhh4lag} or \code{profile_par_lag}
+#' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @param sum_up \code{sum_up = FALSE} returns a more detailed output; for debugging only
+#' @export
 poisson_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
 
-  if(is.list(par_lag)){
-    p_lag <- par_lag$mu # extract parameter
-  }else{
-    p_lag <- par_lag
-  }
+  mu_lag <- exp(par_lag)
 
-  weights0 <- c(rep(0, min_lag - 1), dpois((min_lag:max_lag) - 1, p_lag)) #BJ
+  weights0 <- c(rep(0, min_lag - 1), dpois((min_lag:max_lag) - 1, mu_lag)) #BJ
   weights <- weights0/sum(weights0) #BJ
   pois_lag <- if(sum_up){
     matrix(0, ncol = ncol(lag1), nrow = nrow(lag1))
@@ -88,14 +100,21 @@ poisson_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
   pois_lag #BJ
 } #BJ
 
-# helper function: transform matrix of first lags to matrix of geometric lags
+#' Transform matrix of first-order lagged observations to matrix of weighted sums of past observation
+#' (with weights for first and second lags)
+
+#' This function modifies the design matrices from first-order lags to weighted lsum of first and second lags.
+#' To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use AR2-lags.
+#' @param lag1 a matrix of first lags as usually used in \code{hhh4}.
+#' @param par_lag a parameter to steer the lag structure, here \eqn{logit(p)} where \eqn{p} is the weight of
+#' the first lag; see details of \code{hhh4lag} or \code{profile_par_lag}
+#' @param min_lag smallest lag to include; the support of the geometric form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @param sum_up \code{sum_up = FALSE} returns a more detailed output; for debugging only
+#' @export
 ar2_lag <- function(lag1, par_lag, min_lag, max_lag, sum_up = TRUE){ #BJ
 
-  if(is.list(par_lag)){
-    p_lag <- par_lag$mu # extract parameter
-  }else{
-    p_lag <- par_lag
-  }
+  p_lag <- exp(par_lag)/(1 + exp(par_lag))
 
   weights0 <- c(rep(0, min_lag - 1), p_lag, 1 - p_lag, rep(0, max_lag - min_lag - 1)) #BJ
   weights <- weights0/sum(weights0) #BJ
