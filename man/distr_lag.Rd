@@ -24,7 +24,7 @@ salmonella <- disProg2sts(salmonella.agona)
 # with weight 0.8 for first lag
 control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
                            ar = list(f = addSeason2formula(~ 1),
-                           par_lag = 0.8, use_distr_lag = TRUE),
+                           par_lag = 0.8),
                            family = "NegBinM", subset = 6:312)
 fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
 distr_lag(fit_salmonella)

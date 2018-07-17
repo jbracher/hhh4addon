@@ -12,7 +12,7 @@ fit_par_lag(stsObj, control, check.analyticals = FALSE, range_par,
 allows for some additional arguments
 
 In this modified version of \code{surveillance::hhh4}, distributed lags can be specified by
-additional elements in the \code{ar} and \code{ne} parts of \code{control}:
+additional elements \code{control} argument:
 \itemize{
   \item{\code{funct_lag}}{ Function to calculate the a matrix of distributed lags from a matrix of first lags.
    Currently only geometric lags (\code{hhh4addon:::geometric_lag}) are available and set as default, see Details.
