@@ -13,6 +13,11 @@
 ### a copy of which is available at http://www.r-project.org/Licenses/.
 ################################################################################
 
+#' Predictive Model Assessment for hhh4_lag Models
+#'
+#' A version of \code{surveillance::oneStepAhead} for \code{hhh4_lag} objects. NOTE: the \code{lag_par} parameter
+#' is not re-fit in this function!
+#'
 #' @export
 oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                          tp,     # scalar: one-step-ahead predictions for time
