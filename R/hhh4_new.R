@@ -129,6 +129,7 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
   opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag)$par
   control$par_lag <- opt_par_lag
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
+  best_mod$dim["fixed"] <- best_mod$dim["fixed"] + 1 # + 1 for decay paramter
   cov = numeric_fisher_hhh4lag(best_mod)
   return(list(best_mod = best_mod, cov = cov))
 }
