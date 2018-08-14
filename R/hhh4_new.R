@@ -131,6 +131,7 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
   best_mod$dim["fixed"] <- best_mod$dim["fixed"] + 1 # + 1 for decay paramter
   cov = numeric_fisher_hhh4lag(best_mod)
+  best_mod$se_par_lag = cov["par_lag", "par_lag"]
   return(list(best_mod = best_mod, cov = cov))
 }
 
@@ -149,6 +150,7 @@ numeric_fisher_hhh4lag <- function(best_mod){
   }
   hess <- numDeriv::hessian(lik_vect, coefficients)
   cov <- -solve(hess)
+  colnames(cov) <- rownames(cov) <- names(coefficients)
   return(cov)
 }
 
@@ -174,15 +176,15 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' \item{Geometric lags (function \code{geometric_lag}).
 #' These are specified as
 #' \deqn{u0_q = \alpha * (1 - \alpha)^{q - 1}}
-#' and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to \eqn{\alpha},
+#' and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}),
 #' i.e. the un-normalized weight of the first lag.}
 #' \item{Poisson lags (function \code{poisson_lag}).
 #' These are specified as
 #' \deqn{u0_q =  \alpha^(q - 1)\exp(-\alpha)/(q - 1)!,}
 #' and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}. Note that he Poisson distribution is shifted by one to
-#' achieve a positive support. The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+#' achieve a positive support. The \code{par_lag} parameter corresponds to log(\eqn{\alpha}).}
 #' \item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
-#' The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+#' The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}
 #' }
 #'
 #' @param stsObj,control,check.analyticals As in \code{surveillance::hhh4},
