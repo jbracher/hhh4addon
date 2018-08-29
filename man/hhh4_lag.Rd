@@ -16,33 +16,22 @@ hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = NA), ne =
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4},
-but the \code{control} argument allows for some additional specifications.
-
-Distributed lags can be specified by
-additional elements in \code{control} argument:
+but with the following additional elements in the \code{control} argument in order to specify a distributed lag structure:
 \itemize{
-  \item{\code{funct_lag}}{ Function to calculate the a matrix of
-  distributed lags from a matrix of first lags. Currently only
-  geometric lags (\code{hhh4addon:::geometric_lag}) are available
-  and set as default, see Details. The function has to take the
+  \item{\code{funct_lag}}{ Function to compute the lag weights \eqn{u_q} (see details) depending on a scalar
+  parameter \code{par_lag}. The function has to take the
   following arguments:
   \itemize{
-  \item{\code{lag1}}{ Matrix containing the first lags which would
-  be used in a standard \code{hhh4} model.}
-  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For
-  the geometric lags this is the un-normalized weight of the first lag.}
+  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
+  take any value in the real numbers}
   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
   Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
-  \item{\code{sum_up}}{ Specifies how detailed the output of the
-  function is - only for internal use.}
   }}
   \item{\code{par_lag, min_lag, max_lag}}{ Specification of the arguments
   passed to funct_lag} to compute the distributed  lags.
 }
-The current implementation requires the lag structure to be handled
-the same way in the «code{ar} and the \code{ne} components.
-The parameter \code{par_lag} can be estimated using a profile
-likelihood approach. This is done using the wrapper \code{fit_par_lag}.}
+\code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
+likelihood approach.}
 }
 \description{
 A modified version of \code{surveillance::hhh4} to allow for distributed
@@ -55,14 +44,13 @@ first lags i.e. of the form
 see \code{?hhh4}. The extension \code{hhh4_lag} allows to specify
 models of the form
 \deqn{mu_{it} = \lambda_{it}\sum_{q= 1}^Q u_q X_{i, t - q} + \phi_{it}\sum_{j\neq i}sum_{q= 1}^Q w_{ji}u_q X_{j, t - q} + \nu_{it}.}
-The simple first lags are replaced by weighted sums of the Q
+Here the first lags are now replaced by weighted sums of the Q
 previous observations. The weights u_q, q = 1, ..., Q sum up to
-1 and need to be parametrizable by a single scalar parameter \code{par_lag}.
-This parameter is passed to a function \code{funct_lag} which takes
-the first lags and transforms them into distributed lags. Currently three
-different types of lags are available:
+1 and need to be parametrizable by a single scalar parameter. The value of this parameter needs to be passed as \code{control$par_lag}.
+Moreover, a function to obtain a vector of weights from \code{par_lag} needs to be provided in \code{control$funct_lag}.
+Currently three such functions are implemented in the package:
 \itemize{
-\item{Geometric lags (function \code{geometric_lag}).
+\item{Geometric lags (function \code{geometric_lag}; the default).
 These are specified as
 \deqn{u0_q = \alpha * (1 - \alpha)^{q - 1}}
 and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}),
@@ -75,6 +63,7 @@ achieve a positive support. The \code{par_lag} parameter corresponds to log(\eqn
 \item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
 The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}
 }
+Users can specify their own weighting functions as long as they take the arguments described above and return a vector of weights.
 }
 \examples{
 ## a simple univariate example:

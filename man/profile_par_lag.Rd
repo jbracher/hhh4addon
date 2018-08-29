@@ -5,39 +5,42 @@
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
 profile_par_lag(stsObj, control, start_par_lag = 0.5, lower_par_lag = -10,
-  upper_par_lag = 10, check.analyticals = FALSE)
+  upper_par_lag = 10, return_full_cov = FALSE, reltol_par_lag = 1e-08,
+  check.analyticals = FALSE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4}, but \code{control}
-allows for some additional arguments}
+allows for some additional arguments in order to specify a distributed lag structure:
+\itemize{
+  \item{\code{funct_lag}}{ Function to compute the lag weights \eqn{u_q} (see details) depending on a scalar
+  parameter \code{par_lag}. The function has to take the
+  following arguments:
+  \itemize{
+  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
+  take any value in the real numbers}
+  \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
+  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
+  }}
+  \item{\code{min_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed lags. Unlike in
+  \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
+}}
+
+\item{start_par_lag}{A starting value for \code{par_lag}}
+
+\item{lower_par_lag, upper_par_lag}{lower and upper limits for the value of par_lag; defaults to -10, 10}
+
+\item{return_full_cov}{logical: should the full covariance matrix of the parameter estimates (including \code{par_lag})
+be obtained numerically?}
+
+\item{reltol_par_lag}{the relative tolerance passed to the \code{optim} call to identify \code{par_lag}}
 }
 \value{
-A list with two elements: \code{best_mod} is the \code{hhh4lag} fit for the best value
-of \code{par_lag}; \code{cov} is an extended covariance matrix for the regression parameters
-which also includes par_lag. It is obtained via numerical differentiation using
-\code{numDeriv:::hessian}
-
-In this modified version of \code{surveillance::hhh4}, distributed lags can be specified by
-additional elements in the \code{ar} and \code{ne} parts of \code{control}:
-\itemize{
-  \item{\code{funct_lag}}{ Function to calculate the a matrix of distributed lags from a matrix of first lags.
-   Currently only geometric lags (\code{hhh4addon:::geometric_lag}) are available and set as default, see Details.
-  The function has to take the following arguments:
-  \itemize{
-  \item{\code{lag1}}{ Matrix containing the first lags which would be used in a standard \code{hhh4} model.}
-  \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. For the geometric lags this is the un-normalized weight of the first lag.}
-  \item{\code{max_lag}}{ Maximum number of lags.}
-  \item{\code{sum_up}}{ Specifies how detailed the output of the function is - only for internal use.}
-  }}
-  \item{\code{max_lag}}{ Specification of the \code{max_lag} argument passed to funct_lag} to compute the lags.
-}
-Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not specified directly
-by the user; instead it is estimated from the data using profile likelihood.
+If \code{return_full_cov == FALSE}: an \code{hhh4_lag} object. If \code{return_full_cov == TRUE} A list with two
+elements: \code{best_mod} is the \code{hhh4_lag} fit for the best value of \code{par_lag}; \code{cov} is an extended covariance matrix for the regression parameters
+which also includes par_lag.
 }
 \description{
 Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
 governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
-around it and tries a set of possible parameters provided in the argument \code{range_par}. NOTE: this will
-soon replace \code{fit_par_lag} which does the same, but using a grid over \code{par_lag} instead of
-\code{optim}.
+around it finds the optimal value of \code{par_lag}. See \code{?hhh4_lag} for details.
 }
