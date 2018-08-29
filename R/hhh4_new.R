@@ -344,8 +344,7 @@ hhh4_lag <- function (stsObj, control = list(
   }
 
   #BJ: calculate distributed lags:
-  distr_lag <- control$funct_lag(matrix(1, nrow = control$max_lag), par_lag = control$par_lag,
-                      min_lag = control$min_lag, max_lag = control$max_lag, sum_up = FALSE)[1,,]
+  distr_lag <- control$funct_lag(par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag)
 
   ## gather results in a list -> "hhh4" object
   result <- list(coefficients=thetahat,
