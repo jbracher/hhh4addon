@@ -65,15 +65,15 @@ different types of lags are available:
 \item{Geometric lags (function \code{geometric_lag}).
 These are specified as
 \deqn{u0_q = \alpha * (1 - \alpha)^{q - 1}}
-and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to \eqn{\alpha},
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}),
 i.e. the un-normalized weight of the first lag.}
 \item{Poisson lags (function \code{poisson_lag}).
 These are specified as
 \deqn{u0_q =  \alpha^(q - 1)\exp(-\alpha)/(q - 1)!,}
 and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}. Note that he Poisson distribution is shifted by one to
-achieve a positive support. The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+achieve a positive support. The \code{par_lag} parameter corresponds to log(\eqn{\alpha}).}
 \item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
-The \code{par_lag} parameter corresponds to \eqn{\alpha}.}
+The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}
 }
 }
 \examples{

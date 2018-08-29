@@ -2,24 +2,22 @@
 % Please edit documentation in R/get_geom_lags.R
 \name{ar2_lag}
 \alias{ar2_lag}
-\title{Transform matrix of first lags to matrix of AR2-lags
-To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use AR2-lags.}
+\title{Function to obtain AR2 weights
+This function generates AR2 weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.}
 \usage{
-ar2_lag(lag1, par_lag, min_lag, max_lag, sum_up = TRUE)
+ar2_lag(par_lag, min_lag, max_lag)
 }
 \arguments{
-\item{lag1}{a matrix of first lags as usually used in \code{hhh4}.}
-
 \item{par_lag}{a parameter to steer the lag structure, here \eqn{logit(p)} where \eqn{p} is the weight of
-the first lag; see details of \code{hhh4lag} or \code{profile_par_lag}}
+the first lag; see details of \code{hhh4lag} or \code{profile_par_lag}.}
 
-\item{min_lag}{smallest lag to include; the support of the geometric form starts only at \code{min_lag}. Defaults to 1.}
+\item{min_lag}{smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.}
 
 \item{max_lag}{highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.}
-
-\item{sum_up}{\code{sum_up = FALSE} returns a more detailed output; for debugging only}
 }
 \description{
-Transform matrix of first lags to matrix of AR2-lags
-To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use AR2-lags.
+Function to obtain AR2 weights
+This function generates AR2 weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.
 }

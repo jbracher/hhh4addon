@@ -2,24 +2,22 @@
 % Please edit documentation in R/get_geom_lags.R
 \name{geometric_lag}
 \alias{geometric_lag}
-\title{Transform matrix of first lags to matrix of geometric lags
-To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use geometric lags.}
+\title{Function to obtain geometric weights
+This function generates geometric weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.}
 \usage{
-geometric_lag(lag1, par_lag, min_lag, max_lag, sum_up = TRUE)
+geometric_lag(par_lag, min_lag, max_lag)
 }
 \arguments{
-\item{lag1}{a matrix of first lags as usually used in \code{hhh4}.}
-
 \item{par_lag}{a parameter to steer the lag structure, here \eqn{logit(p)} where \eqn{p} is the parameter of
-the geometric distribution characterizing the lag structure; see details of \code{hhh4lag} or \code{profile_par_lag}}
+the geometric distribution characterizing the lag structure; see details of \code{hhh4lag} or \code{profile_par_lag}.}
 
-\item{min_lag}{smallest lag to include; the support of the geometric form starts only at \code{min_lag}. Defaults to 1.}
+\item{min_lag}{smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.}
 
 \item{max_lag}{highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.}
-
-\item{sum_up}{\code{sum_up = FALSE} returns a more detailed output; for debugging only}
 }
 \description{
-Transform matrix of first lags to matrix of geometric lags
-To be passed to \code{hhh4lag} or \code{profile_par_lag} in order to use geometric lags.
+Function to obtain geometric weights
+This function generates geometric weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.
 }
