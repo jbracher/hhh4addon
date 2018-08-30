@@ -73,7 +73,7 @@ aggregate_moments <- function(momentsObj, aggregation_matrix, by_timepoint = FAL
   n_units <- ncol(momentsObj$mu_matrix)
   n_timepoints <- nrow(momentsObj$mu_matrix)
   if(is.null(rownames(aggregation_matrix))){
-    rownames(aggregation_matrix) <- paste0("V", nrow(aggregation_matrix))
+    rownames(aggregation_matrix) <- paste0("V", 1:nrow(aggregation_matrix))
   }
 
   # check validity of arguments
