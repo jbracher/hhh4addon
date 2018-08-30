@@ -44,7 +44,7 @@
 #' legend("topleft", col = "blue", lty = 1, legend = "observed seasons")
 #' @importFrom fanplot fan
 #' @export
-fanplot_stationary <- function(stat_mom, unit, probs = 1:99/100,
+fanplot_stationary <- function(stat_mom, unit = 1, probs = 1:99/100,
                                interpolate_probs = TRUE, add_pred_means = TRUE,
                                fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red", pt.cex = 0.3, l.col = "black",
                                mean_col = "black", mean_lty = "dashed",
