@@ -30,8 +30,11 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                          cores = 1) # if which.start="final", the predictions
                                     # can be computed in parallel
 {
-  if(class(result)[1] == "hhh4") surveillance::oneStepAhead(result = result, tp = tp, type = type, which.start = which.start,
-                                                            keep.estimates = keep.estimates, verbose = verbose, cores = cores)
+  # if hhh4 model without distributed lags: pass to regular oneStepAhead function.
+  if(class(result)[1] == "hhh4"){
+    return(surveillance::oneStepAhead(result = result, tp = tp, type = type, which.start = which.start,
+                               keep.estimates = keep.estimates, verbose = verbose, cores = cores))
+  }
 
     stopifnot(inherits(result, "hhh4"))
     type <- match.arg(type)
