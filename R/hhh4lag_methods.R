@@ -214,8 +214,11 @@ update.hhh4lag <- function (object, ..., S = NULL, subset.upper = NULL,
   }
 
   ## restrict fit to those epochs of control$subset which are <=subset.upper
-  if (surveillance:::isScalar(subset.upper))
-    control$subset <- control$subset[control$subset <= subset.upper]
+  if (surveillance:::isScalar(subset.upper)) {
+    if (subset.upper < control$subset[1L])
+      stop("'subset.upper' is smaller than the lower bound of 'subset'")
+    control$subset <- control$subset[1L]:subset.upper
+  }
 
 
   ## fit the updated model or just return the modified control list
