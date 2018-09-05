@@ -109,7 +109,7 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
     getPreds <- function (fit, tp) {
         coefs <- unname(fit$coefficients)
         c(list(pred = as.vector(
-               meanHHH(coefs, fit$terms, subset=tp+1L, total.only=TRUE))),
+               surveillance:::meanHHH(coefs, fit$terms, subset=tp+1L, total.only=TRUE))),
           if (withPsi) list(psi = coefs[psiIdx]),
           if (keep.estimates) list(
               coefficients=coefs,
@@ -130,7 +130,7 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
             if (verbose)
                 cat("One-step-ahead prediction @ t =", tp, "...\n")
             if (type == "rolling") { # update fit
-                fit <- update.hhh4(result, subset.upper=tp, use.estimates=TRUE,
+                fit <- update.hhh4lag(result, subset.upper=tp, use.estimates=TRUE,
                                    start=if (is.list(which.start)) which.start,
                                    verbose=FALSE, # chaotic in parallel
                                    keep.terms=TRUE) # need "model" -> $terms
