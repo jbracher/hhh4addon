@@ -152,7 +152,7 @@ setControl <- function (control, stsObj)
             ne = control$max_lag) # BJ
   maxlag <- suppressWarnings(max(lags[names(lags) %in% comps])) # could be -Inf
   if (control$subset[1L] <= maxlag) {
-    warning("'control$subset' should be > ", maxlag, " due to epidemic lags")
+    stop("'control$subset[1]' has to be > ", maxlag, " as ", maxlag, " lags are incuded in the model")
   }
 
   if (!is.list(control$optimizer) ||

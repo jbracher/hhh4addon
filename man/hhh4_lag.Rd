@@ -4,15 +4,16 @@
 \alias{hhh4_lag}
 \title{Fitting hhh4 models with distributed lags}
 \usage{
-hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = NA), ne =
-  list(f = ~-1, offset = 1, lag = NA, weights = neighbourhood(stsObj) == 1,
-  scale = NULL, normalize = FALSE), end = list(f = ~1, offset = 1), family =
-  c("Poisson", "NegBin1", "NegBinM"), funct_lag = geometric_lag, par_lag = 1,
-  min_lag = 1, max_lag = 5, subset = 2:nrow(stsObj), optimizer = list(stop =
-  list(tol = 1e-05, niter = 100), regression = list(method = "nlminb"), variance
-  = list(method = "nlminb")), verbose = FALSE, start = list(fixed = NULL,     
-  random = NULL, sd.corr = NULL), data = list(t = stsObj@epoch -
-  min(stsObj@epoch)), keep.terms = FALSE), check.analyticals = FALSE)
+hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = NA),
+  ne = list(f = ~-1, offset = 1, lag = NA, weights = neighbourhood(stsObj)
+  == 1, scale = NULL, normalize = FALSE), end = list(f = ~1, offset = 1),
+  family = c("Poisson", "NegBin1", "NegBinM"), funct_lag = geometric_lag,
+  par_lag = 1, min_lag = 1, max_lag = 5, subset = 6:nrow(stsObj), optimizer
+  = list(stop = list(tol = 1e-05, niter = 100), regression = list(method =
+  "nlminb"), variance = list(method = "nlminb")), verbose = FALSE, start =
+  list(fixed = NULL,      random = NULL, sd.corr = NULL), data = list(t =
+  stsObj@epoch - min(stsObj@epoch)), keep.terms = FALSE),
+  check.analyticals = FALSE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4},
@@ -25,7 +26,9 @@ but with the following additional elements in the \code{control} argument in ord
   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
   take any value in the real numbers}
   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
-  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
+  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.
+  #'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
+  \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)}
   }}
   \item{\code{par_lag, min_lag, max_lag}}{ Specification of the arguments
   passed to funct_lag} to compute the distributed  lags.

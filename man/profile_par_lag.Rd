@@ -4,9 +4,9 @@
 \alias{profile_par_lag}
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
-profile_par_lag(stsObj, control, start_par_lag = 0.5, lower_par_lag = -10,
-  upper_par_lag = 10, return_full_cov = FALSE, reltol_par_lag = 1e-08,
-  check.analyticals = FALSE)
+profile_par_lag(stsObj, control, start_par_lag = 0.5,
+  lower_par_lag = -10, upper_par_lag = 10, return_full_cov = FALSE,
+  reltol_par_lag = 1e-08, check.analyticals = FALSE)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4}, but \code{control}
@@ -23,6 +23,8 @@ allows for some additional arguments in order to specify a distributed lag struc
   }}
   \item{\code{min_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed lags. Unlike in
   \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
+  Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
+  \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
 }}
 
 \item{start_par_lag}{A starting value for \code{par_lag}}

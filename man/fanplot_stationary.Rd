@@ -4,17 +4,17 @@
 \alias{fanplot_stationary}
 \title{Display stationary distribution as a fanplot}
 \usage{
-fanplot_stationary(stat_mom, unit, probs = 1:99/100,
+fanplot_stationary(stat_mom, unit = 1, probs = 1:99/100,
   interpolate_probs = TRUE, add_pred_means = TRUE,
   fan.col = colorRampPalette(c("darkgreen", "gray90")), pt.col = "red",
   pt.cex = 0.3, l.col = "black", mean_col = "black",
   mean_lty = "dashed", ln = NULL, ln.col = "red", rlab = NULL,
   style = "fan", add = FALSE,
-  timepoints = 1:nrow(stat_mom$mu_matrix)/stat_mom$freq, add_legend = FALSE,
-  width_legend = 0.1 * (max(timepoints) - min(timepoints)),
-  probs_legend = c(1, 25, 50, 75, 99)/100, hlines = NULL, vlines = NULL,
-  ylim = NULL, xlab = "t", ylab = "No. infected", return_matrix = FALSE,
-  ...)
+  timepoints = 1:nrow(stat_mom$mu_matrix)/stat_mom$freq,
+  add_legend = FALSE, width_legend = 0.1 * (max(timepoints) -
+  min(timepoints)), probs_legend = c(1, 25, 50, 75, 99)/100,
+  hlines = NULL, vlines = NULL, ylim = NULL, xlab = "t",
+  ylab = "No. infected", return_matrix = FALSE, ...)
 }
 \arguments{
 \item{stat_mom}{the stationary moments as returned by \code{stationary_moments_hhh4}

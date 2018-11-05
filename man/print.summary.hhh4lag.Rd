@@ -4,8 +4,8 @@
 \alias{print.summary.hhh4lag}
 \title{A modified version of \code{print.summary.hhh4}}
 \usage{
-\method{print}{summary.hhh4lag}(x, digits = max(3, getOption("digits") - 3),
-  ...)
+\method{print}{summary.hhh4lag}(x, digits = max(3, getOption("digits") -
+  3), ...)
 }
 \description{
 A modified version of \code{print.summary.hhh4} to deal with the added

@@ -12,7 +12,6 @@
 
 
 ### Simulate-method for hhh4-objects
-
 simulate.hhh4lag <- function (object, # result from a call to hhh4
                               nsim=1, # number of replicates to simulate
                               seed=NULL,
