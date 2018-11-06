@@ -75,11 +75,28 @@ data("salmonella.agona")
 salmonella <- disProg2sts(salmonella.agona)
 # specify and fit model: fixed geometric lag structure
 # with weight 0.8 for first lag
+# par_lag is the logit of alpha:
+par_lag <- log(0.8/(1 - 0.8))
 control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
-                           ar = list(f = addSeason2formula(~ 1),
-                                     par_lag = 0.8),
-                           family = "NegBinM", subset = 6:312)
+                           ar = list(f = addSeason2formula(~ 1)),
+                           family = "NegBinM", subset = 6:312,
+                           par_lag = par_lag)
 fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
 summary(fit_salmonella)
+# has indeed weight 0.8 on first lag
+#
+# re-fit with Poisson lags:
+par_lag2 <- log(1.2)
+control_salmonella2 <- control_salmonella
+control_salmonella2$funct_lag = poisson_lag
+control_salmonella2$par_lag <- par_lag2
+fit_salmonella2 <- hhh4_lag(salmonella, control_salmonella2)
+summary(fit_salmonella2)
+# the Poisson lag actually allows you to put more weight on
+# the second than on the first lag.
 
+}
+\seealso{
+\code{profile_par_lag} and \code{fit_par_lag} estimate \code{par_lag} in a profiling procedure. \code{profile_par_lag} is the
+recommended function, \code{fit_par_lag} may be quicker for complex models.
 }

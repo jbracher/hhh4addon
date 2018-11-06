@@ -62,6 +62,38 @@
 #' }
 #' @param range_par a vector of values to try for the \code{par_lag} argument of \code{funct_lag}
 #' @param use_update should results from previous values in range_par be used as starting value for next iteration (via \code{update})?
+#'
+#' @return A list including the best model among all fitted ones (\code{best_mod}) and a vector of the AIC values obtained for the different
+#' values provided in \code{range_par} (\code{AICs})
+#' @seealso \code{hhh4_lag} for fitting models with fixed \code{par_lag}; \code{profile_par_lag} for optimization using \code{optim}
+#' rather than avector \code{range_par} of potential values.
+#'
+#' @examples
+#' ## a simple univariate example:
+#' data("salmonella.agona")
+#' ## convert old "disProg" to new "sts" data class
+#' salmonella <- disProg2sts(salmonella.agona)
+#' # specify and fit model: fixed geometric lag structure
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
+#'                            ar = list(f = addSeason2formula(~ 1)),
+#'                            family = "NegBinM", subset = 6:312)
+#' # get a reasonable range of values for par_lag. par_lag is logit(p) in teh
+#' # geometric lag function
+#' grid_p <- seq(from = 0.01, to = 0.99, by = 0.02)
+#' grid_par_lag <- log(grid_p/(1 - grid_p))
+#' fit_salmonella <- fit_par_lag(salmonella, control_salmonella, range_par = grid_par_lag)
+#' summary(fit_salmonella$best_mod)
+#' plot(fit_salmonella$AICs, xlab = "p", ylab = "AIC")
+#' # 0.56 on first lag
+#' #
+#' # re-fit with Poisson lags:
+#' control_salmonella2 <- control_salmonella
+#' control_salmonella2$funct_lag = poisson_lag
+#' grid_p2 <- seq(from = 0.01, to = 2, by = 0.02)
+#' grid_par_lag2 <- log(grid_p2)
+#' fit_salmonella2 <- fit_par_lag(salmonella, control_salmonella2, range_par = grid_par_lag2)
+#' summary(fit_salmonella2$best_mod)
+#' # leads to somewhat different decay and very slightly better AIC
 #' @export
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
   AICs <- rep(NA, length(range_par))
@@ -99,9 +131,11 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood
 #'
 #' Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
-#' governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
-#' around it finds the optimal value of \code{par_lag}. See \code{?hhh4_lag} for details.
-#'
+#' governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{profile_par_lag}
+#' re-fits the model for different values of \code{par_lag} and finds the optimal value. See \code{?hhh4_lag} for details.
+#' NOTE: \code{fit_par_lag} serves essentially the same purpose, but is based on a grid of potential values for
+#' \code{par_lag} rather than optimization using \code{optim}. \code{profile_par_lag} is the recommended option, but
+#' \code{fit_par_lag} may be somethat quicker for complex models.
 #'
 #' @param stsObj,control,check.analyticals As in \code{surveillance::hhh4}, but \code{control}
 #' allows for some additional arguments in order to specify a distributed lag structure:
@@ -129,6 +163,29 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' @return If \code{return_full_cov == FALSE}: an \code{hhh4_lag} object. If \code{return_full_cov == TRUE} A list with two
 #' elements: \code{best_mod} is the \code{hhh4_lag} fit for the best value of \code{par_lag}; \code{cov} is an extended covariance matrix for the regression parameters
 #' which also includes par_lag.
+#'
+#' @seealso \code{hhh4_lag} for fitting models with fixed \code{par_lag}; \code{fit_par_lag} for grid-based optimization.
+#'
+#' @examples
+#' ## a simple univariate example:
+#' data("salmonella.agona")
+#' ## convert old "disProg" to new "sts" data class
+#' salmonella <- disProg2sts(salmonella.agona)
+#' # specify and fit model: fixed geometric lag structure
+#' control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
+#'                            ar = list(f = addSeason2formula(~ 1)),
+#'                            family = "NegBinM", subset = 6:312)
+#' fit_salmonella <- profile_par_lag(salmonella, control_salmonella)
+#' summary(fit_salmonella)
+#' # 0.56 on first lag
+#' #
+#' # re-fit with Poisson lags:
+#' control_salmonella2 <- control_salmonella
+#' control_salmonella2$funct_lag = poisson_lag
+#' fit_salmonella2 <- profile_par_lag(salmonella, control_salmonella2)
+#' summary(fit_salmonella2)
+#' # leads to somewhat different decay and very slightly better AIC
+#'
 #' @export
 profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag = -10, upper_par_lag = 10,
                             return_full_cov = FALSE, reltol_par_lag = 1e-08, check.analyticals = FALSE){
@@ -227,6 +284,8 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' }
 #' \code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
 #' likelihood approach.
+#' @seealso \code{profile_par_lag} and \code{fit_par_lag} estimate \code{par_lag} in a profiling procedure. \code{profile_par_lag} is the
+#' recommended function, \code{fit_par_lag} may be quicker for complex models.
 #'
 #' @examples
 #' ## a simple univariate example:
@@ -235,12 +294,25 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' salmonella <- disProg2sts(salmonella.agona)
 #' # specify and fit model: fixed geometric lag structure
 #' # with weight 0.8 for first lag
+#' # par_lag is the logit of alpha:
+#' par_lag <- log(0.8/(1 - 0.8))
 #' control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
-#'                            ar = list(f = addSeason2formula(~ 1),
-#'                                      par_lag = 0.8),
-#'                            family = "NegBinM", subset = 6:312)
+#'                            ar = list(f = addSeason2formula(~ 1)),
+#'                            family = "NegBinM", subset = 6:312,
+#'                            par_lag = par_lag)
 #' fit_salmonella <- hhh4_lag(salmonella, control_salmonella)
 #' summary(fit_salmonella)
+#' # has indeed weight 0.8 on first lag
+#' #
+#' # re-fit with Poisson lags:
+#' par_lag2 <- log(1.2)
+#' control_salmonella2 <- control_salmonella
+#' control_salmonella2$funct_lag = poisson_lag
+#' control_salmonella2$par_lag <- par_lag2
+#' fit_salmonella2 <- hhh4_lag(salmonella, control_salmonella2)
+#' summary(fit_salmonella2)
+#' # the Poisson lag actually allows you to put more weight on
+#' # the second than on the first lag.
 #'
 #' @export
 hhh4_lag <- function (stsObj, control = list(

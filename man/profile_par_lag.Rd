@@ -43,6 +43,33 @@ which also includes par_lag.
 }
 \description{
 Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
-governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
-around it finds the optimal value of \code{par_lag}. See \code{?hhh4_lag} for details.
+governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{profile_par_lag}
+re-fits the model for different values of \code{par_lag} and finds the optimal value. See \code{?hhh4_lag} for details.
+NOTE: \code{fit_par_lag} serves essentially the same purpose, but is based on a grid of potential values for
+\code{par_lag} rather than optimization using \code{optim}. \code{profile_par_lag} is the recommended option, but
+\code{fit_par_lag} may be somethat quicker for complex models.
+}
+\examples{
+## a simple univariate example:
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+# specify and fit model: fixed geometric lag structure
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
+                           ar = list(f = addSeason2formula(~ 1)),
+                           family = "NegBinM", subset = 6:312)
+fit_salmonella <- profile_par_lag(salmonella, control_salmonella)
+summary(fit_salmonella)
+# 0.56 on first lag
+#
+# re-fit with Poisson lags:
+control_salmonella2 <- control_salmonella
+control_salmonella2$funct_lag = poisson_lag
+fit_salmonella2 <- profile_par_lag(salmonella, control_salmonella2)
+summary(fit_salmonella2)
+# leads to somewhat different decay and very slightly better AIC
+
+}
+\seealso{
+\code{hhh4_lag} for fitting models with fixed \code{par_lag}; \code{fit_par_lag} for grid-based optimization.
 }

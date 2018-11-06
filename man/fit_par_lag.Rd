@@ -12,6 +12,10 @@ fit_par_lag(stsObj, control, check.analyticals = FALSE, range_par,
 
 \item{use_update}{should results from previous values in range_par be used as starting value for next iteration (via \code{update})?}
 }
+\value{
+A list including the best model among all fitted ones (\code{best_mod}) and a vector of the AIC values obtained for the different
+values provided in \code{range_par} (\code{AICs})
+}
 \description{
 Wrapper around \code{hhh4_lag} to allow for profile likelihood estimation of the scalar parameter
 governing the lag structure. \code{hhh4_lag} can fit models with fixed lag decay parameter; \code{fit_par_lag} loops
@@ -54,4 +58,35 @@ allows for some additional elements in order to specify a distributed lag struct
   \item{\code{min_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed lags. Unlike in
   \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
 }
+}
+\examples{
+## a simple univariate example:
+data("salmonella.agona")
+## convert old "disProg" to new "sts" data class
+salmonella <- disProg2sts(salmonella.agona)
+# specify and fit model: fixed geometric lag structure
+control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
+                           ar = list(f = addSeason2formula(~ 1)),
+                           family = "NegBinM", subset = 6:312)
+# get a reasonable range of values for par_lag. par_lag is logit(p) in teh
+# geometric lag function
+grid_p <- seq(from = 0.01, to = 0.99, by = 0.02)
+grid_par_lag <- log(grid_p/(1 - grid_p))
+fit_salmonella <- fit_par_lag(salmonella, control_salmonella, range_par = grid_par_lag)
+summary(fit_salmonella$best_mod)
+plot(fit_salmonella$AICs, xlab = "p", ylab = "AIC")
+# 0.56 on first lag
+#
+# re-fit with Poisson lags:
+control_salmonella2 <- control_salmonella
+control_salmonella2$funct_lag = poisson_lag
+grid_p2 <- seq(from = 0.01, to = 2, by = 0.02)
+grid_par_lag2 <- log(grid_p2)
+fit_salmonella2 <- fit_par_lag(salmonella, control_salmonella2, range_par = grid_par_lag2)
+summary(fit_salmonella2$best_mod)
+# leads to somewhat different decay and very slightly better AIC
+}
+\seealso{
+\code{hhh4_lag} for fitting models with fixed \code{par_lag}; \code{profile_par_lag} for optimization using \code{optim}
+rather than avector \code{range_par} of potential values.
 }
