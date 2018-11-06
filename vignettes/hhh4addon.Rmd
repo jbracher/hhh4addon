@@ -40,10 +40,24 @@ $$
 \mu_{it} = \nu_{it} + \lambda_{it}\sum_{d = 1}^D \lfloor u_d\rfloor X_{t - d} + \phi_{it}\sum_{j\neq i}\sum_{d = 1}^D w_{ji}\lfloor u_d\rfloor X_{j, t - d}
 $$
 
-where the weights $u_d$ are normalized such that $\sum_{d = 1}^D \lfloor u_d\rfloor = 1$ before they enter. This means that instead of the previous observation $X_{t - 1}$ a weighted average of the $D$ preceding observations $X_{t - D},\dots, X_{t - 1}$ enters. Currently only a geometric, i.e. exponentially decaying lag structure is implemented:
+where the weights $u_d$ are normalized such that $\sum_{d = 1}^D \lfloor u_d\rfloor = 1$ before they enter. This means that instead of the previous observation $X_{t - 1}$ a weighted average of the $D$ preceding observations $X_{t - D},\dots, X_{t - 1}$ enters. Currently three lag types are implemented. The default is a geometric, i.e. exponentially decaying lag structure (implemented in `geometric_lag`):
 $$
-u_d = p(1 - p)^{d - 1}
+u_d = \alpha(1 - \alpha)^{d - 1}
 $$
+The `par_lag` parameter of the function `geometric_lag` is not $\alpha$ but $logit(\alpha)$, as this allows us to avoid constraints in the optimization procedure.
+
+A second option are Poisson lags (implemented in `poisson_lag`):
+$$
+u_d = \frac{\alpha^{d - 1}}{(d - 1)!}\exp(-\alpha)
+$$
+The `par_lag` parameter of the function `poisson_lag` is $\log(\alpha)$ here, again to avoid constraints in the optimization procedure.
+
+The third pre-implemented lag structure is a simple AR(2) version (`ar2_lag`) with
+$$
+u_1 = \alpha;\ \ \ u_2 = 1 - \alpha.
+$$
+where again the `par_lag` parameter of the function `ar2_lag` is $logit(\alpha)$.
+
 We exemplify this with an with a simple univariate analysis of the `salmonella` data from `surveillance`. All syntax also translates to the multivariate case.
 ```{r, fig.show='hold'}
 library(surveillance, quietly = TRUE)
@@ -64,43 +78,49 @@ fit_salmonella <- hhh4(salmonella, control_salmonella)
 AIC(fit_salmonella)
 ```
 
-When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available which allows for some additional specifications in the `control` list. Specifically the following arguments can be specified in the `ar` (and potentially `ne`) components:
+When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available which allows for some additional specifications in the `control` list. Specifically the following arguments can be specified in the `control` list:
 
-- `use_distributed_lag`: de-activates the usual `lag` argument and activates the use of the three following arguments
 - `funct_lag`: a function to compute distributed lags from simple first lags given some parameter value and a maximum number of lags. Currently only the default function `geometric_lag` is implemented.
 - `par_lag`: the parameter entering into `funct_lag`; for `geometric_lag` this is $p$ (which corresponds to the un-normalized weight of the first lag)
-- `max_lag`: the maximum number of lags entering into `funct_lag`
+- `min_lag`: the lowest lag to be included; should be left at 1 in most cases
+- `max_lag`: the highest lag to be included. Note that the `subset` specified in `control`needs to be compatible with `max_lag` (`subset[1]` needs to be larger than `max_lag`).
 
 The folowing code allows to fit a model with a geometric lag structure, a fixed value of $p = 0.8$ and five lags. Note that for such a model we can only use the data from week 6 onwards for fitting (the lagged observations are not available for weeks 1 through 5).
 
 ```{r}
+par_lag_0.8 <- log(0.8/(1 - 0.8))
 control_salmonella.08 <- list(end = list(f = addSeason2formula(~ 1)),
-                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      par_lag = 0.8, max_lag = 5),
+                            ar = list(f = addSeason2formula(~ 1)),
+                            par_lag = par_lag_0.8, max_lag = 5,
                             family = "NegBinM", subset = 6:312)
 fit_salmonella.08 <- hhh4_lag(salmonella, control_salmonella.08)
 plot(fit_salmonella.08)
-AIC(fit_salmonella.08) # 1225.157
+AIC(fit_salmonella.08)
 ```
 
-We can see that this model is better than the above model with first lags. To estimate $p$ from the data we can use wrapper `fit_par_lag` which evaluates `hhh4_lag` for a set of values for `par_lag` provided in an argument `range_par`:
+We can see that this model is better than the above model with first lags. To estimate $\alpha$ from the data we can use the wrapper `profile_par_lag` which re-fits the model for different values of $\alpha$ and uses `optim()`to find the optimal one:
 
 ```{r}
-control_salmonella.flex <- list(end = list(f = addSeason2formula(~ 1)),
-                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      max_lag = 5),
+control_salmonella.profile <- list(end = list(f = addSeason2formula(~ 1)),
+                            ar = list(f = addSeason2formula(~ 1)),
+                            max_lag = 5,
                             family = "NegBinM", subset = 6:312)
-range_par <- seq(0.1, 1, by = 0.01)
-fit_salmonella.flex <- fit_par_lag(salmonella, control_salmonella.flex, range_par = range_par)
-```
-The return object of this function contains two objects: the `hhh4` object from the fit with the lowest AIC (`best_mod`) and a vector giving the AIC values for models using the different values of par_lag.
-```{r}
-plot(fit_salmonella.flex$best_mod)
-summary(fit_salmonella.flex$best_mod)
-plot(range_par, fit_salmonella.flex$AICs, type = "l", xlab = "p", ylab = "AIC")
-min(fit_salmonella.flex$AICs)
+fit_salmonella.profile <- profile_par_lag(salmonella, control_salmonella.profile)
+AIC(fit_salmonella.profile)
+summary(fit_salmonella.profile)
 ```
 The best fit is attained with a model using $p = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one.
+
+An (older) alternative in order to estimate $\alpha$ is `fit_par_lag` which instead of applying `optim` fits the model for a set of values for `alpha` provided by the user:
+```{r}
+grid_alpha <- seq(from = 0.01, to = 0.99, by = 0.02)
+grid_par_lag <- log(grid_alpha/(1 - grid_alpha)) # move to logit scale
+fit_salmonella.grid <- fit_par_lag(salmonella, control_salmonella.profile, range_par = grid_par_lag)
+```
+This function returns a list containing the best model and the AIC values of the models corresponding to the different values of $\alpha$.
+```{r}
+plot(grid_alpha, fit_salmonella.grid$AICs, type = "l", xlab = expression(alpha), ylab = "AIC")
+```
 
 A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated. This is due to the loss of one degree of freedom.
 ```{r}
@@ -110,8 +130,51 @@ control_salmonella.056 <- list(end = list(f = addSeason2formula(~ 1)),
                             family = "NegBinM", subset = 6:312)
 fit_salmonella.056 <- hhh4_lag(salmonella, control_salmonella.056)
 AIC(fit_salmonella.056)
-AIC(fit_salmonella.flex$best_mod)
+AIC(fit_salmonella.profile)
+AIC(fit_salmonella.grid$best_mod)
 ```
+
+To use other lag weighting functions the `funct_lag` argument needs to be specified explicitly. We fit models with Poisson and AR(2) lags:
+```{r}
+# Poisson lags:
+control_salmonella_pl <- control_salmonella
+control_salmonella_pl$funct_lag <- poisson_lag
+fit_salmonella_pl <- profile_par_lag(salmonella, control_salmonella_pl)
+summary(fit_salmonella_pl)
+# AR(2) lags:
+control_salmonella_ar2 <- control_salmonella
+control_salmonella_ar2$funct_lag <- ar2_lag
+fit_salmonella_ar2 <- profile_par_lag(salmonella, control_salmonella_ar2)
+summary(fit_salmonella_ar2)
+```
+
+Lastly, it is possible to specify a custom function for the lag weighting. It has to take scalar arguments `par_lag, min_lag, max_lag` and return a weight vector of length `max_lag` (i.e. its elements need to sum up to 1). We exemplify this with a function which assigns linearly decreasing weights:
+```{r}
+lin_weights <- function(par_lag, min_lag, max_lag){
+  neg_slope <- exp(par_lag) # par_lag corresponds to the log of the negative slope of the un-normalized weights
+  weights0 <- c(rep(0, min_lag - 1), 10 - neg_slope*c(0:(max_lag - min_lag)))
+  weights0 <- pmax(weights0, 0)
+  weights <- weights0/sum(weights0)
+  return(weights)
+}
+# evaluate for some example values:
+lin_weights(par_lag = 0.5, min_lag = 1, max_lag = 5)
+lin_weights(par_lag = 1, min_lag = 1, max_lag = 5)
+lin_weights(par_lag = 2, min_lag = 1, max_lag = 5)
+lin_weights(par_lag = 2, min_lag = 2, max_lag = 5)
+```
+
+This can then be plugged into for instance the `profile_par_lag`function:
+```{r}
+control_salmonella_lin <- control_salmonella
+control_salmonella_lin$funct_lag <- lin_weights
+control_salmonella_lin$max_lag <- 3 # does not work so well with max_lag = 5...
+fit_salmonella.lin <- profile_par_lag(salmonella, control_salmonella_lin)
+summary(fit_salmonella.lin)
+plot(fit_salmonella.lin$distr_lag, type = "l", xlab = "lag", ylab = "lag weight")
+```
+
+This leads indeed to linearly decaying weights. Note however, that this model specification generally does not behave well, which is why it is not included in the pacakge.
 
 ## Predictive and periodically stationary moments
 
