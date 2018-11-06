@@ -21,10 +21,10 @@ distr_lag <- function(hhh4Obj){
     stop("structure of distributed lags can only be extracted from objects of class hhh4lag.")
   }
 
-  list(funct_lag = hhh4Obj$control$funct_lag,
-       par_lag = hhh4Obj$control$par_lag,
-       min_lag = hhh4Obj$control$min_lag,
-       max_lag = hhh4Obj$control$max_lag)
+  ret <- list(funct_lag = hhh4Obj$control$funct_lag,
+              par_lag = hhh4Obj$control$par_lag,
+              min_lag = hhh4Obj$control$min_lag,
+              max_lag = hhh4Obj$control$max_lag)
 
   return(ret)
 }

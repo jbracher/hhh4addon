@@ -25,23 +25,6 @@
 #' around it and tries a set of possible parameters provided in the argument \code{range_par}. NOTE: this will
 #' soon be replaced by \code{profile_par_lag} which does the same, but using \code{optim..., method = "Brent", ...)}.
 #'
-#'
-#' @param{stsObj,control,check.analyticals As in \code{surveillance::hhh4}, but \code{control}
-#' allows for some additional elements in order to specify a distributed lag structure:
-#' \itemize{
-#'   \item{\code{funct_lag}}{ Function to compute the lag weights \eqn{u_q} (see details) depending on a scalar
-#'   parameter \code{par_lag}. The function has to take the
-#'   following arguments:
-#'   \itemize{
-#'   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
-#'   take any value in the real numbers}
-#'   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
-#'   Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
-#'   }}
-#'   \item{\code{min_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed lags. Unlike in
-#'   \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
-#' }}
-#'
 #' In this modified version of \code{surveillance::hhh4}, distributed lags can be specified by
 #' additional elements \code{control} argument:
 #' \itemize{
@@ -58,12 +41,25 @@
 #'   \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
 #'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
 #'   \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
-#'   }}
-#'   \item{\code{max_lag}}{ Specification of the \code{max_lag} argument passed to funct_lag} to compute the lags.
 #' }
 #' Unlike in \code{hhh4_lag} the par_lag argument for \code{funct_lag} is not specified directly
 #' by the user; instead the model is re-fit for each parameter value provided in \code{range_par}.
 #'
+#'#' @param{stsObj,control,check.analyticals} As in \code{surveillance::hhh4}, but \code{control}
+#' allows for some additional elements in order to specify a distributed lag structure:
+#' \itemize{
+#'   \item{\code{funct_lag}}{ Function to compute the lag weights \eqn{u_q} (see details) depending on a scalar
+#'   parameter \code{par_lag}. The function has to take the
+#'   following arguments:
+#'   \itemize{
+#'   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
+#'   take any value in the real numbers}
+#'   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
+#'   Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
+#'   }}
+#'   \item{\code{min_lag, max_lag}}{ Specification of the arguments passed to funct_lag} to compute the distributed lags. Unlike in
+#'   \code{hhh4_lag}, \code{par_lag} is not to be specified as it is estimated from the data.
+#' }
 #' @param range_par a vector of values to try for the \code{par_lag} argument of \code{funct_lag}
 #' @param use_update should results from previous values in range_par be used as starting value for next iteration (via \code{update})?
 #' @export
@@ -222,12 +218,12 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #'   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
 #'   take any value in the real numbers}
 #'   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
-#'   Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.
-#'   #'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
-#'   \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)}
+#'   Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
 #'   }}
 #'   \item{\code{par_lag, min_lag, max_lag}}{ Specification of the arguments
 #'   passed to funct_lag} to compute the distributed  lags.
+#'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
+#'   \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
 #' }
 #' \code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
 #' likelihood approach.
