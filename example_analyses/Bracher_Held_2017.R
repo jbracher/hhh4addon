@@ -17,6 +17,8 @@ library(forecast)
 ######################################################
 # Getting and plotting the data:
 data("noroBL")
+noroBL <- noroBL[1:312, ] # restrict to subset used in article
+
 par(mfrow = c(1, 2))
 plot(noroBL@observed[, 1], type = "h", main = "(a) Bremen", las = 1,
      xlab = "time", ylab = "weekly no. of cases", axes = FALSE); box()
@@ -36,35 +38,33 @@ offsets_ne <- matrix(c(67, 790), ncol = 2, nrow = nrow(noroBL@observed), byrow =
 x <- matrix(1*((1:nrow(noroBL@observed))%%52 %in% c(0, 1)), ncol = 2, nrow = nrow(noroBL@observed))
 x_ne <- x; x_ne[,2] <- 0
 control_lg <- list(end = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE), S = c(1, 1))),
-                   ar = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE) + fe(x, unitSpecific = TRUE), S = c(1, 1)), par_lag = 1, use_distr_lag = TRUE),
-                   ne = list(f = addSeason2formula(~ 1, S = 1), par_lag = 1, use_distr_lag = TRUE, offset = offsets_ne),
+                   ar = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE) + fe(x, unitSpecific = TRUE), S = c(1, 1))),
+                   ne = list(f = addSeason2formula(~ 1, S = 1), offset = offsets_ne),
                    subset = 6:nrow(noroBL@observed), family = "NegBinM")
-# defining the range for profiling of p:
-range_par <- seq(0.1, 1, 0.01)
 # fit model:
-fit_lg <- hhh4addon:::fit_par_lag(noroBL, control_lg, range_par = range_par)
+fit_lg <- profile_par_lag(noroBL, control_lg)
 
 # get stationary moments:
-stat_mom_lg <- hhh4addon:::stationary_moments(fit_lg$best_mod, return_mu_decomposed = TRUE, return_Sigma = TRUE, n_seasons = 2)
+stat_mom_lg <- hhh4addon:::stationary_moments(fit_lg, return_mu_decomposed = TRUE, return_Sigma = TRUE, n_seasons = 2)
 
 # Plots of fit (simplified, the plots in the article are notproduced by the generic functions):
-plot(fit_lg$best_mod, unit = 1)
-plot(fit_lg$best_mod, unit = 2)
+plot(fit_lg, unit = 1)
+plot(fit_lg, unit = 2)
 
 # Plot of stationary means and observations:
-hhh4addon:::plotHHH4lag_stationary(fit_lg$best_mod, unit = 1)
-hhh4addon:::plotHHH4lag_stationary(fit_lg$best_mod, unit = 2)
+hhh4addon:::plotHHH4lag_stationary(fit_lg, unit = 1)
+hhh4addon:::plotHHH4lag_stationary(fit_lg, unit = 2)
 
 # fit simpler models:
 # no cross-lags:
 control_lg_ar <- list(end = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE), S = c(1, 1))),
-                      ar = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE) + fe(x, unitSpecific = TRUE), S = c(1, 1)), par_lag = 1, use_distr_lag = TRUE),
+                      ar = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE) + fe(x, unitSpecific = TRUE), S = c(1, 1))),
                       subset = 6:nrow(noroBL@observed), family = "NegBinM")
-fit_lg_ar <- hhh4addon:::fit_par_lag(noroBL, control_lg_ar, range_par = range_par)
+fit_lg_ar <- profile_par_lag(noroBL, control_lg_ar)
 # no geometric lags:
 control_l1 <- list(end = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE), S = c(1, 1))),
                    ar = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific = TRUE) + fe(x, unitSpecific = TRUE), S = c(1, 1))),
-                   ne = list(f = addSeason2formula(~ 1, S = 1), par_lag = 1, use_distr_lag = TRUE, offset = offsets_ne),
+                   ne = list(f = addSeason2formula(~ 1, S = 1), offset = offsets_ne),
                    subset = 6:nrow(noroBL@observed), family = "NegBinM")
 fit_l1 <- hhh4(noroBL, control_l1)
 # neither cross-lags nor geometric lags:
@@ -74,8 +74,8 @@ control_l1_ar <- list(end = list(f = addSeason2formula(~ -1 + fe(1, unitSpecific
 fit_l1_ar <- hhh4(noroBL, control_l1_ar)
 
 # compare the four AIC values
-AIC(fit_lg$best_mod)
-AIC(fit_lg_ar$best_mod)
+AIC(fit_lg)
+AIC(fit_lg_ar)
 AIC(fit_l1)
 AIC(fit_l1_ar)
 
@@ -107,11 +107,11 @@ ominus <- function(a, b, l){
 }
 
 # get parameters:
-param <- hhh4addon:::lambda_tilde_complex_neighbourhood(fit_lg$best_mod, periodic = TRUE)
+param <- hhh4addon:::lambda_tilde_complex_neighbourhood(fit_lg, periodic = TRUE)
 mu <- stat_mom_lg$mu_matrix
 n_units <- ncol(mu)
 length_of_period <- 52
-max_lag <- length(fit_lg$best_mod$distr_lag$ar)
+max_lag <- length(fit_lg$distr_lag)
 timepoints <- seq(from = 2011 + 6/52, by = 1/52, length.out = 308)
 
 # compute the decomposition of the mean:
@@ -222,7 +222,7 @@ plot(NULL, xlim = c(1, 52), ylim = c(0, 80), xlab = "calendar week t", ylab = ex
      main = "(e) Approximated stationary distributions, Bremen")
 abline(v = 27, col = "grey")
 axis(1, labels = labels_weeks, at = at_weeks); axis(2, las = 1); box()
-stat_mom_lg_oneS <- hhh4addon:::stationary_moments(fit_lg$best_mod, return_mu_decomposed = TRUE, return_Sigma = TRUE,
+stat_mom_lg_oneS <- stationary_moments(fit_lg, return_mu_decomposed = TRUE, return_Sigma = TRUE,
                                                    start = 27)
 fanplot_stationary(stat_mom_lg_oneS, unit = 1, timepoints = 1:52, add = TRUE, mean_lty = "solid", mean_col = NA)
 matr_bremen2 <- matrix(c(rep(NA, 26), noroBL@observed[, "Bremen"], rep(NA, 26)), byrow = TRUE, ncol = 52)
@@ -343,15 +343,14 @@ lines(ll2, col = col_lag2, lwd = 2, lty = lty_lag2)
 par(mfrow = c(2, 2), mar = c(4, 4.5, 3, 1))
 
 # compute the conditional variances (given past):
-vars_fitted <- exp(-fit_lg$best_mod$coefficients[c("-log(overdisp.Bremen)",
-                                                   "-log(overdisp.Lower.Saxony)")])*fit_lg$best_mod$fitted.values^2 +
-  fit_lg$best_mod$fitted.values
+vars_fitted <- exp(-fit_lg$coefficients[c("-log(overdisp.Bremen)",
+                                                   "-log(overdisp.Lower.Saxony)")])*fit_lg$fitted.values^2 +
+  fit_lg$fitted.values
 # compute Pearson residuals:
-res_pearson_fitted <- residuals(fit_lg$best_mod, type = "response")/sqrt(vars_fitted)
+res_pearson_fitted <- residuals(fit_lg, type = "response")/sqrt(vars_fitted)
 
 # compute Pearson residuals relative to stationary means and variances
-stat_mom_lg2 <- hhh4addon:::stationary_moments(fit_lg$best_mod,
-                                               n_seasons = 6)
+stat_mom_lg2 <- stationary_moments(fit_lg, n_seasons = 7)
 res_pearson_stationary <- ((noroBL@observed - stat_mom_lg2$mu_matrix)/sqrt(stat_mom_lg2$var_matrix))[-(1:5), ]
 
 # compute auto-correlations in the two types of residuals:
