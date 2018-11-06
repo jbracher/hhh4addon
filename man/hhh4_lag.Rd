@@ -26,12 +26,12 @@ but with the following additional elements in the \code{control} argument in ord
   \item{\code{par_lag}}{ A scalar parameter to steer \eqn{u_q}. It should be specified in a way which allows it to
   take any value in the real numbers}
   \item{\code{min_lag,max_lag}}{ Minimum and maximum lags; e.g. \code{min_lag = 3, max_lag = 6} will assign all weights to lags 3 through 6.
-  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.
-  #'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
-  \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)}
+  Usually \code{min_lag} is set to 1, higher values can be useful for direct forecasting at higher horizons.}
   }}
   \item{\code{par_lag, min_lag, max_lag}}{ Specification of the arguments
   passed to funct_lag} to compute the distributed  lags.
+  Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
+  \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
 }
 \code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
 likelihood approach.}

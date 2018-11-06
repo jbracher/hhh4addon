@@ -4,7 +4,7 @@
 \alias{update.hhh4lag}
 \title{A modified version of \code{update.hhh4}}
 \usage{
-update.hhh4lag(object, ..., S = NULL, subset.upper = NULL,
+\method{update}{hhh4lag}(object, ..., S = NULL, subset.upper = NULL,
   use.estimates = object$convergence, evaluate = TRUE)
 }
 \description{
