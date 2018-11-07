@@ -181,7 +181,8 @@ extend_M <- function(ana_mom, nu, phi, n_units, start, n_timepoints){
     for(i in n_lags:n_timepoints){
       # fill block diagonal:
       inds_blockdiag <- seq(to = i*n_units + 1, length.out = n_units*n_lags)
-      ind_ana_mom <- i # no further re-ordering necessary here
+      ind_ana_mom <- ifelse(i%%length_of_period == 0,
+                            length_of_period, i%%length_of_period)
       extended_M[1, inds_blockdiag] <- extended_M[inds_blockdiag, 1] <- ana_mom[1, -1, ind_ana_mom]
       extended_M[inds_blockdiag, inds_blockdiag] <- ana_mom[-1, -1,ind_ana_mom]
       # fill remaining parts:
