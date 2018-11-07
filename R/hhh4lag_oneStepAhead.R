@@ -30,6 +30,7 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                          cores = 1) # if which.start="final", the predictions
                                     # can be computed in parallel
 {
+  message("Lag weights are not re-estimated for the one-step-ahead forecasts.")
   # if hhh4 model without distributed lags: pass to regular oneStepAhead function.
   if(class(result)[1] == "hhh4"){
     return(surveillance::oneStepAhead(result = result, tp = tp, type = type, which.start = which.start,

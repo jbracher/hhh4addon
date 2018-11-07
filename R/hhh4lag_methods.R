@@ -66,6 +66,7 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
 #' @export
 summary.hhh4lag <- function (object, maxEV = FALSE, ...)
 {
+  if(maxEV) warning("maxEV not defined for models with higher-order lags.") #BJ
   ## do not summarize results in case of non-convergence
   if (!object$convergence) {
     cat('Results are not reliable! Try different starting values.\n')
@@ -79,7 +80,7 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
                 AIC   = AIC(object),
                 BIC   = BIC(object),
                 # use_distr_lag = object$control$use_distr_lag,
-                maxEV_range = if (maxEV) unique(range(getMaxEV(object))),
+                maxEV_range = if (maxEV) NA, #BJ
                 distr_lag = object$distr_lag))
   class(ret) <- "summary.hhh4lag"
   return(ret)
@@ -157,11 +158,13 @@ logLik.hhh4lag <- function(object, ...)
 #' A modified version of \code{update.hhh4}
 #'
 #' A modified version of \code{update.hhh4} to deal with the added
-#' features of the \code{hhh4lag} class.
+#' features of the \code{hhh4lag} class. Note that the lag weights
+#' are not re-estimated!
 #' @export
-update.hhh4lag <- function (object, ..., S = NULL, subset.upper = NULL,
+update.hhh4lag <- function (object, refit_par_lag, ..., S = NULL, subset.upper = NULL,
                          use.estimates = object$convergence, evaluate = TRUE)
 {
+  message("Note that update.hhh4lag does not re-estimate the lag weights.")
   control <- object$control
 
   ## first modify the control list according to the components in ...
@@ -219,7 +222,6 @@ update.hhh4lag <- function (object, ..., S = NULL, subset.upper = NULL,
       stop("'subset.upper' is smaller than the lower bound of 'subset'")
     control$subset <- control$subset[1L]:subset.upper
   }
-
 
   ## fit the updated model or just return the modified control list
   if (evaluate) {
