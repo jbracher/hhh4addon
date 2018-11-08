@@ -132,7 +132,9 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   }
 
   # check whether everything went right:
-  if(any(abs(as.vector(meanHHH_temp$mean[subset[-(1:max_lag)], , drop = FALSE]) - as.vector(means_from_lambda_tilde[-(1:max_lag), , drop = FALSE])) > 0.00001)){
+  if(any(abs(as.vector(meanHHH_temp$mean[subset[-(1:max_lag)], , drop = FALSE]) -
+             as.vector(means_from_lambda_tilde[-(1:max_lag), , drop = FALSE])) > 0.00001, na.rm = TRUE)){
+    # added na.rm = TRUE so that this works for models where the last observations are not yet available.
     stop("Extracted Lambda is not in agreement with fitted values returned by surveillance:::meanHHH.
          Model does not seem to be covered by extraction algorithm")
   }# else{print("Equality check in lambda_tilde_complex_neighbourhood passed")}
