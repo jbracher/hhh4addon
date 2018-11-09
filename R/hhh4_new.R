@@ -103,7 +103,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
     mod_temp <- if(is.null(mod_temp) || mod_temp$convergence == FALSE || use_update == FALSE){
       hhh4_lag(stsObj, control, check.analyticals)
     }else{
-      update(mod_temp, par_lag = control$par_lag)
+      update(mod_temp, par_lag = control$par_lag, warning_weights = FALSE)
     }
     if(mod_temp$convergence == FALSE & use_update){ # catch convergence errors by trying to fit without update
       warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
