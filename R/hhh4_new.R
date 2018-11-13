@@ -205,7 +205,7 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
   best_mod$dim["fixed"] <- best_mod$dim["fixed"] + 1 # + 1 for decay paramter
   if(return_full_cov){
     cov = numeric_fisher_hhh4lag(best_mod)
-    best_mod$se_par_lag <- cov["par_lag", "par_lag"]
+    best_mod$se_par_lag <- sqrt(cov["par_lag", "par_lag"])
     return(list(best_mod = best_mod, cov = cov))
   }else{
     best_mod$se_par_lag <- NA
