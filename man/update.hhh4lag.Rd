@@ -4,10 +4,12 @@
 \alias{update.hhh4lag}
 \title{A modified version of \code{update.hhh4}}
 \usage{
-update.hhh4lag(object, ..., S = NULL, subset.upper = NULL,
-  use.estimates = object$convergence, evaluate = TRUE)
+\method{update}{hhh4lag}(object, refit_par_lag, ..., S = NULL,
+  subset.upper = NULL, use.estimates = object$convergence,
+  evaluate = TRUE, warning_weights = TRUE)
 }
 \description{
 A modified version of \code{update.hhh4} to deal with the added
-features of the \code{hhh4lag} class.
+features of the \code{hhh4lag} class. Note that the lag weights
+are not re-estimated!
 }

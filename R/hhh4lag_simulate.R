@@ -11,7 +11,15 @@
 ################################################################################
 
 
-### Simulate-method for hhh4-objects
+#' Simulate "hhh4_lag" Count Time Series
+#'
+#' This function is the equivalent of \code{surveillance::simulate.hhh4} for model fits of class
+#' \code{hhh4lag}, obtained from \code{hhh4_lag} or \code{profile_par_lag}. The arguments are the
+#' same as in \code{surveillance::simulate.hhh4}, the only difference being that \code{y.start}
+#' needs to be a matrix with \code{object$control$max_lag} rows and \code{object$nUnit} columns.
+#'
+#' This function is still being tested!!!
+#' @export
 simulate.hhh4lag <- function (object, # result from a call to hhh4
                               nsim=1, # number of replicates to simulate
                               seed=NULL,
@@ -56,8 +64,8 @@ simulate.hhh4lag <- function (object, # result from a call to hhh4
     if (is.vector(y.start)) y.start <- t(y.start)
     if (ncol(y.start) != nUnits)
       stop(sQuote("y.start"), " must have nUnits=", nUnits, " columns")
-    if (nrow(y.start) < maxlag)
-      stop("need 'y.start' values for lag=", maxlag, " initial time points")
+    if (nrow(y.start) != maxlag)
+      stop("need 'y.start' values for lag=", maxlag, " initial time points (provide a matrix with ", maxlag, " rows).")
   }
 
   ## get fitted exppreds nu_it, phi_it, lambda_it (incl. offsets, t in subset)
