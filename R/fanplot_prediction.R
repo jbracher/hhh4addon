@@ -58,7 +58,7 @@ interpolate_qnbinom <- function(p, ...){
 fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
                                interpolate_probs = TRUE, add_observed = TRUE, add_pred_means = TRUE,
                                fan.col = colorRampPalette(c("darkgreen", "gray90")),
-                               pt.col = "red", pt.cex = 0.3, l.col = "black",
+                               pt.col = "red", pt.cex = 0.6, l.col = "black",
                                mean_col = "black", mean_lty = "dashed",
                                ln = NULL, rlab = NULL, add = FALSE,
                                add_legend = FALSE, width_legend = 0.1*(max(pred$timepoints) - min(pred$timepoints))/pred$freq,
@@ -127,12 +127,13 @@ fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
   par(bty = "o")
   # add means:
   if(add_pred_means){
-    lines(timepoints_calendar0, c(pred$condition[unit], mu), col = mean_col, lty = mean_lty)
+    lines(timepoints_calendar0, c(pred$condition[nrow(pred$condition), unit], mu),
+          col = mean_col, lty = mean_lty)
   }
   # add observed:
   if(add_observed){
-    rlz <- c(pred$condition[unit], pred$realizations_matrix[, unit])
-    lines(timepoints_calendar0, rlz, lty=2, col = l.col)
+    rlz <- c(pred$condition[nrow(pred$condition), unit], pred$realizations_matrix[, unit])
+    # lines(timepoints_calendar0, rlz, lty = 2, col = l.col)
     points(timepoints_calendar0, rlz, pch = 19, cex = pt.cex, col = pt.col)
   }
   if(return_matrix){
