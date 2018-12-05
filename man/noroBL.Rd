@@ -6,11 +6,35 @@
 \title{Data set on norovirus gastroenteritis in Bremen and Lower Saxony}
 \source{
 Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+
+Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+
+Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+
+Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin.
+
+Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin.
 }
 \description{
-Case counts of noroviral gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+Case counts of norovirus gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+
+Case counts of rotavirus gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+
+Case counts of campylobacteriosis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+
+Case counts of norovirus gastroenteritis in the twelve districts of Berlin, Germany, 2011-2017; stored as an sts object
+
+Case counts of rotavirus gastroenteritis in the twelve districts of Berlin, Germany, 2011-2017; stored as an sts object
 }
 \author{
+Johannes Bracher
+
+Johannes Bracher
+
+Johannes Bracher
+
+Johannes Bracher
+
 Johannes Bracher
 }
 \keyword{data}

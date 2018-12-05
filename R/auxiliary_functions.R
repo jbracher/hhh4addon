@@ -1,11 +1,56 @@
 #' Data set on norovirus gastroenteritis in Bremen and Lower Saxony
 #'
-#' Case counts of noroviral gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+#' Case counts of norovirus gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
 #'
 #' @name noroBL
 #' @docType data
 #' @author Johannes Bracher
 #' @source Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+#' @keywords data
+NULL
+
+#' Data set on rotavirus gastroenteritis in Bremen and Lower Saxony
+#'
+#' Case counts of rotavirus gastroenteritis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+#'
+#' @name noroBL
+#' @docType data
+#' @author Johannes Bracher
+#' @source Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+#' @keywords data
+NULL
+
+#' Data set on campylobacteriosis in Bremen and Lower Saxony
+#'
+#' Case counts of campylobacteriosis in the German states of Bremen and Lower Saxony, 2011-2017; stored as an sts object
+#'
+#' @name noroBL
+#' @docType data
+#' @author Johannes Bracher
+#' @source Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin as of 30 May 2017.
+#' @keywords data
+NULL
+
+
+#' Data set on norovirus in Berlin
+#'
+#' Case counts of norovirus gastroenteritis in the twelve districts of Berlin, Germany, 2011-2017; stored as an sts object
+#'
+#' @name noroBL
+#' @docType data
+#' @author Johannes Bracher
+#' @source Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin.
+#' @keywords data
+NULL
+
+#' Data set on rotavirus in Berlin
+#'
+#' Case counts of rotavirus gastroenteritis in the twelve districts of Berlin, Germany, 2011-2017; stored as an sts object
+#'
+#' @name noroBL
+#' @docType data
+#' @author Johannes Bracher
+#' @source Surveillance counts retrieved from SurvStat@RKI 2.0 service (https://survstat.rki.de), Robert Koch Institute, Berlin.
 #' @keywords data
 NULL
 
