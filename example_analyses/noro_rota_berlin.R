@@ -10,8 +10,10 @@
 # get and format data:
 library(surveillance)
 library(hhh4addon)
+library(RColorBrewer)
 
 setwd("/home/johannes/Documents/hhh4predict/Theory/Article_Theory/data_analysis")
+# The file auxiliary functions.R needs to be available (equally available in example_analyses.R)
 source("auxiliary_functions.R")
 
 library(hhh4contacts)
@@ -25,12 +27,18 @@ rotaBE@neighbourhood <- rotaBE@neighbourhood + 1
 data <- list(noro = noroBE, rota = rotaBE)
 names_diseases <- names(data)
 
+library(RColorBrewer)
+cols_model_versions <- brewer.pal(8, "Dark2")[1:4]
+cols_lag_structures <- brewer.pal(8, "Dark2")[c(8, 5:7)]
+
 #########################################
 # fit models:
 
 # specify controls:
 names_model_versions <- c("full", "simple_seas", "no_cross", "neither")
 names_lag_structures <- c("ar1", "ar2", "geom", "pois")
+cols_model_versions <- brewer.pal(8, "Dark2")[1:4]
+cols_lag_structures <- brewer.pal(8, "Dark2")[c(8, 5:7)]
 
 # define variable for Christmas breaks:
 christmas <- numeric(nrow(noroBE@observed))
@@ -251,11 +259,11 @@ for(disease in names_diseases){
 }
 
 # choose which model to display:
-model_version <- "no_cross"
+model_version <- "full"
 cols_lag_structures <- c("black", "orange", "purple", "chartreuse3")
 lwd_weights <- 2
-unit1 <- 1
-unit2 <- 2
+unit1 <- "pank"
+unit2 <- "span"
 
 par(mfrow = c(2, 2))
 myplot_acf(pearson_resids$noro$ar1[[model_version]], unit = unit1, main = paste("(a) Norovirus,", unit1),
@@ -298,30 +306,79 @@ myplot_acf(pearson_resids$rota$pois[[model_version]], unit = unit2,
 ##########
 # New Pearson residuals relative to stationary moments
 library(RColorBrewer)
-cols_model_versions <- brewer.pal(8, "Dark2")[1:4]
-cols_lag_structures <- brewer.pal(8, "Dark2")[c(8, 5:7)]
 
-par(mfrow = c(2, 2), las = 1, font.main = 1, family = "serif")
-plot_sm_bands(sm_of_means, emp_mom, "rota", "full", "geom", "pank", col = cols_model_versions[1],
-              main = "(a) Rotavirus, Pankow")
-legend("topright", legend = c("model (a), geometric lags", "model (b), geometric lags"),
-       col = cols_model_versions[1:2], lty = 1, bty = "n")
-plot_sm_bands(sm_of_means, emp_mom, "rota", "simple_seas", "geom", "pank",
-              col = cols_model_versions[2], add = TRUE)
+# noro
 
-plot_sm_bands(sm_of_means, emp_mom, "rota", "full", "geom", "span", col = cols_model_versions[1],
-              main = "(a) Rotavirus, Spandau")
-plot_sm_bands(sm_of_means, emp_mom, "rota", "simple_seas", "geom", "span",
-              col = cols_model_versions[2], add = TRUE)
+par(mar = c(1, 4.5, 2, 1), font.main = 1, family = "serif", las = 1)
+layout_matr <- matrix(c(1, 2,
+                        1, 2,
+                        1, 2,
+                        3, 4,
+                        3, 4,
+                        3, 4,
+                        5, 6,
+                        5, 6,
+                        5, 6,
+                        5, 6#,
+                        # 7, 7,
+                        # 7, 7
+), byrow = TRUE, ncol = 2)
+layout(layout_matr)
+ylim_mu <- c(0, 25)
+ylim_sd <- c(0, 15)
 
-par(mar = c(4, 4.2, 0, 1))
+plot_stat_means(stat_mom = sm, emp_mom = emp_mom, "noro", unit = unit1, ylim = ylim_mu)
+title("(a) Pankow")
+legend("top", col = c(cols_model_versions[1:4], "black"),
+       legend = c("Model (a)   ", "Model (b)",
+                  "Model (c)   ", "Model (d)"),
+       lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA), ncol = 2, cex = 1, bty = "n")
+
+plot_stat_means(stat_mom = sm, emp_mom = emp_mom, "noro", unit = unit2, ylim = ylim_mu)
+title("(b) Spandau")
+
+plot_stat_sds(stat_mom = sm, emp_mom = emp_mom, "noro", unit = unit1, ylim = ylim_sd)
+# mtext("(a) Pankow", line = 1.3, at = -10, cex = 0.8)
+plot_stat_sds(stat_mom = sm, emp_mom = emp_mom, "noro", unit = unit2, ylim = ylim_sd)
+# mtext("(b) Spandau", line = 1.3, at = -10, cex = 0.8)
+
+par(mar = c(4.3, 4.5, 2, 1), font.main = 1, family = "serif", las = 1)
+plot_stat_resids(sm_of_means, emp_mom, "noro",
+                 "full", "geom",
+                 "simple_seas", "geom",
+                 unit1)
+
+plot_stat_resids(sm_of_means, emp_mom, "noro",
+                 "full", "geom",
+                 "simple_seas", "geom",
+                 unit2)
+
+# rota:
+
+plot_stat_means(stat_mom = sm, emp_mom = emp_mom, "rota", unit = unit1, ylim = ylim_mu)
+title("(a) Pankow")
+legend("topright", col = c(cols_model_versions[1:4], "black"),
+       legend = c("Model (a)   ", "Model (b)",
+                  "Model (c)   ", "Model (d)"),
+       lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA), ncol = 2, cex = 1, bty = "n")
+
+plot_stat_means(stat_mom = sm, emp_mom = emp_mom, "rota", unit = unit2, ylim = ylim_mu)
+title("(b) Spandau")
+
+
+plot_stat_sds(stat_mom = sm, emp_mom = emp_mom, "rota", unit = unit1, ylim = ylim_sd)
+# mtext("(a) Pankow", line = 1.3, at = -10, cex = 0.8)
+plot_stat_sds(stat_mom = sm, emp_mom = emp_mom, "rota", unit = unit2, ylim = ylim_sd)
+# mtext("(b) Spandau", line = 1.3, at = -10, cex = 0.8)
+
+par(mar = c(4.3, 4.5, 2, 1), font.main = 1, family = "serif", las = 1)
+plot_stat_resids(sm_of_means, emp_mom, "rota",
+                 "full", "geom",
+                 "simple_seas", "geom",
+                 unit1)
 
 plot_stat_resids(sm_of_means, emp_mom, "rota",
                  "full", "geom",
-                 "neither", "geom",
-                 "pank")
-plot_stat_resids(sm_of_means, emp_mom, "rota",
-                 "full", "geom",
-                 "neither", "geom",
-                 "span")
+                 "simple_seas", "geom",
+                 unit2)
 
