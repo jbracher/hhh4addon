@@ -49,6 +49,34 @@ NOTE: \code{fit_par_lag} serves essentially the same purpose, but is based on a 
 \code{par_lag} rather than optimization using \code{optim}. \code{profile_par_lag} is the recommended option, but
 \code{fit_par_lag} may be somethat quicker for complex models.
 }
+\details{
+The standard \code{hhh4} function only allows for models with
+first lags i.e. of the form
+\deqn{mu_{it} = \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j != i}w_{ji}X_{j, t - 1} + \nu_{it},}
+see \code{?hhh4}. The extension \code{hhh4_lag} allows to specify
+models of the form
+\deqn{mu_{it} = \lambda_{it}\sum_{q= 1}^Q u_q X_{i, t - q} + \phi_{it}\sum_{j\neq i}sum_{q= 1}^Q w_{ji}u_q X_{j, t - q} + \nu_{it}.}
+Here the first lags are now replaced by weighted sums of the Q
+previous observations. The weights u_q, q = 1, ..., Q sum up to
+1 and need to be parametrizable by a single scalar parameter. The value of this parameter needs to be passed as \code{control$par_lag}.
+Moreover, a function to obtain a vector of weights from \code{par_lag} needs to be provided in \code{control$funct_lag}.
+Currently three such functions are implemented in the package:
+\itemize{
+\item{Geometric lags (function \code{geometric_lag}; the default).
+These are specified as
+\deqn{u0_q = \alpha * (1 - \alpha)^{q - 1}}
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q}  for \eqn{q = 1, ..., Q}. The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}),
+i.e. the un-normalized weight of the first lag.}
+\item{Poisson lags (function \code{poisson_lag}).
+These are specified as
+\deqn{u0_q =  \alpha^(q - 1)\exp(-\alpha)/(q - 1)!,}
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}. Note that he Poisson distribution is shifted by one to
+achieve a positive support. The \code{par_lag} parameter corresponds to log(\eqn{\alpha}).}
+\item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
+The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}
+}
+Users can specify their own weighting functions as long as they take the arguments described above and return a vector of weights.
+}
 \examples{
 ## a simple univariate example:
 data("salmonella.agona")
