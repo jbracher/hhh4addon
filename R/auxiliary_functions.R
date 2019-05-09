@@ -54,6 +54,18 @@ NULL
 #' @keywords data
 NULL
 
+#' Data set on dengue in San Juan, Puerto Rico
+#'
+#' Case counts of dengue in San Juan, Puerto Rico, 1990-2013; stored as an sts object
+#'
+#' @name dengueSJ
+#' @docType data
+#' @author Johannes Bracher
+#' @source Counts retrieved from the supplement of Ray et al (2017): Infectious disease prediction with kernel conditional density estimation, Statistics in Medicine 36(30):4908-4929.
+#' These data originally stem from a forecasting competition organized by the US federal government: http://dengueforecasting.noaa.gov/
+#' @keywords data
+NULL
+
 #' Check whether the rows of a matrix show a cyclic pattern
 #'
 #' Needed to determine whether \code{stationary_moments} is applicable (works only for
