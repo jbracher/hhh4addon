@@ -1,3 +1,5 @@
+# scp johannes@130.60.71.234:/home/johannes/Documents/hhh4predict/Theory/Article_Theory/data_analysis/auxiliary_functions.R auxiliary_functions.R
+
 csv_to_sts <- function(file, names, start, end, ...){
   # read data:
   dat <- read.csv2(file,
@@ -68,28 +70,70 @@ get_emp_moments <- function(sts, start = 1){
   reorder <- c(seq(from = start, to = freq),
                seq(to = start - 1, length.out = start - 1))
   weekwise_means <- weekwise_means[reorder, , drop = FALSE]
+  weekwise_vars <- weekwise_vars[reorder, , drop = FALSE]
   return(list(mean = weekwise_means, var = weekwise_vars))
 }
 
-# compute the stationary moments of calendar week-wise averages
-compute_sm_of_means <- function(fit, n_seasons = 7, start = 1, return_Sigma = FALSE){
+### THIS VERSION DOES NOT HANDLE THE END OF THE YEAR CORRECTLY!!!
+# # compute the stationary moments of calendar week-wise averages
+# compute_sm_of_means <- function(fit, n_seasons = 7, start = 1, return_Sigma = FALSE){
+#   # obtain dimensions:
+#   n_units <- ncol(fit$stsObj@observed)
+#   freq <- fit$stsObj@freq
+#   # get stationary moments for n_seasons seasons:
+#   sm <- stationary_moments(fit, start = start, n_seasons = 3, return_Sigma = TRUE)
+#   inds_first <- seq(from = 1, length.out = n_units*freq)
+#   inds_last <- seq(to = 3*n_units*freq, length.out = n_units*freq)
+#   inds_middle <- seq(to = 2*n_units*freq, length.out = n_units*freq)
+#   # we avoid spanning up the matrix for the full n_seasons seasons by just computing
+#   # everything for 3 seasons and re-using the middle part of the matrix n_seasons - 2 times.
+#
+#   new_mu_vector <- sm$mu_vector[inds_first]
+#   new_Sigma <- (sm$Sigma[inds_first, inds_first] +
+#                   (n_seasons - 2)*sm$Sigma[inds_middle, inds_middle] +
+#                   sm$Sigma[inds_last, inds_last])/n_seasons^2
+#
+#   new_sm <- list()
+#
+#   if(return_Sigma){
+#     new_sm$mu_vector <- new_mu_vector
+#     new_sm$Sigma <- new_Sigma
+#   }
+#
+#   new_sm$mu_matrix <- matrix(new_mu_vector, ncol = n_units, byrow = TRUE)
+#   new_sm$var_matrix <- matrix(diag(new_Sigma), ncol = n_units, byrow = TRUE)
+#
+#   rownames(new_sm$mu_matrix) <- rownames(new_sm$var_matrix) <- 1:freq
+#   colnames(new_sm$mu_matrix) <- colnames(new_sm$var_matrix) <- colnames(sm$mu_matrix)
+#
+#   return(new_sm)
+# }
+
+#########################################
+# compute de-correlated Pearson residuals:
+compute_decorr_pearson_residuals <- function(stat_mom_of_means, emp_mom){
+  diffs <- (as.vector(t(emp_mom$mean)) - stat_mom_of_means$mu_vector)
+  resid_uncorr <- t(chol(solve(stat_mom_of_means$Sigma)))%*%t(t(diffs))
+  return(resid_uncorr)
+}
+
+# more computing intensive version, only kept for comparison:
+compute_sm_of_means <- function(fit, n_seasons, start = 1, return_Sigma = FALSE){
   # obtain dimensions:
   n_units <- ncol(fit$stsObj@observed)
   freq <- fit$stsObj@freq
   # get stationary moments for n_seasons seasons:
-  sm <- stationary_moments(fit, start = start, n_seasons = 3, return_Sigma = TRUE)
-  inds_first <- seq(from = 1, length.out = n_units*freq)
-  inds_last <- seq(to = 3*n_units*freq, length.out = n_units*freq)
-  inds_middle <- seq(to = 2*n_units*freq, length.out = n_units*freq)
-  # we avoid spanning up the matrix for the full n_seasons seasons by just computing
-  # everything for 3 seasons and re-using the middle part of the matrix n_seasons - 2 times.
-
-  new_mu_vector <- sm$mu_vector[inds_first]
-  new_Sigma <- (sm$Sigma[inds_first, inds_first] +
-                  (n_seasons - 2)*sm$Sigma[inds_middle, inds_middle] +
-                  sm$Sigma[inds_last, inds_last])/n_seasons^2
-
+  sm <- stationary_moments(fit, start = start, n_seasons = n_seasons, return_Sigma = TRUE)
+  # transformation matrix to move to calendar week-wise means:
+  trafo_matr <- matrix(0, nrow = n_units*freq, ncol = n_units*freq*n_seasons)
+  for(i in 1:n_seasons){
+    diag(trafo_matr[, ((i - 1)*(n_units*freq) + 1:(n_units*freq))]) <- 1/n_seasons
+  }
+  # aggregate moments:
   new_sm <- list()
+
+  new_mu_vector <- trafo_matr%*%sm$mu_vector
+  new_Sigma <- trafo_matr%*%sm$Sigma%*%t(trafo_matr)
 
   if(return_Sigma){
     new_sm$mu_vector <- new_mu_vector
@@ -105,45 +149,48 @@ compute_sm_of_means <- function(fit, n_seasons = 7, start = 1, return_Sigma = FA
   return(new_sm)
 }
 
-#########################################
-# compute de-correlated Pearson residuals:
-compute_decorr_pearson_residuals <- function(stat_mom_of_means, emp_mom){
-  diffs <- (as.vector(t(emp_mom$mean)) - stat_mom_of_means$mu_vector)
-  resid_uncorr <- t(chol(solve(stat_mom_of_means$Sigma)))%*%t(t(diffs))
-  return(resid_uncorr)
-}
+# idea: fill only block diagonal and
+compute_sm_of_means2 <- function(fit, n_seasons, start = 1, return_Sigma = FALSE){
+  # obtain dimensions:
+  n_units <- ncol(fit$stsObj@observed)
+  freq <- fit$stsObj@freq
+  # get stationary moments for n_seasons seasons:
+  sm2 <- stationary_moments(fit, start = start, n_seasons = 2, return_Sigma = TRUE)
 
-# more computing intensive version, only kept for comparison:
-# compute_sm_of_means0 <- function(fit, n_seasons = 7, start = 1, return_Sigma = FALSE){
-#   # obtain dimensions:
-#   n_units <- ncol(fit$stsObj@observed)
-#   freq <- fit$stsObj@freq
-#   # get stationary moments for n_seasons seasons:
-#   sm <- stationary_moments(fit, start = start, n_seasons = n_seasons, return_Sigma = TRUE)
-#   # transformation matrix to move to calendar week-wise means:
-#   trafo_matr <- matrix(0, nrow = n_units*freq, ncol = n_units*freq*n_seasons)
-#   for(i in 1:n_seasons){
-#     diag(trafo_matr[, ((i - 1)*(n_units*freq) + 1:(n_units*freq))]) <- 1/n_seasons
-#   }
-#   # aggregate moments:
-#   new_sm <- list()
-#
-#   new_mu_vector <- trafo_matr%*%sm$mu_vector
-#   new_Sigma <- trafo_matr%*%sm$Sigma%*%t(trafo_matr)
-#
-#   if(return_Sigma){
-#     new_sm$mu_vector <- new_mu_vector
-#     new_sm$Sigma <- new_Sigma
-#   }
-#
-#   new_sm$mu_matrix <- matrix(new_mu_vector, ncol = n_units, byrow = TRUE)
-#   new_sm$var_matrix <- matrix(diag(new_Sigma), ncol = n_units, byrow = TRUE)
-#
-#   rownames(new_sm$mu_matrix) <- rownames(new_sm$var_matrix) <- 1:freq
-#   colnames(new_sm$mu_matrix) <- colnames(new_sm$var_matrix) <- colnames(sm$mu_matrix)
-#
-#   return(new_sm)
-# }
+  lgt_n_seas <- n_units*freq*n_seasons
+
+  long_mu_vector <- rep(sm2$mu_vector, length.out = lgt_n_seas)
+  large_Sigma <- matrix(0, nrow = lgt_n_seas, ncol = lgt_n_seas)
+  for(i in 1:(n_seasons - 1)){
+    large_Sigma[(i - 1)*n_units*freq + (1:(2*n_units*freq)),
+          (i - 1)*n_units*freq + (1:(2*n_units*freq))] <-
+      sm2$Sigma
+  }
+
+  # transformation matrix to move to calendar week-wise means:
+  trafo_matr <- matrix(0, nrow = n_units*freq, ncol = n_units*freq*n_seasons)
+  for(i in 1:n_seasons){
+    diag(trafo_matr[, ((i - 1)*(n_units*freq) + 1:(n_units*freq))]) <- 1/n_seasons
+  }
+  # aggregate moments:
+  new_sm <- list()
+
+  new_mu_vector <- trafo_matr%*%long_mu_vector
+  new_Sigma <- trafo_matr%*%large_Sigma%*%t(trafo_matr)
+
+  if(return_Sigma){
+    new_sm$mu_vector <- new_mu_vector
+    new_sm$Sigma <- new_Sigma
+  }
+
+  new_sm$mu_matrix <- matrix(new_mu_vector, ncol = n_units, byrow = TRUE)
+  new_sm$var_matrix <- matrix(diag(new_Sigma), ncol = n_units, byrow = TRUE)
+
+  rownames(new_sm$mu_matrix) <- rownames(new_sm$var_matrix) <- 1:freq
+  colnames(new_sm$mu_matrix) <- colnames(new_sm$var_matrix) <- colnames(sm$mu_matrix)
+
+  return(new_sm)
+}
 
 ##################
 # p-values for region-wise versions:
@@ -329,26 +376,26 @@ my_acf <- function(pearson_resids){
 }
 
 # a customized plotting function:
-myplot_acf <- function(macf, unit = 1, nobs = 358, shift_x = 0, add = FALSE, ...){
+myplot_acf <- function(macf, unit = 1, nobs = 358, shift_x = 0, lwd = 2, ylim = c(-0.2, 0.2), add = FALSE, ...){
   if(!add){
     plot(c(1:5, 7) + shift_x,
          macf[c(1:5, 52), unit],
-         xlim = c(0.5, 7.5), ylim = c(-0.2, 0.2), type = "h",
+         xlim = c(0.5, 7.5), ylim = ylim, type = "h",
          axes = FALSE, xlab = "", ylab = "residual ACF",
-         lwd = lwd_weights, ...)
+         lwd = lwd, ...)
     axis(1, at = c(1:5, 7), labels = c(1:5, 52))
     mtext("lag", 1, line = 2.2)
     axis(2)
     box()
     abline(h = 0)
-    x <- 6; d <- 0.03
-    rect(x - d, -0.22 -d, x + d, -0.22 + d, col = "white", border = NA, xpd = TRUE)
-    lines(c(x - 2*d, x), -0.22 + c(d/2, -d/2), xpd = TRUE)
-    lines(c(x, x + 2*d), -0.22 + c(d/2, -d/2), xpd = TRUE)
+    x <- 6; d <- 0.03; y_ax <- 1.1*min(ylim)
+    rect(x - d, y_ax -d, x + d, y_ax + d, col = "white", border = NA, xpd = TRUE)
+    lines(c(x - 2*d, x), y_ax + c(d/2, -d/2), xpd = TRUE)
+    lines(c(x, x + 2*d), y_ax + c(d/2, -d/2), xpd = TRUE)
     abline(h = c(-1.96, 1.96)/sqrt(nobs), lty = "dotted")
   }else{
     lines(c(1:5, 7) + shift_x,
-          macf[c(1:5, 52), unit], type = "h", lwd = lwd_weights, ...)
+          macf[c(1:5, 52), unit], type = "h", lwd = lwd, ...)
   }
 }
 
@@ -438,4 +485,33 @@ plot_stat_resids <- function(sm_of_means, emp_mom,
   axis(1, at = c(1, 13, 26, 39, 52)); axis(2); box()
   abline(h = 0, col = "black")
   abline(h = c(-1.96, 1.96), col = "black", lty = "dotted")
+}
+
+
+# function to simulate p-values
+sim_teststats <- function(fit, n_sim, n_seasons, seed = 123){
+  set.seed(seed)
+  teststats_sim <- teststats_trafo_sim <- numeric(n_sim)
+  for(i in 1:n_sim){
+    # generate data and fit model to simulated data::
+    if(is.null(fit$control$funct_lag)){
+      dat_sim0 <- simulate(fit, y.start = fit$stsObj@observed[1, ]) # run once to go through "burn-in" period (independence of starting values)
+      dat_sim <- simulate(fit, y.start = dat_sim0@observed[52 + 1, ]) # feed values from the first run into a second as starting values
+      fit_sim <- hhh4(dat_sim, fit$control)
+    }else{
+      dat_sim0 <- hhh4addon:::simulate.hhh4lag(fit, y.start = fit$stsObj@observed[1:5, ])
+      dat_sim <- hhh4addon:::simulate.hhh4lag(fit, y.start = dat_sim0@observed[52 + 1:5, ])
+      fit_sim <- hhh4addon::profile_par_lag(dat_sim, fit$control)
+    }
+
+    # compute stationary moments of week-wise averages:
+    sm_of_means_sim <- compute_sm_of_means(fit_sim, n_seasons = n_seasons, return_Sigma = TRUE)
+    # compute empirical moments:
+    emp_mom_sim <- get_emp_moments(dat_sim)
+    # get test statistic:
+    teststats_sim[i] <- get_pval(stat_mom_of_means = sm_of_means_sim, emp_mom = emp_mom_sim)$test_stat
+    teststats_trafo_sim[i] <- get_pval2(stat_mom_of_means = sm_of_means_sim, emp_mom = emp_mom_sim)$test_stat
+    # print(i)
+  }
+  return(list(teststats_sim = teststats_sim, teststats_trafo_sim = teststats_trafo_sim))
 }
