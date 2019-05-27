@@ -60,7 +60,7 @@ Here the first lags are now replaced by weighted sums of the Q
 previous observations. The weights u_q, q = 1, ..., Q sum up to
 1 and need to be parametrizable by a single scalar parameter. The value of this parameter needs to be passed as \code{control$par_lag}.
 Moreover, a function to obtain a vector of weights from \code{par_lag} needs to be provided in \code{control$funct_lag}.
-Currently three such functions are implemented in the package:
+Currently four such functions are implemented in the package:
 \itemize{
 \item{Geometric lags (function \code{geometric_lag}; the default).
 These are specified as
@@ -72,9 +72,14 @@ These are specified as
 \deqn{u0_q =  \alpha^(q - 1)\exp(-\alpha)/(q - 1)!,}
 and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}. Note that he Poisson distribution is shifted by one to
 achieve a positive support. The \code{par_lag} parameter corresponds to log(\eqn{\alpha}).}
-\item{A weighting only between first and second lags, i.e. \deqn{u_1 = \alpha, u_2 = 1 - \alpha}.
-The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}
-}
+\item{Linearly decaying weights (in function \code{linear_lag}).
+These are specified as
+\deqn{u0_q = max(1 - mq, 0)}
+and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}.
+The \code{par_lag} parameter corresponds to logit(\eqn{m}).}
+\item{A weighting only between first and second lags (in function \code{ar2lag}), i.e.
+\deqn{u_1 = \alpha, u_2 = 1 - \alpha.}
+The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}}
 Users can specify their own weighting functions as long as they take the arguments described above and return a vector of weights.
 }
 \examples{

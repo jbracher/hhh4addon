@@ -111,3 +111,24 @@ ar2_lag <- function(par_lag, min_lag, max_lag){
   weights <- weights0/sum(weights0)
   return(weights)
 }
+
+
+#' Function to obtain linearly decaying weights
+#'
+#' This function generates linearly decaying weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+#' to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument. There are different ways of
+#' specifying linearly decaying weights, the version implemented here is
+#' \deqn{u0_q = max(1 - mq, 0)}
+#' and \eqn{u_q = u0_q / sum_{q = 1}^Q u0_q} for \eqn{q = 1, ..., Q}.
+#' @param par_lag a parameter to steer the lag structure, here \eqn{logit(m)} where \eqn{m} is the linear decay
+#' factor; see details of \code{hhh4lag} or \code{profile_par_lag}.
+#' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @export
+linear_lag <- function (par_lag, min_lag, max_lag){
+  m_lag <- exp(par_lag)/(1 + exp(par_lag))
+  weights0 <- pmax(c(rep(0, min_lag - 1),
+                     1 - m_lag*(0:(max_lag - min_lag))), 0)
+  weights <- weights0/sum(weights0)
+  return(weights)
+}
