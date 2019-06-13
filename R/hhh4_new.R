@@ -247,7 +247,10 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
   best_mod$dim["fixed"] <- best_mod$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
   if(return_full_cov){
     cov = numeric_fisher_hhh4lag(best_mod)
-    best_mod$se_par_lag <- sqrt(cov["par_lag", "par_lag"])
+    inds_par_lag <- paste0("par_lag", seq_along(best_mod$par_lag))
+    vars_par_lag <- diag(cov[inds_par_lag, inds_par_lag])
+    vars_par_lag[vars_par_lag < 0]  <- NA # replace negative diagonal elements by NA.
+    best_mod$se_par_lag <- sqrt(vars_par_lag)
     return(list(best_mod = best_mod, cov = cov))
   }else{
     best_mod$se_par_lag <- NA
@@ -264,9 +267,9 @@ numeric_fisher_hhh4lag <- function(best_mod){
   control <- best_mod$control
   coefficients <- c(best_mod$coefficients, par_lag = best_mod$par_lag)
   lik_vect <- function(coefficients){
-    control$par_lag <- control$par_lag <- coefficients["par_lag"]
+    control$par_lag <- control$par_lag <- coefficients[-(1:length(best_mod$coefficients))]
     mod <- hhh4addon:::interpretControl(control, stsObj = stsObj)
-    surveillance:::penLogLik(coefficients[names(coefficients) != "par_lag"], NULL, model = mod)
+    surveillance:::penLogLik(coefficients[1:length(best_mod$coefficients)], NULL, model = mod)
   }
   hess <- numDeriv::hessian(lik_vect, coefficients)
   cov <- -solve(hess)
