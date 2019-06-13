@@ -109,8 +109,8 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
       warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
       mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     }
-    mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # + 1 for decay paramter
-    AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as +1 added above
+    mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
+    AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as + 1 added above
     if(i == 1){ # keep first model in all cases
       best_mod <- mod_temp
     }else{ # otherwise only if it beats the previous ones.
@@ -231,11 +231,20 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
     mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     return(-mod_temp$loglikelihood)
   }
-  opt_par_lag <- optim(par = 0.5, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag,
-                       control = list(reltol = reltol_par_lag))$par
+
+  # use Brent if just one parameter:
+  if(length(start_par_lag) == 1){
+    opt_par_lag <- optim(par = start_par_lag, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag,
+                         control = list(reltol = reltol_par_lag))$par
+  }else{
+    # use Nelder-MEad for multivariate parameters:
+    opt_par_lag <- optim(par = start_par_lag, profile_lik,
+                         control = list(reltol = reltol_par_lag))$par
+  }
+
   control$par_lag <- opt_par_lag
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
-  best_mod$dim["fixed"] <- best_mod$dim["fixed"] + 1 # + 1 for decay paramter
+  best_mod$dim["fixed"] <- best_mod$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
   if(return_full_cov){
     cov = numeric_fisher_hhh4lag(best_mod)
     best_mod$se_par_lag <- sqrt(cov["par_lag", "par_lag"])
