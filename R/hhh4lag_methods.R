@@ -161,11 +161,11 @@ logLik.hhh4lag <- function(object, ...)
 #' features of the \code{hhh4lag} class. Note that the lag weights
 #' are not re-estimated!
 #' @export
-update.hhh4lag <- function (object, refit_par_lag, ..., S = NULL, subset.upper = NULL,
+update.hhh4lag <- function (object, refit_par_lag = TRUE, ..., S = NULL, subset.upper = NULL,
                          use.estimates = object$convergence, evaluate = TRUE, warning_weights = TRUE)
 {
-  if(warning_weights) message("Note that update.hhh4lag does not re-estimate the lag weights.")
-  control <- object$control
+
+    control <- object$control
 
   ## first modify the control list according to the components in ...
   extras <- list(...)
@@ -225,7 +225,13 @@ update.hhh4lag <- function (object, refit_par_lag, ..., S = NULL, subset.upper =
 
   ## fit the updated model or just return the modified control list
   if (evaluate) {
-    hhh4_lag(stsObj = object$stsObj, control = control)
+    if(refit_par_lag){
+      profile_par_lag(stsObj = object$stsObj, control = control)
+    }else{
+      if(warning_weights) message("Note that update.hhh4lag does not re-estimate the lag weights.")
+      hhh4_lag(stsObj = object$stsObj, control = control)
+    }
+
   } else {
     control
   }

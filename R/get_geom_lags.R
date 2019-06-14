@@ -132,3 +132,20 @@ linear_lag <- function (par_lag, min_lag, max_lag){
   weights <- weights0/sum(weights0)
   return(weights)
 }
+
+#' Function to obtain unrestricted lags
+#'
+#' This function generates \eqn{Q} lag weights without a parametric constraint. The weights are obtained via
+#' a multinomial logit transformation where the first lag is the reference category.
+#' @param par_lag theparameter vector of length \eqn{Q - 1}
+#' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @export
+unrestricted_lag <- function(par_lag, min_lag, max_lag){
+  if(length(par_lag) != max_lag - min_lag){
+    stop("The starting value for par_lag needs to be of length max_lag - min_lag + 1.")
+  }
+  weights0 <- c(1, exp(par_lag))/sum(c(1, exp(par_lag)))
+  weights <- c(rep(0, min_lag - 1), weights0)
+  return(weights)
+}

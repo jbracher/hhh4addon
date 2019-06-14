@@ -220,10 +220,26 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' # leads to somewhat different decay and very slightly better AIC
 #'
 #' @export
-profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag = -10, upper_par_lag = 10,
+profile_par_lag <- function(stsObj, control,
+                            start_par_lag = NULL,
+                            lower_par_lag = -10, upper_par_lag = 10,
                             return_full_cov = FALSE, reltol_par_lag = 1e-08, check.analyticals = FALSE){
-  control$par_lag <- start_par_lag
-  initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
+
+  # choose start_par_lag if user did not specify anything:
+  # unrestricted_lag requires length max_lag - min_lag, others length 1.
+  if(is.null(start_par_lag)){
+    if(identical(control$funct_lag, unrestricted_lag, ignore.environment = TRUE, ignore.bytecode = TRUE)){
+      if(is.null(control$max_lag)) control$max_lag <- 5 # set min_lag and max_lag to defaults in unspecified
+      if(is.null(control$min_lag)) control$min_lag <- 1
+      start_par_lag <- rep(0, max(control$max_lag - control$min_lag))
+    }else{
+      start_par_lag <- 0.5
+    }
+  }
+
+  # # fit an initial model
+  # control$par_lag <- start_par_lag
+  # initial_fit <- hhh4_lag(stsObj = stsObj, control = control)
   profile_lik <- function(par_lag){
     # par_lag <- exp(logit_par_lag)/(1 + exp(logit_par_lag))
     control$par_lag <- par_lag
@@ -234,20 +250,32 @@ profile_par_lag <- function(stsObj, control, start_par_lag = 0.5, lower_par_lag 
 
   # use Brent if just one parameter:
   if(length(start_par_lag) == 1){
-    opt_par_lag <- optim(par = start_par_lag, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag,
-                         control = list(reltol = reltol_par_lag))$par
+    opt_profile <- optim(par = start_par_lag, profile_lik, method = "Brent", lower = lower_par_lag, upper = upper_par_lag,
+                         control = list(reltol = reltol_par_lag))
   }else{
-    # use Nelder-MEad for multivariate parameters:
-    opt_par_lag <- optim(par = start_par_lag, profile_lik,
-                         control = list(reltol = reltol_par_lag))$par
+    # use Nelder-Mead for multivariate parameters:
+    opt_profile <- optim(par = start_par_lag, profile_lik,
+                         control = list(reltol = reltol_par_lag))
   }
+  opt_par_lag <- opt_profile$par
 
   control$par_lag <- opt_par_lag
   best_mod <- hhh4_lag(stsObj = stsObj, control = control)
   best_mod$dim["fixed"] <- best_mod$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
+  best_mod$optim_profile <- opt_profile
+  best_mod$convergence_profile <- (opt_profile$convergence == 0)
+
   if(return_full_cov){
     cov = numeric_fisher_hhh4lag(best_mod)
-    inds_par_lag <- paste0("par_lag", seq_along(best_mod$par_lag))
+
+    # indices corresponding to lag weighting parameters:
+    if(length(best_mod$par_lag) == 1){
+      inds_par_lag <- "par_lag"
+    }else{
+      inds_par_lag <- paste0("par_lag", seq_along(best_mod$par_lag))
+    }
+
+    # extract the variances/sds of lag weighting parameters:
     vars_par_lag <- diag(cov[inds_par_lag, inds_par_lag])
     vars_par_lag[vars_par_lag < 0]  <- NA # replace negative diagonal elements by NA.
     best_mod$se_par_lag <- sqrt(vars_par_lag)
@@ -512,3 +540,4 @@ hhh4_lag <- function (stsObj, control = list(
   class(result) <- c("hhh4lag", "hhh4")
   return(result)
 }
+
