@@ -96,6 +96,10 @@
 #' # leads to somewhat different decay and very slightly better AIC
 #' @export
 fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, use_update = TRUE){
+  if(identical(control$funct_lag, unrestricted_lag)){
+    stop("unrestricted_lag can only be used with profile_par_lag.")
+  }
+
   AICs <- rep(NA, length(range_par))
   best_mod <- mod_temp <- NULL
   for(i in 1:length(range_par)){
@@ -228,7 +232,7 @@ profile_par_lag <- function(stsObj, control,
   # choose start_par_lag if user did not specify anything:
   # unrestricted_lag requires length max_lag - min_lag, others length 1.
   if(is.null(start_par_lag)){
-    if(identical(control$funct_lag, unrestricted_lag, ignore.environment = TRUE, ignore.bytecode = TRUE)){
+    if(isTRUE(all.equal(control$funct_lag, unrestricted_lag))){
       if(is.null(control$max_lag)) control$max_lag <- 5 # set min_lag and max_lag to defaults in unspecified
       if(is.null(control$min_lag)) control$min_lag <- 1
       start_par_lag <- rep(0, max(control$max_lag - control$min_lag))
@@ -236,6 +240,7 @@ profile_par_lag <- function(stsObj, control,
       start_par_lag <- 0.5
     }
   }
+
 
   # # fit an initial model
   # control$par_lag <- start_par_lag
@@ -264,6 +269,7 @@ profile_par_lag <- function(stsObj, control,
   best_mod$dim["fixed"] <- best_mod$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
   best_mod$optim_profile <- opt_profile
   best_mod$convergence_profile <- (opt_profile$convergence == 0)
+  if(!best_mod$convergence_profile) warning("Optimization of profile likelihood did not converge.")
 
   if(return_full_cov){
     cov = numeric_fisher_hhh4lag(best_mod)
