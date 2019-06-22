@@ -157,10 +157,11 @@ format_return_prediction <- function(M, nu, phi, t_condition, stsObj,
 
   # array containing covariances if needed:
   if(return_cov_array){
-    cov_array0 <- array(dim = c(n_units, n_units, lgt))
+    ret$cov_array <- array(dim = c(n_units, n_units, lgt))
     for(i in 1:lgt){
-      cov_array0[,,i] <- M[inds, inds, i] - M[1, inds, i] %*% t(M[1, inds, i])
+      ret$cov_array[,,i] <- M[inds, inds, i] - M[1, inds, i] %*% t(M[1, inds, i])
     }
+
     dimnames(ret$cov_array) <- list(names_units, names_units, rownames(ret$mu_matrix))
   }
   rm(inds)
