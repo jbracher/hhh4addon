@@ -104,10 +104,11 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
   best_mod <- mod_temp <- NULL
   for(i in 1:length(range_par)){
     control$par_lag <- range_par[i]
-    mod_temp <- if(is.null(mod_temp) || mod_temp$convergence == FALSE || use_update == FALSE){
-      hhh4_lag(stsObj, control, check.analyticals)
+    if(is.null(mod_temp) || mod_temp$convergence == FALSE || use_update == FALSE){
+      mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
+      mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # correct dim
     }else{
-      update(mod_temp, par_lag = control$par_lag, warning_weights = FALSE, refit_par_lag = FALSE)
+      mod_temp <- update(mod_temp, par_lag = control$par_lag, warning_weights = FALSE, refit_par_lag = FALSE)
     }
     if(mod_temp$convergence == FALSE & use_update){ # catch convergence errors by trying to fit without update
       warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
