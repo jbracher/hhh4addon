@@ -37,6 +37,11 @@ distr_lag <- function(hhh4Obj){
 #' @param lag_weigths a vector of weights; the length of this vector determines the number of lags.
 #' @param sum_up \code{sum_up = FALSE} returns a more detailed output; for debugging only.
 get_weighted_lags <- function(lag1, lag_weights, sum_up = FALSE){
+
+  if(any(is.na(lag_weights)) | any(is.nan(lag_weights))){
+    stop(paste("Lag weights are NA or NaN:", paste(lag_weights, collapse = "; ")))
+  }
+
   if(abs(sum(lag_weights) - 1) > 0.0001 | any(lag_weights < 0)){
     stop("Lag weights need to be positive and sum up to 1. Please make sure your lag weighting function only returns valid weights.")
   }
@@ -91,7 +96,7 @@ geometric_lag <- function(par_lag, min_lag, max_lag){
 poisson_lag <- function(par_lag, min_lag, max_lag){
   mu_lag <- exp(par_lag)
   weights0 <- c(rep(0, min_lag - 1), dpois((min_lag:max_lag) -
-                                             1, mu_lag))
+                                             1, mu_lag)) + 0.0001 # avoids numerical problems
   weights <- weights0/sum(weights0)
   return(weights)
 }
