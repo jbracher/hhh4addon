@@ -210,7 +210,7 @@ update.hhh4lag <- function (object, refit_par_lag = TRUE, ..., S = NULL, subset.
     stopifnot(is.list(S), !is.null(names(S)),
               names(S) %in% c("ar", "ne", "end"))
     control[names(S)] <- mapply(function (comp, S) {
-      comp$f <- surveillance::addSeason2formula(removeSeasonFromFormula(comp$f),
+      comp$f <- surveillance::addSeason2formula(surveillance:::removeSeasonFromFormula(comp$f),
                                   period = object$stsObj@freq, S = S)
       comp
     }, control[names(S)], S, SIMPLIFY=FALSE, USE.NAMES=FALSE)
