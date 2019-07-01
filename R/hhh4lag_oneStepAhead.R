@@ -23,6 +23,7 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                          tp,     # scalar: one-step-ahead predictions for time
                                  # points (tp+1):nrow(stsObj), or tp=c(from, to)
                          type = c("rolling", "first", "final"),
+                         refit_par_lag = FALSE,
                          which.start = c("current", "final"), #if type="rolling"
                          keep.estimates = FALSE,
                          verbose = TRUE, # verbose-1 is used as verbose setting
@@ -30,7 +31,11 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                          cores = 1) # if which.start="final", the predictions
                                     # can be computed in parallel
 {
-  message("Lag weights are not re-estimated for the one-step-ahead forecasts.")
+  if(!refit_par_lag){
+    message("Lag weights are not re-estimated for the one-step-ahead forecasts (set refit_par_lag = TRUE to re-fit them).")
+  }else{
+    message("Also re-fitting par_lag. This may take a while...")
+  }
   # if hhh4 model without distributed lags: pass to regular oneStepAhead function.
   if(class(result)[1] == "hhh4"){
     return(surveillance::oneStepAhead(result = result, tp = tp, type = type, which.start = which.start,
@@ -85,8 +90,8 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
     fit <- if (type == "first") {
         if (do_pb)
             cat("\nRefitting model at first time point t =", tps[1L], "...\n")
-        update.hhh4lag(result, subset.upper = tps[1L], use.estimates = TRUE,
-                    keep.terms = TRUE) # need "model" -> $terms
+        update.hhh4lag(result, refit_par_lag = refit_par_lag, subset.upper = tps[1L], use.estimates = TRUE,
+                    keep.terms = TRUE, warning_weights = FALSE) # need "model" -> $terms
     } else result
     if (!fit$convergence) stop("initial fit did not converge")
 
@@ -131,10 +136,11 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
             if (verbose)
                 cat("One-step-ahead prediction @ t =", tp, "...\n")
             if (type == "rolling") { # update fit
-                fit <- update.hhh4lag(result, subset.upper=tp, use.estimates=TRUE,
+                fit <- update.hhh4lag(result, refit_par_lag  = refit_par_lag, subset.upper=tp, use.estimates=TRUE,
                                    start=if (is.list(which.start)) which.start,
                                    verbose=FALSE, # chaotic in parallel
-                                   keep.terms=TRUE) # need "model" -> $terms
+                                   keep.terms=TRUE,
+                                   warning_weights = FALSE) # need "model" -> $terms
                 if (!fit$convergence) {
                     cat("WARNING: No convergence @ t =", tp, "!\n")
                     return(resTemplate)
@@ -169,10 +175,11 @@ oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
                     which.start
                 } else if (which.start == "current") surveillance:::hhh4coef2start(fit)
                 ## else NULL
-                fit <- update.hhh4lag(result, subset.upper=tps[i],
+                fit <- update.hhh4lag(result, refit_par_lag = refit_par_lag, subset.upper=tps[i],
                                    start=start, # takes precedence
                                    use.estimates=TRUE,
-                                   keep.terms=TRUE) # need "model" -> $terms
+                                   keep.terms=TRUE,
+                                   warning_weights = FALSE) # need "model" -> $terms
                 if (!fit$convergence) {
                     if (do_pb) cat("\n")
                     cat("WARNING: No convergence @ t =", tps[i], "!\n")

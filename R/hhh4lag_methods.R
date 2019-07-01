@@ -165,7 +165,7 @@ update.hhh4lag <- function (object, refit_par_lag = TRUE, ..., S = NULL, subset.
                          use.estimates = object$convergence, evaluate = TRUE, warning_weights = TRUE)
 {
 
-    control <- object$control
+  control <- object$control
 
   ## first modify the control list according to the components in ...
   extras <- list(...)
