@@ -96,7 +96,10 @@ geometric_lag <- function(par_lag, min_lag, max_lag){
 poisson_lag <- function(par_lag, min_lag, max_lag){
   mu_lag <- exp(par_lag)
   weights0 <- c(rep(0, min_lag - 1), dpois((min_lag:max_lag) -
-                                             1, mu_lag) + 0.0001) # avoids numerical problems
+                                             min_lag, mu_lag))
+  if(sum(weights0) < 0.0001){
+    weights0[length(weights0)] <- weights0[length(weights0)] + 0.00001 # avoids numerical problems
+  }
   weights <- weights0/sum(weights0)
   return(weights)
 }
