@@ -106,7 +106,6 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
     control$par_lag <- range_par[i]
     if(is.null(mod_temp) || mod_temp$convergence == FALSE || use_update == FALSE){
       mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
-      mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + 1 # correct dim
     }else{
       mod_temp <- update(mod_temp, par_lag = control$par_lag, warning_weights = FALSE, refit_par_lag = FALSE)
     }
