@@ -4,10 +4,8 @@
 \alias{profile_par_lag}
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
-profile_par_lag(stsObj, control,
-  start_par_lag = ifelse(identical(control$funct_lag, unrestricted_lag),
-  rep(0, control$max_lag - control$min_lag), 0.5), lower_par_lag = -10,
-  upper_par_lag = 10, return_full_cov = FALSE,
+profile_par_lag(stsObj, control, start_par_lag = NULL,
+  lower_par_lag = -10, upper_par_lag = 10, return_full_cov = FALSE,
   reltol_par_lag = 1e-08, check.analyticals = FALSE)
 }
 \arguments{

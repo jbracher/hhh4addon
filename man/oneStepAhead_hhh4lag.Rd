@@ -5,10 +5,13 @@
 \title{Predictive Model Assessment for hhh4_lag Models}
 \usage{
 oneStepAhead_hhh4lag(result, tp, type = c("rolling", "first", "final"),
-  which.start = c("current", "final"), keep.estimates = FALSE,
-  verbose = TRUE, cores = 1)
+  refit_par_lag = FALSE, which.start = c("current", "final"),
+  keep.estimates = FALSE, verbose = TRUE, cores = 1)
+}
+\arguments{
+\item{refit_par_lag}{Only new argument compared to \code{surveillance:oneStepAhead}: should the lag weighting parameter \code{lag_par} be re-fitted in each iteration? Defaults to FALSE.}
 }
 \description{
-A version of \code{surveillance::oneStepAhead} for \code{hhh4_lag} objects. NOTE: the \code{lag_par} parameter
+A version of \code{surveillance::oneStepAhead} for \code{hhh4_lag} objects. NOTE: by default the \code{lag_par} parameter
 is not re-fit in this function!
 }
