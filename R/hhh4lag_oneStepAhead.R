@@ -15,8 +15,10 @@
 
 #' Predictive Model Assessment for hhh4_lag Models
 #'
-#' A version of \code{surveillance::oneStepAhead} for \code{hhh4_lag} objects. NOTE: the \code{lag_par} parameter
+#' A version of \code{surveillance::oneStepAhead} for \code{hhh4_lag} objects. NOTE: by default the \code{lag_par} parameter
 #' is not re-fit in this function!
+#'
+#' @param refit_par_lag Only new argument compared to \code{surveillance:oneStepAhead}: should the lag weighting parameter \code{lag_par} be re-fitted in each iteration? Defaults to FALSE.
 #'
 #' @export
 oneStepAhead_hhh4lag <- function(result, # hhh4-object (i.e. a hhh4 model fit)
