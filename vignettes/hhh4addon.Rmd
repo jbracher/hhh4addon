@@ -88,7 +88,7 @@ When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available 
 The folowing code allows to fit a model with a geometric lag structure, a fixed value of $p = 0.8$ and five lags. Note that for such a model we can only use the data from week 6 onwards for fitting (the lagged observations are not available for weeks 1 through 5).
 
 ```{r}
-par_lag_0.8 <- log(0.8/(1 - 0.8))
+par_lag_0.8 <- log(0.8/(1 - 0.8)) # compute the par_lag value corresponding to alpha = 0.8
 control_salmonella.08 <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1)),
                             par_lag = par_lag_0.8, max_lag = 5,
@@ -124,9 +124,11 @@ plot(grid_alpha, fit_salmonella.grid$AICs, type = "l", xlab = expression(alpha),
 
 A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated. This is due to the loss of one degree of freedom.
 ```{r}
+par_lag_0.56 <- log(0.56/(1 - 0.56)) # compute the par_lag value corresponding to alpha = 0.56
 control_salmonella.056 <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      par_lag = 0.56, max_lag = 5),
+                                      max_lag = 5),
+                            par_lag = par_lag_0.56,
                             family = "NegBinM", subset = 6:312)
 fit_salmonella.056 <- hhh4_lag(salmonella, control_salmonella.056)
 AIC(fit_salmonella.056)
@@ -174,7 +176,32 @@ summary(fit_salmonella.lin)
 plot(fit_salmonella.lin$distr_lag, type = "l", xlab = "lag", ylab = "lag weight")
 ```
 
-This leads indeed to linearly decaying weights. Note however, that this model specification generally does not behave well, which is why it is not included in the pacakge.
+This leads indeed to linearly decaying weights. Note however, that this model specification generally does not behave well, which is why it is not included in the package.
+
+Most of the functionality for `hhh4` objects is by now also available for `hhh4lag` objects (as returned by `hhh4lag` and `profile_par_lag`). For instance we can simulate:
+```{r}
+# simulate 100 trajectories for weeks 101 through 110:
+sim <- simulate(fit_salmonella.profile, subset = 101:110,
+                y.start = fit_salmonella.profile$stsObj@observed[96:100, , drop = FALSE],
+                nsim = 1000, simplify = TRUE)
+# plot one trajectory:
+plot(101:110, sim[, , 1], type = "b", xlab = "week", ylab = "cases")
+
+```
+
+Or we can generate rolling one-week-ahead forecasts. This is done using a new function `oneStepAhead_hhh4lag` (the function `oneStepAhead` from `surveillance` cannot be applied and will throw an error message). By default the lag weighting parameter is not re-fitted (as this can lead to quite long computation times); to re-fit them set the argument \code{refit_par_lag} to TRUE. The result can then be handled just like the return from \code{surveillance:oneStepAhead} would.
+```{r}
+owa_forecasts.profile <- oneStepAhead_hhh4lag(fit_salmonella.profile,
+                                      tp = c(260, 311), refit_par_lag = FALSE)
+colMeans(scores(owa_forecasts.profile))
+
+# for comparison: model without distributed lags:
+owa_forecasts <- oneStepAhead(fit_salmonella,
+                                      tp = c(260, 311))
+colMeans(scores(owa_forecasts))
+
+# The geometric-lag model performs slightly better in terms of the logarithmic score.
+```
 
 ## Predictive and periodically stationary moments
 
@@ -195,6 +222,7 @@ fanplot_prediction(pred_mom, add = TRUE)
 fanplot_prediction(pred_mom, add = FALSE)
 ```
 
+
 The fanplots here are based on negative binomial approximations of the predictive distributions via the first two moments. We can also use these predictive moments to evaluate the Dawid-Sebastiani score, a proper scoring rule for predictive model assessment:
 ```{r}
 ds_score_hhh4(pred_mom)
@@ -204,13 +232,25 @@ We use this to compare a model with one lag to a model with geometric lags.
 ```{r}
 # fit the model with geometric lags
 control_salmonella.sub.flex <- list(end = list(f = addSeason2formula(~ 1)),
-                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      par_lag = 0.8, max_lag = 5),
-                            family = "NegBinM", subset = 6:260)
-range_par <- seq(0.1, 1, by = 0.01)
-fit_salmonella.sub.flex <- fit_par_lag(salmonella, control_salmonella.sub.flex, range_par = range_par)
+                            ar = list(f = addSeason2formula(~ 1)),
+                            family = "NegBinM", max_lag = 5, subset = 6:260)
+grid_alpha <- seq(from = 0.01, to = 0.99, by = 0.02)
+grid_par_lag <- log(grid_alpha/(1 - grid_alpha)) # move to logit scale
+fit_salmonella.sub.flex <- fit_par_lag(salmonella, control_salmonella.sub.flex, range_par = grid_par_lag)
+
 # get prediction:
 pred_mom.flex <- predictive_moments(fit_salmonella.sub.flex$best_mod, t_condition = 260, lgt = 52, return_Sigma = TRUE)
 ds_score_hhh4(pred_mom.flex)
 ```
 Like other predictive scores the David-Sebastiani score is negatively oriented, i.e. the prediction from the model `fit_salmonella.sub.flex` with geometric lags is slightly better than the one from the simpler `fit_salmonella.sub`.
+
+The function can also be used to check that our simulation functions are doing the right thing. Taking up the example for the previous section:
+```{r}
+cond_mom_101 <- predictive_moments(fit_salmonella.profile, t_condition = 100, lgt = 10)
+plot(101:110, apply(sim, 1:2, mean), xlab = "week", ylab = "predictive mean")
+lines(101:110, cond_mom_101$mu_matrix)
+
+plot(101:110, apply(sim, 1:2, sd), xlab = "week", ylab = "predictive standard deviation")
+lines(101:110, sqrt(cond_mom_101$var_matrix))
+```
+The agreement is still rather poor with 1000 simulation runs, but gets very good with 10000 (not applied here as costly in terms of storage and computation time).
