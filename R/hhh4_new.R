@@ -113,7 +113,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
       warning("Model with par_lag = ", range_par[i], " did not converge using update(). Refitting from scratch....")
       mod_temp <- hhh4_lag(stsObj, control, check.analyticals)
     }
-    mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + length(best_mod$par_lag) # + 1 for decay paramter
+    mod_temp$dim["fixed"] <- mod_temp$dim["fixed"] + length(mod_temp$par_lag) # + 1 for decay paramter
     AICs[i] <- AIC(mod_temp) # + 2 no longer necessary as + 1 added above
     if(i == 1){ # keep first model in all cases
       best_mod <- mod_temp
