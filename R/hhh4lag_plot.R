@@ -31,7 +31,7 @@ plot.hhh4lag <- function (x,
   }
 
   # cases where a specific function had to be implemented:
-  if(type %in% c("fitted", "maps")){
+  if(type %in% c("fitted")){
     cl[[1L]] <- as.name(paste("plotHHH4lag", match.arg(type), sep="_"))
     eval(cl, envir = parent.frame())
   }
@@ -47,5 +47,9 @@ plot.hhh4lag <- function (x,
   }
   if(type %in% c("maps", "ri")){
     stop("Plot types maps and ri currently not implemented for hhh4lag objects.)")
+  }
+
+  if(!type %in% c("fitted", "season", "neweights", "maxEV", "maps", "ri")){
+    stop("Plot type does not exist for hhh4lag objects.")
   }
 }
