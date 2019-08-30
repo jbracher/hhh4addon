@@ -138,8 +138,16 @@ setControl <- function (control, stsObj)
 
   if (is.factor(control$family)) {
     stopifnot(length(control$family) == nUnit)
-    control$family <- droplevels(control$family)
-    names(control$family) <- colnames(stsObj)
+    ## guard against misuse as family = factor("Poisson"), e.g., if taken
+    ## from a data.frame of control options with "stringsAsFactors"
+    if (nUnit == 1 && as.character(control$family) %in% defaultControl$family) {
+      control$family <- as.character(control$family)
+      warning("'family = factor(\"", control$family, "\")' is interpreted ",
+              "as 'family = \"", control$family, "\"'")
+    } else {
+      control$family <- droplevels(control$family)
+      names(control$family) <- colnames(stsObj)
+    }
   } else {
     control$family <- match.arg(control$family, defaultControl$family)
   }
