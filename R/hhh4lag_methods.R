@@ -49,12 +49,12 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
   } else cat("No coefficients\n")
   cat("\n")
   # if(x$use_distr_lag){ #BJ
-    wgts <- x$distr_lag
-    cat(paste0("Distributed lags used (max_lag = ", length(wgts),
-               "). Weights: "))
-    cat(paste(round(wgts, 2), collapse = "; "))
-    cat("\nUse distr_lag() to check the applied lag distribution and parameters.\n") #BJ
-    cat("\n") #BJ
+  wgts <- x$distr_lag
+  cat(paste0("Distributed lags used (max_lag = ", length(wgts),
+             "). Weights: "))
+  cat(paste(round(wgts, 2), collapse = "; "))
+  cat("\nUse distr_lag() to check the applied lag distribution and parameters.\n") #BJ
+  cat("\n") #BJ
   #}
   invisible(x)
 }
@@ -162,7 +162,7 @@ logLik.hhh4lag <- function(object, ...)
 #' are not re-estimated!
 #' @export
 update.hhh4lag <- function (object, refit_par_lag = TRUE, ..., S = NULL, subset.upper = NULL,
-                         use.estimates = object$convergence, evaluate = TRUE, warning_weights = TRUE)
+                            use.estimates = object$convergence, evaluate = TRUE, warning_weights = TRUE)
 {
 
   control <- object$control
@@ -211,12 +211,13 @@ update.hhh4lag <- function (object, refit_par_lag = TRUE, ..., S = NULL, subset.
               names(S) %in% c("ar", "ne", "end"))
     control[names(S)] <- mapply(function (comp, S) {
       comp$f <- surveillance::addSeason2formula(surveillance:::removeSeasonFromFormula(comp$f),
-                                  period = object$stsObj@freq, S = S)
+                                                period = object$stsObj@freq, S = S)
       comp
     }, control[names(S)], S, SIMPLIFY=FALSE, USE.NAMES=FALSE)
   }
 
-  ## restrict fit to those epochs of control$subset which are <=subset.upper
+  ## use a different time range of the data (only changing the end)
+  ## Note: surveillance < 1.15.0 disallowed subset.upper > max(control$subset)
   if (surveillance:::isScalar(subset.upper)) {
     if (subset.upper < control$subset[1L])
       stop("'subset.upper' is smaller than the lower bound of 'subset'")
@@ -296,7 +297,7 @@ decompose.hhh4lag <- function (x, coefs = x$coefficients, ...)
 #' A modified version of \code{neOffsetArray} to deal with the added
 #' features of the \code{hhh4lag} class.
 neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
-                           subset = object$control$subset)
+                                   subset = object$control$subset)
 {
   ## initialize array ordered as (j, t, i) for apply() below
   res <- array(data = 0,
@@ -317,9 +318,9 @@ neOffsetArray.hhh4lag <- function (object, pars = coefW(object),
     # tYtm1 <- t(Y[tm1,,drop=FALSE])
     #BJ calculate lags using weightedSumAR instead of indexing as in original function
     tY_lagged <- t(hhh4addon:::weightedSumAR(observed = Y, lag = control$ar$lag, #BJ
-                                          funct_lag = control$funct_lag, par_lag = control$par_lag,
-                                          max_lag = control$max_lag, min_lag = control$min_lag,
-                                          sum_up = TRUE)[subset, ]) #BJ
+                                             funct_lag = control$funct_lag, par_lag = control$par_lag,
+                                             max_lag = control$max_lag, min_lag = control$min_lag,
+                                             sum_up = TRUE)[subset, ]) #BJ
     # from now on everything continues as before
     res[] <- apply(W, 2L, function (wi) tY_lagged * wi)
     offset <- object$control$ne$offset
