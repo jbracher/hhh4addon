@@ -20,7 +20,7 @@ plot.hhh4lag <- function (x,
                        type = c("fitted", "season", "maxEV", "maps", "ri", "neweights"),
                        ...)
 {
-  if(type[1] != "fitted") stop("This plot type is not implemented yet for objects of class hhh4lag")
+  # if(!(type[1] %in% c("fitted", "seas"))) stop("This plot type is not implemented yet for objects of class hhh4lag")
   stopifnot(x$convergence)
   cl <- sys.call()  # not match.call() because plotHHH4_season() has no 'x'
   ## remove the type argument from the call
@@ -29,6 +29,23 @@ plot.hhh4lag <- function (x,
   } else {
     cl$type <- NULL
   }
-  cl[[1L]] <- as.name(paste("plotHHH4lag", match.arg(type), sep="_"))
-  eval(cl, envir = parent.frame())
+
+  # cases where a specific function had to be implemented:
+  if(type %in% c("fitted", "maps")){
+    cl[[1L]] <- as.name(paste("plotHHH4lag", match.arg(type), sep="_"))
+    eval(cl, envir = parent.frame())
+  }
+
+  # cases where the hhh4 functions still work:
+  if(type %in% c("season", "neweights")){
+    surveillance:::plot.hhh4(x = x, type = type)
+  }
+
+  # cases which are not implemented / cannot be implemented:
+  if(type == "maxEV"){
+    stop("Plot type maxEV not implemented for hhh4lag objects (concept of maxEV not clearly defined.)")
+  }
+  if(type %in% c("maps", "ri")){
+    stop("Plot types maps and ri currently not implemented for hhh4lag objects.)")
+  }
 }
