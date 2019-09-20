@@ -14,7 +14,7 @@ To install the package directly from github and explore its functionality type:
 
 ```
 library(devtools)
-install_github("jbracher/hhh4addon", build_opts = c("--no-resave-data", "--no-manual"))
+install_github("jbracher/hhh4addon", build_vignettes = TRUE)
 library(hhh4addon)
 vignette("hhh4addon")
 ```
