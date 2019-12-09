@@ -1,6 +1,6 @@
 ---
 title: "hhh4addon: extending the functionality of surveillance:hhh4"
-author: "Johannes Bracher"
+author: "Johannes Bracher (johannes.bracher@uzh.ch), University of Zurich"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,140 +9,177 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-## Purpose of the `hhh4addon` package
+## Purpose of the `R` package `hhh4addon`
 
-The `hhh4addon` package modifies and extends  the functionality of the `surveillance` package, more specifically the model class implemented in the function `hhh4`. **Note that `hhh4addon` is currently only available in a development version.** It adds the following features:
+The `R` package `hhh4addon` extends the functionality of the `surveillance` package (Meyer et al 2017), more specifically the implementation of the endemic-epidemic model class in the function `hhh4`. <!-- **Note that `hhh4addon` is currently only available in a development version.--> It adds the following features:
 
-- Fitting model versions with distributed-lags.
-- Computation of predictive and stationary first and second moments.
+- Fitting models with higher-order lags.
+- Computation of predictive and marginal (stationary/periodically stationary) first and second moments.
 
-As `hhh4addon` can only be used in combination with `surveillance` we assume some basic familiarity with this package in the following.
+As `hhh4addon` can only be used in combination with `surveillance` we assume familiarity with this package and in particular the `hhh4` function in the following.
 
 
-## The `hhh4` model class and its extension to distributed lags
+## The endemic-epidemic model class and its extension to higher-order lags
 
-We only give a very brief description of the `hhh4` modelling framework, details can be found for instance in `vignette("hhh4")` and `vignette("hhh4_spacetime")` from the `surveillance` package. Counts $X_{it}$ in unit $i$ at time $t$ are modelled as
+We only give a brief description of the endemic-epidemic modelling and the `hhh4` function, details can be found in Meyer et al (2017) and the vignettes `vignette("hhh4")` and `vignette("hhh4_spacetime")` from the `surveillance` package. Counts $X_{it}$ in units $i = 1, ..., m$ and time $t$ are modelled as
 
 $$
-X_{it} \mid \mathbf{X}_{t - 1} \sim \text{NegBin}(\mu_{it}, \psi_i); X_{it} \bot X_{jt} \mid \mathbf{X}_{t - 1}\\
-\mu_{it} = e_{it}\nu_{it} + \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j \neq i} w_{ji}X_{j, t - 1}
+X_{it} \mid \mathbf{X}_{t - 1} \sim \text{NegBin}(\mu_{it}, \psi_i); X_{it} \bot X_{jt} \mid \mathbf{X}_{t - 1}
 $$
-where the negative binomial distribution is parametrized by its mean $\mu_{it}$ and an overdispersion perameter $\psi_i$ such that the conditional variance $\text{Var}(X_t \mid X_{t - 1}) = \mu_{it}\cdot(1 + \psi_i\mu_{it})$. While $e_{it}$ is a population offset, the remaining parameters of the mean structure are modelled in a log-linear fashion. While in principle covariates can enter here, it is common to let only an intercept and sine/cosine terms for seasonality enter:
 $$
-\log(\nu_{it}) = \alpha^{(\nu)}_i + \beta^{(\nu)}_i \sin(2\pi t/\omega) + \gamma^{(\nu)}_i \cos(2\pi t/\omega)\\
-\log(\lambda_{it}) = \alpha^{(\lambda)}_i + \beta^{(\lambda)}_i \sin(2\pi t/\omega) + \gamma^{(\lambda)}_i \cos(2\pi t/\omega)\\
-\log(\phi_{it}) = \alpha^{(\phi)}_i + \beta^{(\phi)}_i \sin(2\pi t/\omega) + \gamma^{(\phi)}_i \cos(2\pi t/\omega)\\
+\mu_{it} = e_{it}\nu_{it} + \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j \neq i} w_{ji}X_{j, t - 1}.
 $$
-Whether unit-specific parameters are necessary and identifiable depends on the data at hand, see the more general vignettes from `surveillance` for more information on model building.
+Here, the negative binomial distribution is parametrized by its mean $\mu_{it}$ and an overdispersion parameter $\psi_i$ so that $\text{Var}(X_t \mid \mathbf{X}_{t - 1}) = \mu_{it}\cdot(1 + \psi_i\mu_{it})$. The term $e_{it}\nu_{it}$ is referred to as the endemic component of incidence, where $e_{it}$ is a population offset. The remaining autoregressive terms form the epidemic component, with $\lambda_{it}X_{i, t - 1}$ often referred to as the autoregressive and $\phi_{it}\sum_{j \neq i} w_{ji}X_{j, t - 1}$ as the neighbourhood part. The parameters $\nu_{it}, \lambda_{it}$ and $\phi_{it}$ are themselves modelled in a log-linear fashion. While in principle covariates can enter here, it is common to include only an intercept and sine/cosine terms for seasonality, e.g.
+$$
+\log(\nu_{it}) = \alpha^{(\nu)}_i + \beta^{(\nu)}_i \sin(2\pi t/\omega) + \gamma^{(\nu)}_i \cos(2\pi t/\omega),
+$$
+$$
+\log(\lambda_{it}) = \alpha^{(\lambda)}_i + \beta^{(\lambda)}_i \sin(2\pi t/\omega) + \gamma^{(\lambda)}_i \cos(2\pi t/\omega),
+$$
+$$
+\log(\phi_{it}) = \alpha^{(\phi)}_i + \beta^{(\phi)}_i \sin(2\pi t/\omega) + \gamma^{(\phi)}_i \cos(2\pi t/\omega).
+$$
+Models of this type can be fitted using the function `hhh4` from `surveillance`. The `control` list allows to specify numerous aspects of the model, with the parameterization for the parameters $\nu_{it}$, $\lambda_{it}$ and $\phi_{it}$ steered by the elements `end`, `ar` and `ne`. Whether unit-specific parameters are necessary and identifiable depends on the data at hand, see the vignettes from `surveillance` for more information on model building.
 
-The added functionality which `hhh4addon` offers is to allow for distributed lags, i.e. models with a conditional mean of the form
+The additional functionality offered by `hhh4addon` is the inclusion of higher-order lags, i.e. fitting models of the form
+$$
+X_{it} \mid \mathbf{X}_{t - 1}, \mathbf{X}_{t - 2}, ... \sim \text{NegBin}(\mu_{it}, \psi_i)
+$$
 $$
 \mu_{it} = \nu_{it} + \lambda_{it}\sum_{d = 1}^D \lfloor u_d\rfloor X_{t - d} + \phi_{it}\sum_{j\neq i}\sum_{d = 1}^D w_{ji}\lfloor u_d\rfloor X_{j, t - d}
 $$
+where the weights $u_d$ are normalized so that $\sum_{d = 1}^D \lfloor u_d\rfloor = 1$. This means that instead of the previous observation $X_{t - 1}$ a weighted average of the $D$ preceding observations $X_{t - 1},\dots, X_{t - D}$ enters. Note that the weights $u_d$ are shared between the autoregressive and neighbourhood component and it is not possible to specify them separately.
 
-where the weights $u_d$ are normalized such that $\sum_{d = 1}^D \lfloor u_d\rfloor = 1$ before they enter. This means that instead of the previous observation $X_{t - 1}$ a weighted average of the $D$ preceding observations $X_{t - D},\dots, X_{t - 1}$ enters. Currently three lag types are implemented. The default is a geometric, i.e. exponentially decaying lag structure (implemented in `geometric_lag`):
+Currently four parameterizations are implemented. The default is a geometric, i.e. exponentially decaying lag structure:
 $$
 u_d = \alpha(1 - \alpha)^{d - 1}
 $$
-The `par_lag` parameter of the function `geometric_lag` is not $\alpha$ but $logit(\alpha)$, as this allows us to avoid constraints in the optimization procedure.
-
-A second option are Poisson lags (implemented in `poisson_lag`):
+A second option as (shifted) Poisson weighting,
 $$
-u_d = \frac{\alpha^{d - 1}}{(d - 1)!}\exp(-\alpha)
+u_d = \frac{\alpha^{d - 1}}{(d - 1)!}\exp(-\alpha),
 $$
-The `par_lag` parameter of the function `poisson_lag` is $\log(\alpha)$ here, again to avoid constraints in the optimization procedure.
-
-The third pre-implemented lag structure is a simple AR(2) version (`ar2_lag`) with
+which unlike the geometric formulation does not force the first lag weight $u_1$ to be the largest. Thirdly there are linearly decaying lag weights,
+$$
+u_d = \max(1 - \alpha d, 0).
+$$
+The last pre-implemented lag structure is a simple AR(2) version with
 $$
 u_1 = \alpha;\ \ \ u_2 = 1 - \alpha.
 $$
-where again the `par_lag` parameter of the function `ar2_lag` is $logit(\alpha)$.
 
-We exemplify this with an with a simple univariate analysis of the `salmonella` data from `surveillance`. All syntax also translates to the multivariate case.
-```{r, fig.show='hold'}
-library(surveillance, quietly = TRUE)
+When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available which allows for the following additional specifications in the `control` list:
+
+- `funct_lag`: a function to compute lag weights from a (scalar) parameter `par_lag` and the smalles and largest lags to include (`min_lag`and `max_lag`). The four parameterizations mentioned above can be specified (implemented in the functions `geometric lag`, `poisson_lag`, `linear_lag` and `ar2_lag`). Alternatively a user-specified function can be provided. For this cse we recommend to consult the source code of `geometric_lag` etc. and adapt it accordingly.
+- `par_lag`: the parameter entering into `funct_lag`; for `geometric_lag`, `linear_lag` and `ar2_lag` this is $\text{logit}(\alpha)$, for `poisson_lag` it is $\log(\alpha)$. These choices enable unconstrained optimization of the (profile) likelihood.
+- `min_lag`: the lowest lag to be included (the weights for lags 1 through `par_lag` - 1 are forced to zero). The default value 1 should be kept in most cases.
+- `max_lag`: the highest lag to be included. Note that the `subset` specified in `control` needs to be compatible with `max_lag` (specifically `subset[1] > max_lag` needs to hold).
+
+The return object of `hhh4lag` is an object of class `hhh4lag`, which inherits from the regular `hhh4` class.
+
+We exemplify this with a simple univariate analysis of the `salmonella.agona` data from `surveillance` (see plot below). All syntax also translates to the multivariate case.
+```{r, fig.show='hold', message=FALSE}
+library(surveillance)
 library(hhh4addon)
-data("salmonella.agona")
-## convert old "disProg" to new "sts" data class
+data("salmonella.agona") # get data
+# convert old "disProg" to new "sts" data class
 salmonella <- disProg2sts(salmonella.agona)
-
+# plot data:
 plot(salmonella)
 ```
 
-First we fit a regular `hhh4` model with seasonality in both components:
+First we fit a univariate `hhh4` model with only first lags and seasonality in both the endemic (`en`) and epidemic/autoregressive (`ar`) component, i.e.
+$$
+\mu_t = \nu_t + \phi_t X_{t - 1}
+$$
+$$
+\log(\nu_t) = \alpha^{(\nu)} + \beta^{(\nu)} \sin(2\pi t/\omega) + \gamma^{(\nu)} \cos(2\pi t/\omega)
+$$
+$$
+\log(\phi_t) = \alpha^{(\phi)} + \beta^{(\phi)} \sin(2\pi t/\omega) + \gamma^{(\phi)} \cos(2\pi t/\omega)
+$$
 ```{r, message=FALSE, warning=FALSE}
 control_salmonella <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1), lag = 1),
-                            family = "NegBinM", subset = 6:312)
-fit_salmonella <- hhh4(salmonella, control_salmonella)
-AIC(fit_salmonella)
+                            family = "NegBin1", subset = 6:312)
+# Note: we fit to subset 6:312 to ensure comparability with the higher-order lag
+# models fitted next.
+fit_salmonella_ar1 <- hhh4(salmonella, control_salmonella) # use regular hhh4
+AIC(fit_salmonella_ar1)
 ```
-
-When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available which allows for some additional specifications in the `control` list. Specifically the following arguments can be specified in the `control` list:
-
-- `funct_lag`: a function to compute distributed lags from simple first lags given some parameter value and a maximum number of lags. Currently only the default function `geometric_lag` is implemented.
-- `par_lag`: the parameter entering into `funct_lag`; for `geometric_lag` this is $p$ (which corresponds to the un-normalized weight of the first lag)
-- `min_lag`: the lowest lag to be included; should be left at 1 in most cases
-- `max_lag`: the highest lag to be included. Note that the `subset` specified in `control`needs to be compatible with `max_lag` (`subset[1]` needs to be larger than `max_lag`).
-
-The folowing code allows to fit a model with a geometric lag structure, a fixed value of $p = 0.8$ and five lags. Note that for such a model we can only use the data from week 6 onwards for fitting (the lagged observations are not available for weeks 1 through 5).
+The folowing code allows to fit a higher-order lag model with
+$$
+\mu_t = \nu_t + \lambda_{it}\sum_{d = 1}^5 \lfloor u_d\rfloor X_{t - d},
+$$
+geometric lag weights $u_d$ and a fixed value of $\alpha = 0.8$. We fit the model to data from week 6 onwards.
 
 ```{r}
-par_lag_0.8 <- log(0.8/(1 - 0.8)) # compute the par_lag value corresponding to alpha = 0.8
+par_lag_0.8 <- log(0.8/(1 - 0.8)) # the par_lag value corresponding to alpha = 0.8
 control_salmonella.08 <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1)),
-                            par_lag = par_lag_0.8, max_lag = 5,
-                            family = "NegBinM", subset = 6:312)
-fit_salmonella.08 <- hhh4_lag(salmonella, control_salmonella.08)
-plot(fit_salmonella.08)
-AIC(fit_salmonella.08)
+                            funct_lag = geometric_lag, # default
+                            max_lag = 5, # default
+                            par_lag = par_lag_0.8, # new parameter
+                            family = "NegBin1", subset = 6:312)
+# Note that funct_lag = geometric_lag and max_lag = 5 are the defaults and would
+# not have to be specified explicitly.
+fit_salmonella_geom.08 <- hhh4_lag(salmonella, control_salmonella.08) # now use hhh4lag
+plot(fit_salmonella_geom.08, names = "")
+AIC(fit_salmonella_geom.08)
 ```
 
-We can see that this model is better than the above model with first lags. To estimate $\alpha$ from the data we can use the wrapper `profile_par_lag` which re-fits the model for different values of $\alpha$ and uses `optim()`to find the optimal one:
+We can see that in terms of AIC this model is better than the previously fitted model with only first lags. To estimate $\alpha$ from the data we can use the wrapper `profile_par_lag` which re-fits the model for different values of $\alpha$ and uses numerical optimization (`optim`) to find the optimal one.
 
 ```{r}
-control_salmonella.profile <- list(end = list(f = addSeason2formula(~ 1)),
+control_salmonella_geom <- list(end = list(f = addSeason2formula(~ 1)),
                             ar = list(f = addSeason2formula(~ 1)),
+                            funct_lag = geometric_lag,
                             max_lag = 5,
-                            family = "NegBinM", subset = 6:312)
-fit_salmonella.profile <- profile_par_lag(salmonella, control_salmonella.profile)
-AIC(fit_salmonella.profile)
-summary(fit_salmonella.profile)
+                            family = "NegBin1", subset = 6:312)
+fit_salmonella_geom <- profile_par_lag(salmonella, control_salmonella_geom)
+AIC(fit_salmonella_geom)
+summary(fit_salmonella_geom)
 ```
-The best fit is attained with a model using $p = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one.
 
-An (older) alternative in order to estimate $\alpha$ is `fit_par_lag` which instead of applying `optim` fits the model for a set of values for `alpha` provided by the user:
+The best fit is achieved with $\alpha = 0.56$, i.e. almost half of the contribution of the epidemic contribution comes from lags of order larger than one (the lag weights are stored in `fit_salmonella_geom$distr_lag`).
+
+An (older) alternative in order to estimate $\alpha$ is `fit_par_lag` which instead of applying `optim` fits the model for a set of values for `par_lag` provided by the user (argument `range_par`). Under certain circumstances this is computationally faster than the use of `optim`.
+
 ```{r}
 grid_alpha <- seq(from = 0.01, to = 0.99, by = 0.02)
 grid_par_lag <- log(grid_alpha/(1 - grid_alpha)) # move to logit scale
-fit_salmonella.grid <- fit_par_lag(salmonella, control_salmonella.profile, range_par = grid_par_lag)
-```
-This function returns a list containing the best model and the AIC values of the models corresponding to the different values of $\alpha$.
-```{r}
-plot(grid_alpha, fit_salmonella.grid$AICs, type = "l", xlab = expression(alpha), ylab = "AIC")
+fit_salmonella_geom.grid <- fit_par_lag(salmonella, control_salmonella_geom,
+                                   range_par = grid_par_lag)
 ```
 
-A remark on the computation of the AICs: The AIC of a model which was fitted with `fit_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated. This is due to the loss of one degree of freedom.
+This function returns a list containing the best model (`$best_mod`) and the AIC values of the models corresponding to the different values of $\alpha$ (`$AICs`). It thus allows us to plot the AIC as a function of $\alpha$.
+
 ```{r}
-par_lag_0.56 <- log(0.56/(1 - 0.56)) # compute the par_lag value corresponding to alpha = 0.56
-control_salmonella.056 <- list(end = list(f = addSeason2formula(~ 1)),
-                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE, 
-                                      max_lag = 5),
+plot(grid_alpha, fit_salmonella_geom.grid$AICs, type = "l",
+     xlab = expression(alpha), ylab = "AIC")
+```
+
+A remark on the computation of the AIC values: The AIC of a model which was fitted with `fit_par_lag` or `profile_par_lag` is 2 points higher than that of a model with the same value of `par_lag`, but specified manually instead of being estimated. This is due to the loss of one degree of freedom.
+
+```{r}
+par_lag_0.56 <- log(0.56/(1 - 0.56)) # par_lag value corresponding to alpha = 0.56
+control_salmonella_geom.056 <- list(end = list(f = addSeason2formula(~ 1)),
+                            ar = list(f = addSeason2formula(~ 1), use_distr_lag = TRUE),
                             par_lag = par_lag_0.56,
-                            family = "NegBinM", subset = 6:312)
-fit_salmonella.056 <- hhh4_lag(salmonella, control_salmonella.056)
-AIC(fit_salmonella.056)
-AIC(fit_salmonella.profile)
-AIC(fit_salmonella.grid$best_mod)
+                            family = "NegBin1", subset = 6:312)
+fit_salmonella_geom.056 <- hhh4_lag(salmonella, control_salmonella_geom.056)
+AIC(fit_salmonella_geom.056) # two points lower
+AIC(fit_salmonella_geom)
+AIC(fit_salmonella_geom.grid$best_mod)
 ```
+For comparison we also fit models with Poisson and AR(2) lags.
 
-To use other lag weighting functions the `funct_lag` argument needs to be specified explicitly. We fit models with Poisson and AR(2) lags:
 ```{r}
 # Poisson lags:
-control_salmonella_pl <- control_salmonella
-control_salmonella_pl$funct_lag <- poisson_lag
-fit_salmonella_pl <- profile_par_lag(salmonella, control_salmonella_pl)
-summary(fit_salmonella_pl)
+control_salmonella_pois <- control_salmonella
+control_salmonella_pois$funct_lag <- poisson_lag
+fit_salmonella_pois <- profile_par_lag(salmonella, control_salmonella_pois)
+summary(fit_salmonella_pois)
+
 # AR(2) lags:
 control_salmonella_ar2 <- control_salmonella
 control_salmonella_ar2$funct_lag <- ar2_lag
@@ -150,107 +187,101 @@ fit_salmonella_ar2 <- profile_par_lag(salmonella, control_salmonella_ar2)
 summary(fit_salmonella_ar2)
 ```
 
-Lastly, it is possible to specify a custom function for the lag weighting. It has to take scalar arguments `par_lag, min_lag, max_lag` and return a weight vector of length `max_lag` (i.e. its elements need to sum up to 1). We exemplify this with a function which assigns linearly decreasing weights:
-```{r}
-lin_weights <- function(par_lag, min_lag, max_lag){
-  neg_slope <- exp(par_lag) # par_lag corresponds to the log of the negative slope of the un-normalized weights
-  weights0 <- c(rep(0, min_lag - 1), 10 - neg_slope*c(0:(max_lag - min_lag)))
-  weights0 <- pmax(weights0, 0)
-  weights <- weights0/sum(weights0)
-  return(weights)
-}
-# evaluate for some example values:
-lin_weights(par_lag = 0.5, min_lag = 1, max_lag = 5)
-lin_weights(par_lag = 1, min_lag = 1, max_lag = 5)
-lin_weights(par_lag = 2, min_lag = 1, max_lag = 5)
-lin_weights(par_lag = 2, min_lag = 2, max_lag = 5)
-```
+In terms of AIC these parameterizations lead to slightly worse results than the geometric lags weights.
 
-This can then be plugged into for instance the `profile_par_lag`function:
-```{r}
-control_salmonella_lin <- control_salmonella
-control_salmonella_lin$funct_lag <- lin_weights
-control_salmonella_lin$max_lag <- 3 # does not work so well with max_lag = 5...
-fit_salmonella.lin <- profile_par_lag(salmonella, control_salmonella_lin)
-summary(fit_salmonella.lin)
-plot(fit_salmonella.lin$distr_lag, type = "l", xlab = "lag", ylab = "lag weight")
-```
+Most of the functionality for `hhh4` objects is by now also available for `hhh4lag` objects (as returned by `hhh4lag` and `profile_par_lag`). For instance we can simulate from a fitted model. Note that in this case the starting values need to be specified as a matrix with `max_lag` rows.
 
-This leads indeed to linearly decaying weights. Note however, that this model specification generally does not behave well, which is why it is not included in the package.
-
-Most of the functionality for `hhh4` objects is by now also available for `hhh4lag` objects (as returned by `hhh4lag` and `profile_par_lag`). For instance we can simulate:
 ```{r}
-# simulate 100 trajectories for weeks 101 through 110:
-sim <- simulate(fit_salmonella.profile, subset = 101:110,
-                y.start = fit_salmonella.profile$stsObj@observed[96:100, , drop = FALSE],
+# simulate 100 trajectories for weeks 261 through 270, using values from 
+# 256 through 260 as starting values:
+set.seed(17)
+sim <- simulate(fit_salmonella_geom, subset = 261:270,
+                y.start = fit_salmonella_geom$stsObj@observed[256:260, , drop = FALSE],
                 nsim = 1000, simplify = TRUE)
 # plot one trajectory:
-plot(101:110, sim[, , 1], type = "b", xlab = "week", ylab = "cases")
+plot(261:270, sim[, , 1], type = "h", xlab = "week", ylab = "No. infected")
 
 ```
 
-Or we can generate rolling one-week-ahead forecasts. This is done using a new function `oneStepAhead_hhh4lag` (the function `oneStepAhead` from `surveillance` cannot be applied and will throw an error message). By default the lag weighting parameter is not re-fitted (as this can lead to quite long computation times); to re-fit them set the argument \code{refit_par_lag} to TRUE. The result can then be handled just like the return from \code{surveillance:oneStepAhead} would.
+Or we can generate rolling one-week-ahead forecasts (i.e. from models which are iteratively re-fitted each week). This is done using the new function `hhh4addon:oneStepAhead_hhh4lag` (the function `surveillance:oneStepAhead` cannot be applied and will throw an error). By default the lag weighting parameter `par_lag` is not re-fitted (as this can lead to quite long computation times); to re-fit it set the argument `refit_par_lag` to `TRUE`. The result of `hhh4addon:oneStepAhead_hhh4lag` can be handled just like the return from `surveillance:oneStepAhead` would. We illustrate this for weeks 261--312 as the validation period.
+
 ```{r}
-owa_forecasts.profile <- oneStepAhead_hhh4lag(fit_salmonella.profile,
+owa_forecasts_geom <- oneStepAhead_hhh4lag(fit_salmonella_geom,
                                       tp = c(260, 311), refit_par_lag = FALSE)
-colMeans(scores(owa_forecasts.profile))
+# forecasts are done for tp[1] + 1, tp[2] + 1, ...
+colMeans(scores(owa_forecasts_geom))
 
-# for comparison: model without distributed lags:
-owa_forecasts <- oneStepAhead(fit_salmonella,
+# for comparison: model with only first lags:
+owa_forecasts_ar1 <- oneStepAhead(fit_salmonella_ar1,
                                       tp = c(260, 311))
-colMeans(scores(owa_forecasts))
-
-# The geometric-lag model performs slightly better in terms of the logarithmic score.
+colMeans(scores(owa_forecasts_ar1))
 ```
 
-## Predictive and periodically stationary moments
+The geometric-lag model thus performs slightly better in terms of the logarithmic and Dawid-Sebastiani scores, but worse in terms of the ranked probability score (all scores are negatively oriented).
 
-The second and more mature functionality of `hhh4addon` concerns predictive and periodically stationary moments. These quantities can be computed without the need for simulation for the `hhh4` class, see Held, Meyer and Bracher (2017) and Bracher and Held (2017) for the theoretical background.
+## Computing predictive and marginal moments
 
-To demonstrate this we re-fit the above models on a a subset of the `salmonella` data and keep the rest for validation of our predictions.
+The second functionality of `hhh4addon` concerns predictive and marginal (stationary or periodically stationary) moments. These quantities can be computed without the need for simulation for the endemic-epidemic class, see Held, Meyer and Bracher (2017) and Bracher and Held (2017) for the theoretical background.
+
+To illustrate the use of predictive moments this we re-fit the above models to weeks 6--260 of the `salmonella.agona` data. The rest is again kept for validation of our predictions.
+
 ```{r}
 control_salmonella.sub <- list(end = list(f = addSeason2formula(~ 1), lag = 1),
                             ar = list(f = addSeason2formula(~ 1), lag = 1),
-                            family = "NegBinM", subset = 6:260)
-fit_salmonella.sub <- hhh4(salmonella, control_salmonella.sub)
+                            family = "NegBin1", subset = 6:260)
+fit_salmonella_ar1.sub <- hhh4(salmonella, control_salmonella.sub)
+fit_salmonella_geom.sub <- profile_par_lag(salmonella, control_salmonella.sub)
 ```
-Predictive moments can now be calculated and plotted as follows:
+
+Predictive moments for weeks 261, 262, ... can now be calculated and plotted. Note that these correspond to a path forecast rather than a weekly updated rolling forecast as before, i.e. the forecasts for weeks 261, 262,... are all conditioned on the observation from week 206.
+
 ```{r}
-pred_mom <- predictive_moments(fit_salmonella.sub, t_condition = 260, lgt = 52, return_Sigma = TRUE)
-plot(fit_salmonella.sub)
-fanplot_prediction(pred_mom, add = TRUE)
-fanplot_prediction(pred_mom, add = FALSE)
+pred_mom_ar1 <- predictive_moments(fit_salmonella_ar1.sub, t_condition = 260, 
+                               lgt = 52, return_Sigma = TRUE)
+# if return_Sigma == TRUE the full predictive covariance function is returned
+# this may be costly in terms of storage for complex models and long forecasts.
+pred_mom_geom <- predictive_moments(fit_salmonella_geom.sub, 
+                                    t_condition = 260, lgt = 52, return_Sigma = TRUE)
+
+plot(fit_salmonella_ar1.sub, names = "")
+fanplot_prediction(pred_mom_geom, add = TRUE)
 ```
 
-
-The fanplots here are based on negative binomial approximations of the predictive distributions via the first two moments. We can also use these predictive moments to evaluate the Dawid-Sebastiani score, a proper scoring rule for predictive model assessment:
+The fanplots shown here are based on negative binomial approximations of the predictive distributions via the first two moments. We can also use these predictive moments to evaluate the Dawid-Sebastiani score of the path forecasts (a proper scoring rule for predictive model assessment, Held et al 2017).
 ```{r}
-ds_score_hhh4(pred_mom)
+ds_score_hhh4(pred_mom_ar1)
+ds_score_hhh4(pred_mom_geom)
 ```
 
-We use this to compare a model with one lag to a model with geometric lags.
+The David-Sebastiani score is negatively oriented here, i.e. the prediction from the model `fit_salmonella_geom.sub` with geometric lags is slightly better than the one from the simpler `fit_salmonella.sub`.
+
+The `predictive_moments` function can also be used to check that the simulation functions are doing the right thing. Re-using the previously simulated data:
+
 ```{r}
-# fit the model with geometric lags
-control_salmonella.sub.flex <- list(end = list(f = addSeason2formula(~ 1)),
-                            ar = list(f = addSeason2formula(~ 1)),
-                            family = "NegBinM", max_lag = 5, subset = 6:260)
-grid_alpha <- seq(from = 0.01, to = 0.99, by = 0.02)
-grid_par_lag <- log(grid_alpha/(1 - grid_alpha)) # move to logit scale
-fit_salmonella.sub.flex <- fit_par_lag(salmonella, control_salmonella.sub.flex, range_par = grid_par_lag)
+cond_mom_geom_101 <- predictive_moments(fit_salmonella_geom, t_condition = 260, lgt = 10)
+plot(261:270, apply(sim, 1:2, mean), xlab = "week", ylab = "predictive mean")
+lines(261:270, cond_mom_geom_101$mu_matrix)
+legend("topright", pch = c(1, NA), lty = c(NA, 1),
+       legend = c("simulation-based", "analytical"), bty = "n")
 
-# get prediction:
-pred_mom.flex <- predictive_moments(fit_salmonella.sub.flex$best_mod, t_condition = 260, lgt = 52, return_Sigma = TRUE)
-ds_score_hhh4(pred_mom.flex)
+plot(261:270, apply(sim, 1:2, sd), xlab = "week", ylab = "predictive standard deviation")
+lines(261:270, sqrt(cond_mom_geom_101$var_matrix))
 ```
-Like other predictive scores the David-Sebastiani score is negatively oriented, i.e. the prediction from the model `fit_salmonella.sub.flex` with geometric lags is slightly better than the one from the simpler `fit_salmonella.sub`.
 
-The function can also be used to check that our simulation functions are doing the right thing. Taking up the example for the previous section:
+The agreement between the analytical results and the simulation-based estimtes of the predictive moments is rather poor with 1,000 simulation runs, but gets very good with 10,000 (not applied here as costly in terms of storage and computation time).
+
+The function `stationary_moments` can be applied in the same way (without specifying a `t_condition` and `lgt`) to obtain the marginal moments of a fitted model. Note that this is only possible for models with either time-constant parameters (stationary moments) or periodically varying parameters (periodically stationary moments). Little surprisingly, for horizons larger than a few weeks the predictive and marginal moments are indistinguishable (as the forecast goes to the periodically stationary behaviour of the model).
 ```{r}
-cond_mom_101 <- predictive_moments(fit_salmonella.profile, t_condition = 100, lgt = 10)
-plot(101:110, apply(sim, 1:2, mean), xlab = "week", ylab = "predictive mean")
-lines(101:110, cond_mom_101$mu_matrix)
-
-plot(101:110, apply(sim, 1:2, sd), xlab = "week", ylab = "predictive standard deviation")
-lines(101:110, sqrt(cond_mom_101$var_matrix))
+marg_mom_geom <- stationary_moments(fit_salmonella_geom)
+fanplot_stationary(marg_mom_geom, timepoints = 1:52, add_legend = TRUE)
 ```
-The agreement is still rather poor with 1000 simulation runs, but gets very good with 10000 (not applied here as costly in terms of storage and computation time).
+
+# References
+
+Bracher, J. and L. Held (2019). Endemic-epidemic models with discrete-time serial interval distributions for infectious disease prediction. Preprint: *arXiv:1901.03090*.
+
+Bracher, J. and L. Held (2017). Periodically stationary multivariate autoregressive models. Preprint: *arXiv:1707.04635*.
+
+Held, L., S. Meyer, and J. Bracher (2017). Probabilistic forecasting in infectious disease epidemiology: the 13th Armitage lecture. *Statistics in Medicine* 36 (22), 3443–3460.
+
+Meyer, S., L. Held, and M. Höhle (2017). Spatio-temporal analysis of epidemic phenomena using the R package surveillance. *Journal of Statistical Software* 77 (11), 1–55.
