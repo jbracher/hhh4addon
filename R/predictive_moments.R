@@ -80,6 +80,11 @@
 predictive_moments <- function(hhh4Obj, t_condition, lgt,
                                return_Sigma = FALSE, return_cov_array = FALSE,
                                return_mu_decomposed = FALSE, return_M = FALSE){
+
+  if(t_condition + lgt > nrow(hhh4Obj$stsObj@observed)){
+    stop("Forecast horizon needs to be covered by range of sts@observed. If necessary, add NA observations to the end of your sts object.")
+  }
+
   nu_lambda <- lambda_tilde_complex_neighbourhood(hhh4Obj, subset = seq(from = t_condition + 1, length.out = lgt))
 
   psi <- if(hhh4Obj$control$family == "Poisson"){
