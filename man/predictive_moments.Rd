@@ -12,7 +12,7 @@ predictive_moments(hhh4Obj, t_condition, lgt, return_Sigma = FALSE,
 \item{hhh4Obj}{an \code{hhh4} object}
 
 \item{t_condition}{the index of the week on which to condition the
-path forecast}
+path forecast, i.e. an integer between 1 and \code{nrow(hhh4Obj$stsObj@observed).}}
 
 \item{lgt}{the length of the path forecast, i.e. 52 for forecasting
 an entire season when using weekly data}
