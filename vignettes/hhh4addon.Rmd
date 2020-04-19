@@ -71,7 +71,7 @@ When `hhh4addon` is loaded, a modified version `hhh4lag` of `hhh4` is available.
 
 - `funct_lag`: a function to compute lag weights from a (scalar) parameter `par_lag`. Moreover the function needs to take the smallest and largest lag to receive a positive weight as arguments (`min_lag` and `max_lag`). The four parameterizations mentioned above can be specified (implemented in the functions `geometric lag`, `poisson_lag`, `linear_lag` and `ar2_lag`). Alternatively a user-defined function can be provided. For this case we recommend to consult the source code of e.g. `geometric_lag` and adapt it accordingly.
 - `par_lag`: the weighting parameter entering into `funct_lag`; for `geometric_lag`, `linear_lag` and `ar2_lag` this is $\text{logit}(\alpha)$, for `poisson_lag` it is $\log(\alpha)$. These choices enable unconstrained optimization of the (profile) likelihood, when $\alpha$ is estimated from the data (see below).
-- `min_lag`: the lowest lag to receive a positive weight (the weights for lags 1 through `par_lag - 1` are forced to zero). The default value 1 should be kept in most cases.
+- `min_lag`: the lowest lag to receive a positive weight (the weights for lags 1 through `min_lag - 1` are forced to zero). The default value 1 should be kept in most cases.
 - `max_lag`: the highest lag to be included. Note that the `subset` specified in `control` needs to be compatible with `max_lag` (specifically `subset[1] > max_lag` needs to hold).
 
 The return object of `hhh4lag` is an object of class `hhh4lag`, which inherits from the regular `hhh4` class.
