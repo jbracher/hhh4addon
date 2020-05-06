@@ -1,7 +1,7 @@
 #' Display the function and parameters used for distributed lags
 #'@export
 #'@param hhh4Obj an object of class \code{hhh4}
-#'@return A list containing the function and parameters characterizeing the lag weights
+#'@return A list containing the function and parameters characterizing the lag weights
 #' (for both the \code{ar} and \code{ne} components)
 #'@examples
 #' data("salmonella.agona")
