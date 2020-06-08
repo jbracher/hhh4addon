@@ -10,7 +10,7 @@ distr_lag(hhh4Obj)
 \item{hhh4Obj}{an object of class \code{hhh4}}
 }
 \value{
-A list containing the function and parameters characterizeing the lag weights
+A list containing the function and parameters characterizing the lag weights
 (for both the \code{ar} and \code{ne} components)
 }
 \description{

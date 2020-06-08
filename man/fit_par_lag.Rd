@@ -4,8 +4,13 @@
 \alias{fit_par_lag}
 \title{Estimating the lag decay parameter of an \code{hhh4_lag} model using profile likelihood}
 \usage{
-fit_par_lag(stsObj, control, check.analyticals = FALSE, range_par,
-  use_update = TRUE)
+fit_par_lag(
+  stsObj,
+  control,
+  check.analyticals = FALSE,
+  range_par,
+  use_update = TRUE
+)
 }
 \arguments{
 \item{range_par}{a vector of values to try for the \code{par_lag} argument of \code{funct_lag}}

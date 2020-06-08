@@ -4,10 +4,17 @@
 \alias{stationary_moments}
 \title{Analytic calculation of periodically stationary moments implied by a \code{hhh4}-model}
 \usage{
-stationary_moments(hhh4Obj, start = 1, n_seasons = 1,
-  return_Sigma = FALSE, return_cov_array = FALSE,
-  return_mu_decomposed = FALSE, return_M = FALSE, max.iter = 10,
-  tolerance = 1e-05)
+stationary_moments(
+  hhh4Obj,
+  start = 1,
+  n_seasons = 1,
+  return_Sigma = FALSE,
+  return_cov_array = FALSE,
+  return_mu_decomposed = FALSE,
+  return_M = FALSE,
+  max.iter = 10,
+  tolerance = 1e-05
+)
 }
 \arguments{
 \item{hhh4Obj}{\code{hhh4} object for which to calculate stationary moments}

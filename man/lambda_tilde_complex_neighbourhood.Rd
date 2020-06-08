@@ -4,8 +4,7 @@
 \alias{lambda_tilde_complex_neighbourhood}
 \title{Extracting Lambda_Tilde from an hhh4 object with complex neighbourhood structure}
 \usage{
-lambda_tilde_complex_neighbourhood(hhh4Obj, subset = NULL,
-  periodic = FALSE)
+lambda_tilde_complex_neighbourhood(hhh4Obj, subset = NULL, periodic = FALSE)
 }
 \arguments{
 \item{hhh4Obj}{a hhh4 object for which to extract Lambda_tilde}

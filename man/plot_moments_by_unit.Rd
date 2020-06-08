@@ -4,13 +4,29 @@
 \alias{plot_moments_by_unit}
 \title{Plot predictive or stationary moments by unit}
 \usage{
-plot_moments_by_unit(mom, probs = 1:99/100, add_observed = TRUE,
-  add_pred_means = TRUE, fan.col = colorRampPalette(c("darkgreen",
-  "gray90")), pt.col = "red", pt.cex = 0.3, mean_col = "black",
-  mean_lty = "dashed", ln = NULL, rlab = NULL, style = "boxfan",
-  space = 0.5, add_legend = FALSE, probs_legend = c(1, 25, 50, 75,
-  99)/100, ylim = NULL, main = NULL, xlab = NULL, las = NULL,
-  axes = TRUE, ...)
+plot_moments_by_unit(
+  mom,
+  probs = 1:99/100,
+  add_observed = TRUE,
+  add_pred_means = TRUE,
+  fan.col = colorRampPalette(c("darkgreen", "gray90")),
+  pt.col = "red",
+  pt.cex = 0.3,
+  mean_col = "black",
+  mean_lty = "dashed",
+  ln = NULL,
+  rlab = NULL,
+  style = "boxfan",
+  space = 0.5,
+  add_legend = FALSE,
+  probs_legend = c(1, 25, 50, 75, 99)/100,
+  ylim = NULL,
+  main = NULL,
+  xlab = NULL,
+  las = NULL,
+  axes = TRUE,
+  ...
+)
 }
 \arguments{
 \item{mom}{an object of class \code{predictive_moments_hhh4} or

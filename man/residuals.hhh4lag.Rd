@@ -4,8 +4,7 @@
 \alias{residuals.hhh4lag}
 \title{A modified version of \code{residuals.hhh4}}
 \usage{
-\method{residuals}{hhh4lag}(object, type = c("deviance", "response"),
-  ...)
+\method{residuals}{hhh4lag}(object, type = c("deviance", "response"), ...)
 }
 \description{
 A modified version of \code{residuals.hhh4} to deal with the added

@@ -4,9 +4,15 @@
 \alias{predictive_moments}
 \title{Analytical computation of predictive moments for an \code{hhh4} model}
 \usage{
-predictive_moments(hhh4Obj, t_condition, lgt, return_Sigma = FALSE,
-  return_cov_array = FALSE, return_mu_decomposed = FALSE,
-  return_M = FALSE)
+predictive_moments(
+  hhh4Obj,
+  t_condition,
+  lgt,
+  return_Sigma = FALSE,
+  return_cov_array = FALSE,
+  return_mu_decomposed = FALSE,
+  return_M = FALSE
+)
 }
 \arguments{
 \item{hhh4Obj}{an \code{hhh4} object}

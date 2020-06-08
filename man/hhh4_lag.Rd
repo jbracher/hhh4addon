@@ -4,16 +4,18 @@
 \alias{hhh4_lag}
 \title{Fitting hhh4 models with distributed lags}
 \usage{
-hhh4_lag(stsObj, control = list(ar = list(f = ~-1, offset = 1, lag = NA),
-  ne = list(f = ~-1, offset = 1, lag = NA, weights = neighbourhood(stsObj)
-  == 1, scale = NULL, normalize = FALSE), end = list(f = ~1, offset = 1),
-  family = c("Poisson", "NegBin1", "NegBinM"), funct_lag = geometric_lag,
-  par_lag = 1, min_lag = 1, max_lag = 5, subset = 6:nrow(stsObj), optimizer
-  = list(stop = list(tol = 1e-05, niter = 100), regression = list(method =
-  "nlminb"), variance = list(method = "nlminb")), verbose = FALSE, start =
-  list(fixed = NULL,      random = NULL, sd.corr = NULL), data = list(t =
-  stsObj@epoch - min(stsObj@epoch)), keep.terms = FALSE),
-  check.analyticals = FALSE)
+hhh4_lag(
+  stsObj,
+  control = list(ar = list(f = ~-1, offset = 1, lag = NA), ne = list(f = ~-1, offset =
+    1, lag = NA, weights = neighbourhood(stsObj) == 1, scale = NULL, normalize = FALSE),
+    end = list(f = ~1, offset = 1), family = c("Poisson", "NegBin1", "NegBinM"),
+    funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, subset =
+    6:nrow(stsObj), optimizer = list(stop = list(tol = 1e-05, niter = 100), regression =
+    list(method = "nlminb"), variance = list(method = "nlminb")), verbose = FALSE, start
+    = list(fixed = NULL,      random = NULL, sd.corr = NULL), data = list(t =
+    stsObj@epoch - min(stsObj@epoch)), keep.terms = FALSE),
+  check.analyticals = FALSE
+)
 }
 \arguments{
 \item{stsObj, control, check.analyticals}{As in \code{surveillance::hhh4},
@@ -33,12 +35,12 @@ but with the following additional elements in the \code{control} argument in ord
   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
   \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
 }
-\code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
+\code{hhh4_lag} requires \code{par_lag} to be pre-specified (with a default of 1). Using the wrappers \code{profile_par_lag} and \code{fit_par_lag} it can also be estimated using a profile
 likelihood approach.}
 }
 \description{
 A modified version of \code{surveillance::hhh4} to allow for distributed
-lags. Usually used from inside of the wrapper \code{fit_par_lag}.
+lags. Usually used from inside of the wrappers \code{profile_par_lag} or \code{fit_par_lag}.
 }
 \details{
 The standard \code{hhh4} function only allows for models with

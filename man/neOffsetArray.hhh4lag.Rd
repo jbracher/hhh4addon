@@ -4,8 +4,11 @@
 \alias{neOffsetArray.hhh4lag}
 \title{A modified version of \code{neOffsetArray}}
 \usage{
-neOffsetArray.hhh4lag(object, pars = coefW(object),
-  subset = object$control$subset)
+neOffsetArray.hhh4lag(
+  object,
+  pars = coefW(object),
+  subset = object$control$subset
+)
 }
 \description{
 A modified version of \code{neOffsetArray} to deal with the added

@@ -4,9 +4,16 @@
 \alias{update.hhh4lag}
 \title{A modified version of \code{update.hhh4}}
 \usage{
-\method{update}{hhh4lag}(object, refit_par_lag = TRUE, ..., S = NULL,
-  subset.upper = NULL, use.estimates = object$convergence,
-  evaluate = TRUE, warning_weights = TRUE)
+\method{update}{hhh4lag}(
+  object,
+  refit_par_lag = TRUE,
+  ...,
+  S = NULL,
+  subset.upper = NULL,
+  use.estimates = object$convergence,
+  evaluate = TRUE,
+  warning_weights = TRUE
+)
 }
 \description{
 A modified version of \code{update.hhh4} to deal with the added

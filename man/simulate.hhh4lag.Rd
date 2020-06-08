@@ -4,10 +4,17 @@
 \alias{simulate.hhh4lag}
 \title{Simulate "hhh4_lag" Count Time Series}
 \usage{
-\method{simulate}{hhh4lag}(object, nsim = 1, seed = NULL,
-  y.start = NULL, subset = 1:nrow(object$stsObj),
-  coefs = coef(object), components = c("ar", "ne", "end"),
-  simplify = nsim > 1, ...)
+\method{simulate}{hhh4lag}(
+  object,
+  nsim = 1,
+  seed = NULL,
+  y.start = NULL,
+  subset = 1:nrow(object$stsObj),
+  coefs = coef(object),
+  components = c("ar", "ne", "end"),
+  simplify = nsim > 1,
+  ...
+)
 }
 \description{
 This function is the equivalent of \code{surveillance::simulate.hhh4} for model fits of class

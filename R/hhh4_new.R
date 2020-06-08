@@ -315,7 +315,7 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #' Fitting hhh4 models with distributed lags
 #'
 #' A modified version of \code{surveillance::hhh4} to allow for distributed
-#' lags. Usually used from inside of the wrapper \code{fit_par_lag}.
+#' lags. Usually used from inside of the wrappers \code{profile_par_lag} or \code{fit_par_lag}.
 #'
 #' The standard \code{hhh4} function only allows for models with
 #' first lags i.e. of the form

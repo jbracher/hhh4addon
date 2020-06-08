@@ -4,15 +4,31 @@
 \alias{fanplot_prediction}
 \title{Display prediction as a fan plot}
 \usage{
-fanplot_prediction(pred, unit = 1, probs = 1:99/100,
-  interpolate_probs = TRUE, add_observed = TRUE,
-  add_pred_means = TRUE, fan.col = colorRampPalette(c("darkgreen",
-  "gray90")), pt.col = "red", pt.cex = 0.6, l.col = "black",
-  mean_col = "black", mean_lty = "dashed", ln = NULL, rlab = NULL,
-  add = FALSE, add_legend = FALSE, width_legend = 0.1 *
-  (max(pred$timepoints) - min(pred$timepoints))/pred$freq,
-  probs_legend = c(1, 25, 50, 75, 99)/100, ylim = NULL, xlab = "t",
-  ylab = "No. infected", return_matrix = FALSE, ...)
+fanplot_prediction(
+  pred,
+  unit = 1,
+  probs = 1:99/100,
+  interpolate_probs = TRUE,
+  add_observed = TRUE,
+  add_pred_means = TRUE,
+  fan.col = colorRampPalette(c("darkgreen", "gray90")),
+  pt.col = "red",
+  pt.cex = 0.6,
+  l.col = "black",
+  mean_col = "black",
+  mean_lty = "dashed",
+  ln = NULL,
+  rlab = NULL,
+  add = FALSE,
+  add_legend = FALSE,
+  width_legend = 0.1 * (max(pred$timepoints) - min(pred$timepoints))/pred$freq,
+  probs_legend = c(1, 25, 50, 75, 99)/100,
+  ylim = NULL,
+  xlab = "t",
+  ylab = "No. infected",
+  return_matrix = FALSE,
+  ...
+)
 }
 \arguments{
 \item{pred}{the prediction as returned by \code{longterm_prediction_hhh4}
