@@ -366,7 +366,7 @@ numeric_fisher_hhh4lag <- function(best_mod){
 #'   Important: the first element of the \code{subset} argument in \code{control} needs to be larger than
 #'   \code{max_lag} (as for the first \code{max_lag} observations the fitted values canot be computed)
 #' }
-#' \code{hhh4_lag} requires \code{par_lag} to be pre-specified. Using the wrapper \code{fit_par_lag} it can also be estimated using a profile
+#' \code{hhh4_lag} requires \code{par_lag} to be pre-specified (with a default of 1). Using the wrappers \code{profile_par_lag} and \code{fit_par_lag} it can also be estimated using a profile
 #' likelihood approach.
 #' @seealso \code{profile_par_lag} and \code{fit_par_lag} estimate \code{par_lag} in a profiling procedure. \code{profile_par_lag} is the
 #' recommended function, \code{fit_par_lag} may be quicker for complex models.
@@ -432,6 +432,10 @@ hhh4_lag <- function (stsObj, control = list(
     stsObj <- surveillance:::disProg2sts(stsObj)
   } else {
     stopifnot(inherits(stsObj, "sts"))
+  }
+
+  if(is.null(control$par_lag)){
+    message("You are using the default value par_lag = 1, which may or may not be a reasonable choice for your lag weighting function funct_lag. If you want par_lag (i.e. the weights for different lags) to be estimated from the data use the wrappers profile_par_lag (recommended) or fit_par_lag.")
   }
 
   ## check control and set default values (for missing arguments)
