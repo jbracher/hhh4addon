@@ -35,7 +35,7 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
   }
   if (x$dim["random"] > 0) {
     cat('Random effects:\n')
-    .printREmat(if (is.null(x$REmat)) .getREmat(x) else x$REmat,
+    surveillance:::.printREmat(if (is.null(x$REmat)) .getREmat(x) else x$REmat,
                 digits = digits)
     cat("\nFixed effects:\n")
   } else if (x$dim["fixed"] > 0) {
