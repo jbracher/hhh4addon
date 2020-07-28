@@ -45,8 +45,13 @@ plot.hhh4lag <- function (x,
   if(type[1] == "maxEV"){
     stop("Plot type maxEV not implemented for hhh4lag objects (concept of maxEV not clearly defined.)")
   }
-  if(type[1] %in% c("maps", "ri")){
-    stop("Plot types maps and ri currently not implemented for hhh4lag objects.)")
+
+  if(type[1] == "maps"){
+    plotHHH4lag_maps(x = x, type = type, ...)
+  }
+
+  if(type[1] %in% c("ri")){
+    stop("Plot type ri currently not implemented for hhh4lag objects.)")
   }
 
   if(!type[1] %in% c("fitted", "season", "neweights", "maxEV", "maps", "ri")){
