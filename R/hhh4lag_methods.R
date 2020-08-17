@@ -35,7 +35,7 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
   }
   if (x$dim["random"] > 0) {
     cat('Random effects:\n')
-    surveillance:::.printREmat(if (is.null(x$REmat)) .getREmat(x) else x$REmat,
+    surveillance:::.printREmat(if (is.null(x$REmat)) surveillance:::.getREmat(x) else x$REmat,
                 digits = digits)
     cat("\nFixed effects:\n")
   } else if (x$dim["fixed"] > 0) {
@@ -43,7 +43,7 @@ print.hhh4lag <- function (x, digits = max(3, getOption("digits")-3), ...)
   }
   if (x$dim["fixed"] > 0) {
     print.default(
-      format(if (is.null(x$fixef)) surveillance:::fixef.hhh4(x, ...) else x$fixef,
+      format(if (is.null(x$fixef)) fixef.hhh4lag(x, ...) else x$fixef,
              digits=digits),
       quote = FALSE, print.gap = 2)
   } else cat("No coefficients\n")
@@ -74,8 +74,8 @@ summary.hhh4lag <- function (object, maxEV = FALSE, ...)
   }
   ret <- c(object[c("call", "convergence", "dim", "loglikelihood", "margll",
                     "lags", "nTime", "nUnit")],
-           list(fixef = surveillance:::fixef.hhh4(object, se=TRUE, ...),
-                ranef = surveillance:::ranef.hhh4(object, ...),
+           list(fixef = fixef.hhh4lag(object, se=TRUE, ...),
+                ranef = ranef.hhh4lag(object, ...),
                 REmat = surveillance:::.getREmat(object),
                 AIC   = AIC(object),
                 BIC   = BIC(object),
@@ -393,4 +393,55 @@ psi2size.hhh4lag <- function (object, subset = object$control$subset, units = NU
   } else {
     size
   }
+}
+
+#' A modified version of \code{fixef.hhh4}
+fixef.hhh4lag <- function(object, ...){
+  # get correct number of fixed effects to extract from coefficients. If par_lag was estimated
+  # this needs to be lowered by 1.
+  n_fixef <- ifelse(is_fitted_par_lag(object), object$dim[1] - 1, object$dim[1])
+  if (object$dim[1L] > 0) {
+    head(surveillance:::coef.hhh4(object, ...), n_fixef)
+  }
+  else NULL
+}
+
+#' A modified version of \code{fixef.hhh4}
+fixef.hhh4lag <- function(object, ...){
+  # get correct number of fixed effects to extract from coefficients. If par_lag was estimated
+  # this needs to be lowered by 1.
+  n_fixef <- ifelse(is_fitted_par_lag(object), object$dim[1] - 1, object$dim[1])
+  if (object$dim[1L] > 0) {
+    head(surveillance:::coef.hhh4(object, ...), n_fixef)
+  }
+  else NULL
+}
+
+#' A modified version of \code{ranef.hhh4}
+ranef.hhh4lag <- function (object, tomatrix = FALSE, intercept = FALSE, ...)
+{
+  if (object$dim[2L] > 0) {
+    ranefvec <- tail(surveillance:::coef.hhh4(object, ...), object$dim[2L])
+  }
+  else return(NULL)
+  if (intercept)
+    tomatrix <- TRUE
+  if (!tomatrix)
+    return(ranefvec)
+  model <- terms.hhh4lag(object)
+  idxRE <- model$indexRE
+  idxs <- unique(idxRE)
+  mat <- vapply(X = idxs, FUN = function(idx) {
+    RE <- ranefvec[idxRE == idx]
+    Z <- model$terms["Z.intercept", ][[idx]]
+    "%m%" <- get(model$terms["mult", ][[idx]])
+    c(Z %m% RE)
+  }, FUN.VALUE = numeric(model$nUnits), USE.NAMES = FALSE)
+  dimnames(mat) <- list(colnames(model$response), model$namesFE[match(idxs,
+                                                                      model$indexFE)])
+  if (intercept) {
+    FE <- object$coefficients[colnames(mat)]
+    mat <- t(t(mat) + FE)
+  }
+  return(mat)
 }

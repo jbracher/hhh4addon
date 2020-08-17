@@ -29,6 +29,9 @@ plot.hhh4lag <- function (x,
   } else {
     cl$type <- NULL
   }
+  # some of the plotting functions get confused if dim is increased by one due to fitting of par_lag.
+  # therefore set dim[1] to to number of fixed effects excluding par_lag parameters:
+  x$dim[1] <- length(fixef.hhh4lag(x))
 
   # cases where a specific function had to be implemented:
   if(type[1] %in% c("fitted")){

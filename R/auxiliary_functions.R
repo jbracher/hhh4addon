@@ -97,3 +97,8 @@ get_diags_of_array <- function(arr){
   inds_in_array <- rep(0:(lgt - 1)*n_units^2, each = n_units) + inds_one_slice
   return(arr[inds_in_array])
 }
+
+#' Check if the par_lag parameter was fitted
+is_fitted_par_lag <- function(object){
+  return(sum(object$dim) > length(object$coefficients))
+}

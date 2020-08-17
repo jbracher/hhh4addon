@@ -33,7 +33,7 @@ plotHHH4lag_fitted <- function (x, units = 1, names = NULL,
     meanHHH <- if (is.null(decompose)) {
       surveillance:::meanHHH(x$coefficients, terms(x)) #BJ: removed hhh4. This was the only thing that prevented the function from working.
     } else {
-      surveillance:::decompose.hhh4(x)
+      hhh4addon:::decompose.hhh4lag(x)
     }
   }
 
