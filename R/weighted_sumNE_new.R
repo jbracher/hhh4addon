@@ -40,7 +40,7 @@ weightedSumNE <- function(observed, weights, lag, funct_lag, par_lag, min_lag, m
 
   #BJ: similar to surveillance implementation, but takes lag-weighted version of observations
   if (length(dim(weights)) == 2L) { # fast track for time-constant weights
-    if (any(isNA <- is.na(lag_weighted_observed)))
+    # if (any(isNA <- is.na(lag_weighted_observed)))
       # lag_weighted_observed[isNA] <- 0  # keep original na.rm = TRUE behaviour (for now)
       rbind(matrix(NA_real_, 1, nUnits),
             lag_weighted_observed[seq_len(nTime-1),,drop=FALSE] %*% weights)
