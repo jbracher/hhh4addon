@@ -32,11 +32,13 @@ weightedSumNE <- function(observed, weights, lag, funct_lag, par_lag, min_lag, m
     NULL
   }
 
+  #BJ: weight with lag weights prior to applying matrix weights
   lag_weights <- funct_lag(par_lag = par_lag, min_lag = min_lag,
                            max_lag = max_lag)
   lag_weighted_observed <- hhh4addon:::get_weighted_lags(lag1 = observed, lag_weights = lag_weights,
                                                          sum_up = sum_up)
 
+  #BJ: similar to surveillance implementation, but takes lag-weighted version of observations
   if (length(dim(weights)) == 2L) { # fast track for time-constant weights
     if (any(isNA <- is.na(lag_weighted_observed)))
       # lag_weighted_observed[isNA] <- 0  # keep original na.rm = TRUE behaviour (for now)
