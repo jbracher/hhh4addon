@@ -177,7 +177,7 @@ simHHH4lag <- function(ar,     # lambda_it (nTime x nUnits matrix)
                                          sum_up = TRUE)[max_lag + 1, ] #BJ
 
     if(!is.null(neW)){
-      Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag:0), , drop = FALSE], weights = neW, lag = lag.ne, #BJ
+      Ylagged.ne <- hhh4addon:::weightedSumNE(y[nStart + t - (max_lag:0), , drop = FALSE], weights = neWt, lag = lag.ne, #BJ
                                               funct_lag = funct_lag, #BJ
                                               par_lag = par_lag, #BJ
                                               min_lag = min_lag,

@@ -103,8 +103,14 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
   # Fill Lambda:
   for(i in 1:n_subset){
     t <- subset[i]
+    # accout for potentially time-varying scaled_w
+    if(length(dim(scaled_w)) == 3){
+      scaled_wt <- scaled_w[,,t]
+    }else{
+      scaled_wt <- scaled_w
+    }
     # add phi
-    lambda_unweighted_temp <- Phi[t, ]*t(scaled_w)
+    lambda_unweighted_temp <- Phi[t, ]*t(scaled_wt)
     # add lambda (in case that three-component-version is used)
     diag(lambda_unweighted_temp) <- diag(lambda_unweighted_temp) + lambda[t, ]
 

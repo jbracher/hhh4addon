@@ -21,25 +21,34 @@
 ## W is either a nUnits x nUnits matrix of time-constant weights w_ji
 ## or a nUnits x nUnits x nTime array of time-varying weights
 
-weightedSumNE <- function (observed, weights, lag, funct_lag, par_lag, min_lag, max_lag, sum_up) #BJ
+weightedSumNE <- function(observed, weights, lag, funct_lag, par_lag, min_lag, max_lag, sum_up)
 {
   dimY <- dim(observed)
   nTime <- dimY[1L]
   nUnits <- dimY[2L]
-  tY <- t(observed)                     # -> nUnits x nTime
 
-  res <- apply(weights, 2L, function (wi)
-    ## if dim(weights)==2 (time-constant weights), length(wi)=nUnits,
-    ## if dim(weights)==3, wi is a matrix of size nUnits x nTime
-    .colSums(tY * wi, nUnits, nTime, na.rm=TRUE))
+  if(!sum_up){
+    warning("sum_up = FALSE has been deprecated")
+    NULL
+  }
 
-  #BJ distributed lags are used
-  lag1 <- rbind(matrix(NA_real_, 1, nUnits), #BJ: force lag = 1 here
-                res[seq_len(nTime-1),,drop=FALSE]) #BJ force lag = 1 here
-  lag_weights <- funct_lag(par_lag = par_lag, min_lag = min_lag, max_lag = max_lag)
-  get_weighted_lags(lag1 = lag1, #BJ: transform to geometric lags
-                    lag_weights = lag_weights,
-                    sum_up = sum_up) #BJ
+  lag_weights <- funct_lag(par_lag = par_lag, min_lag = min_lag,
+                           max_lag = max_lag)
+  lag_weighted_observed <- hhh4addon:::get_weighted_lags(lag1 = observed, lag_weights = lag_weights,
+                                                         sum_up = sum_up)
+
+  if (length(dim(weights)) == 2L) { # fast track for time-constant weights
+    if (any(isNA <- is.na(lag_weighted_observed)))
+      # lag_weighted_observed[isNA] <- 0  # keep original na.rm = TRUE behaviour (for now)
+      rbind(matrix(NA_real_, 1, nUnits),
+            lag_weighted_observed[seq_len(nTime-1),,drop=FALSE] %*% weights)
+  } else {
+    tYlagged <- t(lag_weighted_observed[seq_len(nTime-1),,drop=FALSE])
+    apply(weights[,,(1+1L):nTime,drop=FALSE], 2L, function (wi)
+      ## wi and tYlagged are matrices of size nUnits x (nTime-lag)
+      c(rep(NA_real_, 1),
+        .colSums(tYlagged * wi, nUnits, nTime-1, na.rm=TRUE)))
+  }
 }
 
 # to keep uniform: define analoguously for AR

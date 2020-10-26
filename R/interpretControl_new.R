@@ -47,19 +47,23 @@ interpretControl <- function (control, stsObj)
   Ylagged <- hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
                                       funct_lag = control$funct_lag, par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag, #BJ
                                       sum_up = TRUE) #BJ
-  Ylagged_detailed <- hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
-                             funct_lag = control$funct_lag, par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag, #BJ
-                             sum_up = FALSE) #BJ
+
+  # This step was just for de-bugging and has been deprecated.
+  # Ylagged_detailed <- hhh4addon:::weightedSumAR(observed = Y, lag = ar$lag, #BJ
+  #                            funct_lag = control$funct_lag, par_lag = control$par_lag, min_lag = control$min_lag, max_lag = control$max_lag, #BJ
+  #                            sum_up = FALSE) #BJ
 
   Ylagged.ne <- neOffsetFUN(Y = Y, neweights = ne$weights, scale = ne$scale, normalize = ne$normalize, #BJ
                             nbmat = neighbourhood(stsObj), data = control$data, lag = control$ne$lag, funct_lag = control$funct_lag, par_lag = control$par_lag, # BJ
                             min_lag = control$min_lag, max_lag = control$max_lag, sum_up = TRUE, offset = ne$offset)# BJ
-  Ylagged.ne_detailed <- neOffsetFUN(Y = Y, neweights = ne$weights, scale = ne$scale, normalize = ne$normalize, #BJ
-                nbmat = neighbourhood(stsObj), data = control$data, lag = ne$lag, funct_lag = control$funct_lag, par_lag = control$par_lag, #BJ
-                min_lag = control$min_lag, max_lag = control$max_lag, sum_up = FALSE, offset = ne$offset)# BJ
 
-  offsets <- list(ar = ar$offset * Ylagged, ne = Ylagged.ne, end = end$offset, #BJ
-                  ar_detailed = ar$offset * Ylagged_detailed, ne_detailed = Ylagged.ne_detailed) #BJ: may still cause trouble with matrix-valued offsets.
+  # This step was just for de-bugging and has been deprecated.
+  # Ylagged.ne_detailed <- neOffsetFUN(Y = Y, neweights = ne$weights, scale = ne$scale, normalize = ne$normalize, #BJ
+  #               nbmat = neighbourhood(stsObj), data = control$data, lag = ne$lag, funct_lag = control$funct_lag, par_lag = control$par_lag, #BJ
+  #               min_lag = control$min_lag, max_lag = control$max_lag, sum_up = FALSE, offset = ne$offset)# BJ
+
+  offsets <- list(ar = ar$offset * Ylagged, ne = Ylagged.ne, end = end$offset) #BJ
+                  # ar_detailed = ar$offset * Ylagged_detailed, ne_detailed = Ylagged.ne_detailed) #BJ: may still cause trouble with matrix-valued offsets.
   ## -> offset$ne is a function of the parameter vector 'd', which returns a
   ##    nTime x nUnits matrix -- or 0 (scalar) if there is no NE component
   ## -> offset$end might just be 1 (scalar)
