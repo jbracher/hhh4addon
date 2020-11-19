@@ -12,7 +12,7 @@ Depends: R (>= 3.2.0), methods, grDevices, graphics, stats, utils, sp
         (>= 1.0-15), xtable (>= 1.7-0), polyCub (>= 0.4-3), surveillance
 Imports: surveillance, fanplot, MASS, Matrix, nlme, spatstat,
     numDeriv
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr

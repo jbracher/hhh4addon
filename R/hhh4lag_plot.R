@@ -16,6 +16,7 @@
 ################################################################################
 
 #' @export
+#' @method plot hhh4lag
 plot.hhh4lag <- function (x,
                        type = c("fitted", "season", "maxEV", "maps", "ri", "neweights"),
                        ...)

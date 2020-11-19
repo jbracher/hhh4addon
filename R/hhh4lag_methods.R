@@ -259,6 +259,7 @@ decompose.hhh4 <- function(x, coefs = x$coefficients, ...){
 #'
 #' A modified version of \code{decompose.hhh4} to deal with the added
 #' features of the \code{hhh4lag} class.
+#' @method decompose hhh4lag
 decompose.hhh4lag <- function (x, coefs = x$coefficients, ...)
 {
   ## get three major components from meanHHH() function
@@ -396,17 +397,9 @@ psi2size.hhh4lag <- function (object, subset = object$control$subset, units = NU
 }
 
 #' A modified version of \code{fixef.hhh4}
-fixef.hhh4lag <- function(object, ...){
-  # get correct number of fixed effects to extract from coefficients. If par_lag was estimated
-  # this needs to be lowered by 1.
-  n_fixef <- ifelse(is_fitted_par_lag(object), object$dim[1] - 1, object$dim[1])
-  if (object$dim[1L] > 0) {
-    head(surveillance:::coef.hhh4(object, ...), n_fixef)
-  }
-  else NULL
-}
-
-#' A modified version of \code{fixef.hhh4}
+#' @importFrom nlme fixef
+#' @method fixef hhh4lag
+#' @export
 fixef.hhh4lag <- function(object, ...){
   # get correct number of fixed effects to extract from coefficients. If par_lag was estimated
   # this needs to be lowered by 1.
@@ -418,6 +411,9 @@ fixef.hhh4lag <- function(object, ...){
 }
 
 #' A modified version of \code{ranef.hhh4}
+#' @importFrom nlme ranef
+#' @method ranef hhh4lag
+#' @export
 ranef.hhh4lag <- function (object, tomatrix = FALSE, intercept = FALSE, ...)
 {
   if (object$dim[2L] > 0) {

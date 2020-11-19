@@ -4,7 +4,7 @@
 \alias{decompose.hhh4lag}
 \title{A modified version of \code{decompose.hhh4}}
 \usage{
-decompose.hhh4lag(x, coefs = x$coefficients, ...)
+\method{decompose}{hhh4lag}(x, coefs = x$coefficients, ...)
 }
 \description{
 A modified version of \code{decompose.hhh4} to deal with the added
