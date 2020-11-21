@@ -21,4 +21,4 @@ library(hhh4addon)
 vignette("hhh4addon")
 ```
 
-You can find my personal website at University of Zurich [here](http://www.ebpi.uzh.ch/en/aboutus/departments/biostatistics/teambiostats/bracher.html) and contact me via fistname.lastname@uzh.ch.
+You can find my personal website [here](https://jbracher.github.io) and contact me via fistname.lastname@kit.edu
