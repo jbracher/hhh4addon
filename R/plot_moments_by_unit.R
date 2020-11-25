@@ -50,7 +50,7 @@ plot_moments_by_unit <- function (mom, probs = 1:99/100, add_observed = TRUE, ad
                                   probs_legend = c(1, 25, 50, 75, 99)/100, ylim = NULL, main = NULL, xlab = NULL, las = NULL, axes = TRUE,
                                   ...)
 {
-  if (length(mom$mu) > 100 | mom$has_temporal_strucutre) {
+  if (length(mom$mu) > 100 | mom$has_temporal_structure) {
     warning("You are plotting a lot of units. If you want to plot fanplots of over time use fanplot_prediction() or fanplot_stationary() instead.")
   }
 
