@@ -299,7 +299,7 @@ format_return <- function(M, nu, phi, n_seasons, start,
   ret$timepoints <- seq(from = start, length.out = n_seasons*length_of_period)
   ret$condition <- NULL
   ret$type <- "stationary"
-  ret$has_temporal_strucutre <- TRUE
+  ret$has_temporal_structure <- TRUE
 
   class(ret) <- c("stationary_moments_hhh4", "moments_hhh4")
 
