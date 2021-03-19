@@ -17,7 +17,7 @@
 #' @param return_cov_array logical: should an array with week-wise
 #' covariance matrices be returned?
 #' @param return_mu_decomposed logical: should an array with the
-#' predictive means decomposed into the fidderent components be returned?
+#' predictive means decomposed into the different components be returned?
 #' @param return_M logical: should the matrix M containing the predictive
 #' first and (un-centered) second moments be returned?
 #'
