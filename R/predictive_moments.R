@@ -191,15 +191,21 @@ format_return_prediction <- function(M, nu, phi, t_condition, stsObj,
   }
 
   if(return_mu_decomposed){# split up by component:
-    mu_decomposed0 <- array(dim = c(dim(mu_matrix0), 3))
-    dimnames(mu_decomposed0)[[3]] <- c("endemic", "epi.own", "epi.neighbours")
-    mu_decomposed0[,,"endemic"] <- nu
-    for(i in 1:length_of_period){
-      mu_decomposed0[i,,"epi.own"] <-
+    ret$mu_decomposed <- array(dim = c(dim(ret$mu_matrix), 3))
+    dimnames(ret$mu_decomposed)[[3]] <- c("endemic", "epi.own", "epi.neighbours")
+    ret$mu_decomposed[,,"endemic"] <- nu
+    for(i in 1:lgt){
+      # add last observed values to mu_matrix as these are also needed for the first time points
+      matrix_lagged_expectations0 <- rbind(stsObj@observed[t_condition - (n_lags - 1):0, ],
+                                           ret$mu_matrix)
+      # and restrict to the relevant range:
+      matrix_lagged_expectations <- matrix_lagged_expectations0[i - (n_lags:1) + n_lags, ]
+
+      ret$mu_decomposed[i,,"epi.own"] <-
         only_ar(matrix(phi[ , , i], nrow = nrow(phi)))%*%
-        as.vector(t(mu_matrix0[i - n_lags:1, ]))
+        as.vector(t(matrix_lagged_expectations))
     }
-    mu_decomposed0[,,"epi.neighbours"] <- mu_matrix0 - mu_decomposed0[,,"endemic"] - mu_decomposed0[,,"epi.own"]
+    ret$mu_decomposed[,,"epi.neighbours"] <- ret$mu_matrix - ret$mu_decomposed[,,"endemic"] - ret$mu_decomposed[,,"epi.own"]
   }
 
   if(return_M){
