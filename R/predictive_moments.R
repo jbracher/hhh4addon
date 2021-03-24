@@ -222,7 +222,7 @@ format_return_prediction <- function(M, nu, phi, t_condition, stsObj,
     (stsObj@start[2] + t_condition - 1 + 1:lgt)/ret$freq
   ret$realizations_matrix <- stsObj@observed[t_condition + 1:lgt, , drop = FALSE]
   ret$type <- "predictive"
-  ret$has_temporal_strucutre <- TRUE
+  ret$has_temporal_structure <- TRUE
 
   class(ret) <- c("predictive_moments_hhh4", "moments_hhh4")
 

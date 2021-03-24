@@ -159,7 +159,7 @@ aggregate_moments <- function(momentsObj, aggregation_matrix, by_timepoint = FAL
   }
 
   ret$type <- momentsObj$type
-  ret$has_temporal_strucutre <- by_timepoint
+  ret$has_temporal_structure <- by_timepoint
 
   class(ret) <- class(momentsObj)
 
