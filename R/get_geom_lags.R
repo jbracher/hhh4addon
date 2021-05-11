@@ -145,7 +145,7 @@ linear_lag <- function (par_lag, min_lag, max_lag){
 #'
 #' This function generates \eqn{Q} lag weights without a parametric constraint. The weights are obtained via
 #' a multinomial logit transformation where the first lag is the reference category.
-#' @param par_lag theparameter vector of length \eqn{Q - 1}
+#' @param par_lag the parameter vector of length \eqn{Q - 1}
 #' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
 #' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
 #' @export
@@ -155,5 +155,33 @@ unrestricted_lag <- function(par_lag, min_lag, max_lag){
   }
   weights0 <- c(1, exp(par_lag))/sum(c(1, exp(par_lag)))
   weights <- c(rep(0, min_lag - 1), weights0)
+  return(weights)
+}
+
+#' Discrete Weibull lag function
+#' 
+#' @description The discrete Weibull distribution has probability mass function \insertCite{NakagawaOsaki1975}{Rdpack}
+#' \eqn{p(d; \kappa, \beta) = \kappa ^ {(d - 1) ^ \beta} - \kappa ^ {d ^ \beta}, d = 1, 2, \ldots}
+#' which reduces to the geometric if \eqn{\beta = 1} (\code{geometric_lag}) and the discrete Raleigh distribution if \eqn{\beta = 2} \insertCite{Roy2004}{Rdpack}
+#' 
+#' @param par_lag the parameter vector (must be of length 2)
+#' @param min_lag smallest lag to include
+#' @param max_lag highest lag to include
+#' @references
+#' \insertAllCited
+#' @return the discrete Weibull lag distribution
+#' @importFrom Rdpack reprompt
+#' @export
+#' @seealso geometric_lag poisson_lag ar2_lag linear_lag unrestricted_lag
+weibull_lag <- function(par_lag, min_lag, max_lag){
+  if(length(par_lag) != 2){
+    stop("The starting value for par_lag needs to be 2")
+  }
+  p_lag <- exp(par_lag) / (1 + exp(par_lag))
+  weights0 <- c(rep(0, min_lag - 1),
+                DiscreteWeibull::ddweibull((min_lag : max_lag) -
+                                             1, p_lag[1], p_lag[2],
+                                           zero = TRUE))
+  weights <- weights0 / sum(weights0)
   return(weights)
 }
