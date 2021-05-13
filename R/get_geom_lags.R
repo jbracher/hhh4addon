@@ -171,6 +171,7 @@ unrestricted_lag <- function(par_lag, min_lag, max_lag){
 #' \insertAllCited
 #' @return the discrete Weibull lag distribution
 #' @importFrom Rdpack reprompt
+#' @importFrom DiscreteWeibull ddweibull
 #' @export
 #' @seealso geometric_lag poisson_lag ar2_lag linear_lag unrestricted_lag
 weibull_lag <- function(par_lag, min_lag, max_lag){
