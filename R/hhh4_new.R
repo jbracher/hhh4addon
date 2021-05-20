@@ -230,6 +230,12 @@ profile_par_lag <- function(stsObj, control,
                             lower_par_lag = -10, upper_par_lag = 10,
                             return_full_cov = FALSE, reltol_par_lag = 1e-08, check.analyticals = FALSE){
 
+  # throw a warning if par_lag is specified
+  if(!is.null(control$par_lag)){
+    warning("Your control list contains a par_lag element. This is ignored by profile_par_lag. To fix par_lag ",
+            "rather than estimating it from the data use the function hhh4lag.")
+  }
+
   # choose start_par_lag if user did not specify anything:
   # unrestricted_lag requires length max_lag - min_lag, others length 1.
   if(is.null(start_par_lag)){
