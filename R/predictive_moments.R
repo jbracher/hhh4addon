@@ -21,7 +21,7 @@
 #' @param return_M logical: should the matrix M containing the predictive
 #' first and (un-centered) second moments be returned?
 #'
-#' @return An object of class \code{stationary_moments_hhh4} containing
+#' @return An object of class \code{predictive_moments_hhh4} containing
 #' the following components:
 #' \itemize{
 #'   \item{\code{mu_matrix}} A matrix containing the predictive means.
