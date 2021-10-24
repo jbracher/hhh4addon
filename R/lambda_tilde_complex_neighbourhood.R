@@ -44,7 +44,7 @@ lambda_tilde_complex_neighbourhood <- function(hhh4Obj, subset = NULL, periodic 
                                          terms(hhh4Obj),
                                          subset = 1:n_timepoints)
   # lagged version:
-  Ylagged <- terms(hhh4Obj)$offset$ar/hhh4Obj$control$ar$offset # the offset in terms alson contains the offset from control
+  Ylagged <- terms(hhh4Obj)$offset$ar/hhh4Obj$control$ar$offset # the offset in terms also contains the offset from control
   # maximium lag:
   max_lag <- max(c(if(class(hhh4Obj)[1] == "hhh4lag")hhh4Obj$control$max_lag,
                    hhh4Obj$control$ar$lag,
