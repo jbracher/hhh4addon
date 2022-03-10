@@ -87,7 +87,7 @@ fanplot_prediction <- function(pred, unit = 1, probs = 1:99/100,
   matr_cond <- matrix(NA, ncol = length(mu) + 1, nrow = length(probs))
 
   # need to handle the first time point separately:
-  matr_cond[, 1] <- pred$condition[unit]
+  matr_cond[, 1] <- pred$condition[nrow(pred$condition), unit]
   # rest is calculated using probs():
   for(i in 2:ncol(matr_cond)){
     if(interpolate_probs){
