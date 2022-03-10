@@ -363,7 +363,7 @@ residuals.hhh4lag <- function (object, type = c("deviance", "response"), ...)
     poisson()$dev.resids
   } else {
     size <- if (identical(object$control$family, "NegBin1")) {
-      surveillance:::psi2size.hhh4(object, subset = NULL) # changed
+      hhh4addon:::psi2size.hhh4lag(object, subset = NULL) # changed
     } else {
       hhh4addon:::psi2size.hhh4lag(object) # CAVE: a matrix -> non-standard "size" # changed
     }
