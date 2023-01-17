@@ -7,7 +7,7 @@
 unrestricted_lag(par_lag, min_lag, max_lag)
 }
 \arguments{
-\item{par_lag}{theparameter vector of length \eqn{Q - 1}}
+\item{par_lag}{the parameter vector of length \eqn{Q - 1}}
 
 \item{min_lag}{smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.}
 
