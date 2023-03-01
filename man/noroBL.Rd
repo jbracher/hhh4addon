@@ -28,13 +28,5 @@ Case counts of rotavirus gastroenteritis in the twelve districts of Berlin, Germ
 }
 \author{
 Johannes Bracher
-
-Johannes Bracher
-
-Johannes Bracher
-
-Johannes Bracher
-
-Johannes Bracher
 }
 \keyword{data}

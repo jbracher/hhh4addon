@@ -152,7 +152,7 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' previous observations. The weights u_q, q = 1, ..., Q sum up to
 #' 1 and need to be parametrizable by a single scalar parameter. The value of this parameter needs to be passed as \code{control$par_lag}.
 #' Moreover, a function to obtain a vector of weights from \code{par_lag} needs to be provided in \code{control$funct_lag}.
-#' Currently four such functions are implemented in the package:
+#' Currently several such functions are implemented in the package:
 #' \itemize{
 #' \item{Geometric lags (function \code{geometric_lag}; the default).
 #' These are specified as
@@ -172,6 +172,11 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #' \item{A weighting only between first and second lags (in function \code{ar2lag}), i.e.
 #' \deqn{u_1 = \alpha, u_2 = 1 - \alpha.}
 #' The \code{par_lag} parameter corresponds to logit(\eqn{\alpha}).}}
+#' \item{Unrestricted lag can be fitted using \code{unrestricted_lag}. These are parameterized via
+#'  a multinomial logit transformation where the first lag is the reference category.}
+#'  \item{Discrete Weibull lags are implemented in \code{discrete_weibull_lag}, see details there.}
+#'  \item{Discrete gamma lags are implemented in \code{discrete_gamma_lag}, see details there.}
+#'  \item{Discretized log-normal lags are implemented in \code{log_normal_lag}, see details there.}
 #' Users can specify their own weighting functions as long as they take the arguments described above and return a vector of weights.
 #'
 #'
@@ -237,14 +242,33 @@ profile_par_lag <- function(stsObj, control,
   }
 
   # choose start_par_lag if user did not specify anything:
-  # unrestricted_lag requires length max_lag - min_lag, others length 1.
   if(is.null(start_par_lag)){
+
+    # unrestricted_lag requires length max_lag - min_lag
     if(isTRUE(all.equal(control$funct_lag, unrestricted_lag))){
       if(is.null(control$max_lag)) control$max_lag <- 5 # set min_lag and max_lag to defaults in unspecified
       if(is.null(control$min_lag)) control$min_lag <- 1
       start_par_lag <- rep(0, max(control$max_lag - control$min_lag))
-    }else{
+    }
+
+    # length one:
+    if(isTRUE(all.equal(control$funct_lag, geometric_lag)) |
+      isTRUE(all.equal(control$funct_lag, poisson_lag)) |
+      isTRUE(all.equal(control$funct_lag, linear_lag)) |
+      isTRUE(all.equal(control$funct_lag, ar2_lag))){
       start_par_lag <- 0.5
+    }
+
+    # length 2:
+    if(isTRUE(all.equal(control$funct_lag, discrete_weibull_lag)) |
+       isTRUE(all.equal(control$funct_lag, discrete_gamma_lag)) |
+       isTRUE(all.equal(control$funct_lag, log_normal_lag))){
+      start_par_lag <- c(0.5, 0.5)
+    }
+
+    # undetermined for other (custom) lag functions:
+    if(is.null(start_par_lag)){
+      stop("The function provided via control$funct_lag was not recognized. Please supply starting values for par_lag via start_par_lag.")
     }
   }
 

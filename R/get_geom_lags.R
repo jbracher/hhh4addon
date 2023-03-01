@@ -145,7 +145,7 @@ linear_lag <- function (par_lag, min_lag, max_lag){
 #'
 #' This function generates \eqn{Q} lag weights without a parametric constraint. The weights are obtained via
 #' a multinomial logit transformation where the first lag is the reference category.
-#' @param par_lag theparameter vector of length \eqn{Q - 1}
+#' @param par_lag the parameter vector of length \eqn{Q - 1}
 #' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
 #' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
 #' @export

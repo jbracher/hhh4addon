@@ -6,14 +6,15 @@
 \usage{
 hhh4_lag(
   stsObj,
-  control = list(ar = list(f = ~-1, offset = 1, lag = NA), ne = list(f = ~-1, offset =
-    1, lag = NA, weights = neighbourhood(stsObj) == 1, scale = NULL, normalize = FALSE),
-    end = list(f = ~1, offset = 1), family = c("Poisson", "NegBin1", "NegBinM"),
-    funct_lag = geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, subset =
-    6:nrow(stsObj), optimizer = list(stop = list(tol = 1e-05, niter = 100), regression =
-    list(method = "nlminb"), variance = list(method = "nlminb")), verbose = FALSE, start
-    = list(fixed = NULL,      random = NULL, sd.corr = NULL), data = list(t =
-    stsObj@epoch - min(stsObj@epoch)), keep.terms = FALSE),
+  control = list(ar = list(f = ~-1, offset = 1, lag = NA), ne = list(f = ~-1, offset = 1,
+    lag = NA, weights = neighbourhood(stsObj) == 1, scale = NULL, normalize = FALSE), end
+    = list(f = ~1, offset = 1), family = c("Poisson", "NegBin1", "NegBinM"), funct_lag =
+    geometric_lag, par_lag = 1, min_lag = 1, max_lag = 5, subset = 6:nrow(stsObj),
+    optimizer = list(stop = list(tol = 1e-05, niter = 100), regression = list(method =
+    "nlminb"), variance = list(method = "nlminb")), verbose = FALSE, start = list(fixed =
+    NULL, 
+     random = NULL, sd.corr = NULL), data = list(t = stsObj@epoch -
+    min(stsObj@epoch)), keep.terms = FALSE),
   check.analyticals = FALSE
 )
 }
