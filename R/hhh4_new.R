@@ -241,6 +241,11 @@ profile_par_lag <- function(stsObj, control,
             "rather than estimating it from the data use the function hhh4lag.")
   }
 
+  # use geometric lags if no funct_lag stpecified:
+  if(is.null(control$funct_lag)){
+    control$funct_lag <- geometric_lag
+  }
+
   # choose start_par_lag if user did not specify anything:
   if(is.null(start_par_lag)){
 
