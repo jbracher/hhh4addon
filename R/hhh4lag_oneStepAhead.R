@@ -244,7 +244,8 @@ psi2size.oneStepAhead <- function (object)
     size
 }
 
-## quantiles of the one-step-ahead forecasts
+#' quantiles of the one-step-ahead forecasts
+#' @export
 quantile.oneStepAhead <- function (x, probs = c(2.5, 10, 50, 90, 97.5)/100, ...)
 {
     stopifnot(is.vector(probs, mode = "numeric"), probs >= 0, probs <= 1,
@@ -271,13 +272,15 @@ quantile.oneStepAhead <- function (x, probs = c(2.5, 10, 50, 90, 97.5)/100, ...)
     } else qs
 }
 
-## confidence intervals for one-step-ahead predictions
+#' confidence intervals for one-step-ahead predictions
+#' @export
 confint.oneStepAhead <- function (object, parm, level = 0.95, ...)
 {
     quantile.oneStepAhead(object, (1+c(-1,1)*level)/2, ...)
 }
 
-## simple plot of one-step-ahead forecasts
+#' simple plot of one-step-ahead forecasts
+#' @export
 plot.oneStepAhead <- function (x, unit = 1, probs = 1:99/100,
                                start = NULL, means.args = NULL, ...)
 {

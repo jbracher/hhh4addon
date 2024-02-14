@@ -2,7 +2,15 @@
 % Please edit documentation in R/alternative_lags.R
 \name{log_normal_lag}
 \alias{log_normal_lag}
-\title{This function generates discretized log-normal weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+\title{#' This function generates (shifted) discrete gamma weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+#' to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.
+#' @param par_lag a parameter vector of length 2 to steer the lag structure, here \eqn{log(shape)} and \eqn{log(rate)},
+#' where \eqn{shape} and \eqn{rate} are the parameters of the discrete gamma distribution as implemented in the \code{extraDistr} package.
+#' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @author Maria Dunbar, Johannes Bracher
+#' @export
+This function generates discretized log-normal weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
 to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.}
 \usage{
 log_normal_lag(par_lag, min_lag, max_lag)
@@ -16,6 +24,14 @@ where \eqn{meanlog} and \eqn{sdlog} are the parameters of the log-normal distrib
 \item{max_lag}{highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.}
 }
 \description{
+#' This function generates (shifted) discrete gamma weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
+#' to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.
+#' @param par_lag a parameter vector of length 2 to steer the lag structure, here \eqn{log(shape)} and \eqn{log(rate)},
+#' where \eqn{shape} and \eqn{rate} are the parameters of the discrete gamma distribution as implemented in the \code{extraDistr} package.
+#' @param min_lag smallest lag to include; the support of the Poisson form starts only at \code{min_lag}. Defaults to 1.
+#' @param max_lag highest lag to include; higher lags are cut off and he remaining weights standardized. Defaults to 5.
+#' @author Maria Dunbar, Johannes Bracher
+#' @export
 This function generates discretized log-normal weights which are subsequently used inside of \code{get_weighted_lags}. To be passed
 to \code{hhh4_lag} or \code{profile_par_lag} as the \code{control$funct_lag} argument.
 }
