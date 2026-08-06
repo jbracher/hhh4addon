@@ -144,10 +144,10 @@ fit_par_lag <- function(stsObj, control, check.analyticals = FALSE, range_par, u
 #'
 #' The standard \code{hhh4} function only allows for models with
 #' first lags i.e. of the form
-#' \deqn{mu_{it} = \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j != i}w_{ji}X_{j, t - 1} + \nu_{it},}
+#' \deqn{\mu_{it} = \lambda_{it}X_{i, t - 1} + \phi_{it}\sum_{j != i}w_{ji}X_{j, t - 1} + \nu_{it},}
 #' see \code{?hhh4}. The extension \code{hhh4_lag} allows to specify
 #' models of the form
-#' \deqn{mu_{it} = \lambda_{it}\sum_{q= 1}^Q u_q X_{i, t - q} + \phi_{it}\sum_{j\neq i}sum_{q= 1}^Q w_{ji}u_q X_{j, t - q} + \nu_{it}.}
+#' \deqn{\mu_{it} = \lambda_{it}\sum_{q= 1}^Q u_q X_{i, t - q} + \phi_{it}\sum_{j\neq i}sum_{q= 1}^Q w_{ji}u_q X_{j, t - q} + \nu_{it}.}
 #' Here the first lags are now replaced by weighted sums of the Q
 #' previous observations. The weights u_q, q = 1, ..., Q sum up to
 #' 1 and need to be parametrizable by a single scalar parameter. The value of this parameter needs to be passed as \code{control$par_lag}.
